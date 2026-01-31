@@ -141,6 +141,11 @@
     .light .project-badge {
       filter: invert(1);
     }
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
     .project-info h1 {
       font-size: 14px;
       font-weight: 600;
@@ -148,11 +153,15 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.2;
+      margin: 0;
     }
     .project-info p {
       font-size: 11px;
       font-family: var(--font-mono);
       color: var(--muted-foreground);
+      line-height: 1.2;
+      margin: 0;
     }
     .header-center {
       display: flex;
