@@ -42,7 +42,7 @@ include = ["robotframework_reportlens*"]
 robotframework_reportlens = ["template/*.html"]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "pytest-cov", "ruff"]
+dev = ["pytest>=7.0", "pytest-cov", "ruff", "build"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
