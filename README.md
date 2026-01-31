@@ -11,7 +11,7 @@
 View generated reports here
 
 - [Pass Report](https://deekshith-poojary98.github.io/robotframework-reportlens/pass/pass_report.html "Link to sample report")
-- [Fail Report](https://deekshith-poojary98.github.io/robotframework-reportlens/pass/pass_report.html "Link to sample report")
+- [Fail Report](https://deekshith-poojary98.github.io/robotframework-reportlens/fail/fail_report.html "Link to sample report")
 
 ## Installation
 
@@ -100,3 +100,4 @@ Apache License 2.0 - See [LICENSE](LICENSE) file for details.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
