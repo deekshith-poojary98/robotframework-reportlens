@@ -825,6 +825,20 @@
     }
     .keyword-type.setup { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
     .keyword-type.teardown { background: hsla(270, 50%, 55%, 0.2); color: hsl(270, 50%, 65%); }
+    .keyword-returned {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: hsla(142, 40%, 25%, 0.35);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--status-pass-fg);
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .light .keyword-returned { background: hsla(142, 45%, 35%, 0.25); color: var(--status-pass); }
     .keyword-error-indicator {
       display: inline-flex;
       align-items: center;
@@ -893,6 +907,20 @@
     .log-level.trace { background: hsla(220, 10%, 50%, 0.2); color: var(--log-debug); }
     .log-level.pass { background: hsla(142, 52%, 45%, 0.25); color: var(--status-pass-fg); }
     .log-level.fail { background: hsla(0, 65%, 55%, 0.25); color: var(--status-fail); }
+    .log-entry-returned {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      background: hsla(142, 40%, 25%, 0.35);
+      color: var(--status-pass-fg);
+    }
+    .light .log-entry-returned { background: hsla(142, 45%, 35%, 0.25); color: var(--status-pass); }
     .log-message {
       flex: 1;
       color: var(--foreground);
@@ -1252,6 +1280,23 @@
       if (keyword.keywords) keyword.keywords.forEach(child => result.push(...getMessagesFromKeywordSubtree(child)));
       return result;
     }
+    /** Depth of keyword in tree (0 = test-level keyword). Used to sort logs in execution order. */
+    function keywordDepth(keyword, rootKeywords) {
+      const path = getKeywordPath(rootKeywords, keyword.id);
+      return path ? path.length : 0;
+    }
+    /** Sort log entries by execution order: timestamp ascending, then deeper keywords first for same timestamp (child runs before parent's return log). */
+    function sortLogEntriesByExecutionOrder(entries, rootKeywords) {
+      if (!rootKeywords || entries.length === 0) return entries;
+      return [...entries].sort((a, b) => {
+        const ta = a.message.timestamp || "";
+        const tb = b.message.timestamp || "";
+        if (ta !== tb) return ta < tb ? -1 : 1;
+        const depthA = keywordDepth(a.keyword, rootKeywords);
+        const depthB = keywordDepth(b.keyword, rootKeywords);
+        return depthB - depthA;
+      });
+    }
     /** True if the keyword subtree has at least one message with the given level (e.g. "ERROR"). */
     function keywordHasLogLevel(keyword, level) {
       const messages = getMessagesFromKeywordSubtree(keyword).map(({ message }) => message);
@@ -1470,8 +1515,8 @@
       }
       const test = state.selectedTest;
       const messagesWithKeyword = state.selectedKeyword 
-        ? getMessagesFromKeywordSubtree(state.selectedKeyword)
-        : getAllMessagesWithKeyword(test.keywords);
+        ? sortLogEntriesByExecutionOrder(getMessagesFromKeywordSubtree(state.selectedKeyword), test.keywords)
+        : sortLogEntriesByExecutionOrder(getAllMessagesWithKeyword(test.keywords), test.keywords);
       const messages = (messagesWithKeyword || []).map(({ message }) => message);
       return `
         <main class="main-panel">
@@ -1609,6 +1654,7 @@
                     <div class="log-entry log-entry-clickable" data-keyword-id="${keyword.id}" title="Click to expand keyword: ${(keyword.name || "").replace(/"/g, "&quot;")}">
                       <span class="log-time">${formatTime(m.timestamp)}</span>
                       <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
                       <span class="log-message">${m.message}</span>
                       <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
                     </div>
@@ -1617,6 +1663,7 @@
                     <div class="log-entry">
                       <span class="log-time">${formatTime(m.timestamp)}</span>
                       <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
                       <span class="log-message">${m.message}</span>
                       <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
                     </div>
@@ -1647,6 +1694,7 @@
               <span class="tree-icon ${getStatusClass(kw.status)}">${getStatusIcon(kw.status)}</span>
               ${hasErrorLog ? `<span class="keyword-error-indicator" title="Contains ERROR-level log">${icons.alert}</span>` : ""}
               ${kw.type !== "KEYWORD" ? `<span class="keyword-type ${kw.type.toLowerCase()}">${kw.type}</span>` : ""}
+              ${kw.returned ? `<span class="keyword-returned" title="Returns: ${(kw.returnValues || []).map(v => (v || "").replace(/"/g, "&quot;")).join(", ") || "value(s)"}">RETURNS</span>` : ""}
               <span class="keyword-name">${kw.name}</span>
               <span class="keyword-duration">${formatDuration(kw.duration)}</span>
             </div>
