@@ -349,17 +349,30 @@ class RobotFrameworkReportGenerator:
         doc_elem = kw_elem.find('doc')
         documentation = (doc_elem.text or '').strip() if doc_elem is not None else ''
 
+        return_elem = kw_elem.find('return')
+        returned = return_elem is not None
+        return_values = []
+        if return_elem is not None:
+            for val_elem in return_elem.findall('value'):
+                return_values.append((val_elem.text or '').strip())
+
         messages = []
-        for j, msg_elem in enumerate(kw_elem.findall('msg')):
-            msg_time = msg_elem.get('time', '')
-            level = (msg_elem.get('level') or 'INFO').upper()
-            text = (msg_elem.text or '').strip()
-            messages.append({
-                'id': f"{kw_id}-msg-{j}",
-                'timestamp': msg_time,
-                'level': level,
-                'message': text,
-            })
+        seen_return = False
+        for j, child in enumerate(kw_elem):
+            if child.tag == 'return':
+                seen_return = True
+            elif child.tag == 'msg':
+                msg_time = child.get('time', '')
+                level = (child.get('level') or 'INFO').upper()
+                text = (child.text or '').strip()
+                is_return_log = seen_return
+                messages.append({
+                    'id': f"{kw_id}-msg-{len(messages)}",
+                    'timestamp': msg_time,
+                    'level': level,
+                    'message': text,
+                    'isReturn': is_return_log,
+                })
 
         children = []
         for i, child_kw in enumerate(kw_elem.findall('kw')):
@@ -378,6 +391,8 @@ class RobotFrameworkReportGenerator:
             'messages': messages,
             'keywords': children,
             'failMessage': fail_message,
+            'returned': returned,
+            'returnValues': return_values,
         }
 
     def generate_html(self, output_file='report.html'):
