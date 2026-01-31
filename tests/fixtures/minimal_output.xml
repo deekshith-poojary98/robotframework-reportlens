@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.0" generated="2026-01-31T12:00:00" rpa="false" schemaversion="5">
+<suite id="s1" name="Minimal Suite" source="/path/to/suite.robot">
+<test id="s1-t1" name="Passing Test">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-01-31T12:00:01" level="INFO">hello</msg>
+<status status="PASS" start="2026-01-31T12:00:01" elapsed="0.001"/>
+</kw>
+<doc>A passing test.</doc>
+<tag>smoke</tag>
+<status status="PASS" start="2026-01-31T12:00:01" elapsed="0.002"/>
+</test>
+<test id="s1-t2" name="Failing Test">
+<kw name="Fail" owner="BuiltIn">
+<status status="FAIL" start="2026-01-31T12:00:02" elapsed="0.001">Expected failure</status>
+</kw>
+<status status="FAIL" start="2026-01-31T12:00:02" elapsed="0.002">Expected failure</status>
+</test>
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.005"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="1" skip="0">All Tests</stat>
+</total>
+</statistics>
+<errors>
+<msg time="2026-01-31T12:00:00" level="WARN">Error in file '/path/to/suite.robot' on line 10: Some warning.</msg>
+</errors>
+</robot>

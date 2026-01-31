@@ -64,8 +64,22 @@ ReportLens reads `output.xml`, parses suites, tests, keywords, and messages, the
 │   ├── generator.py     # XML → report data → HTML
 │   └── template/
 │       └── template.html
+├── tests/
+│   ├── conftest.py      # pytest fixtures
+│   ├── test_cli.py      # CLI tests
+│   ├── test_generator.py # report generator tests
+│   └── fixtures/        # minimal Robot output.xml for tests
 ├── pyproject.toml
 └── README.md
+```
+
+### Running tests
+
+Install with dev dependencies and run pytest:
+
+```bash
+pip install -e ".[dev]"
+pytest tests/ -v
 ```
 
 ## License

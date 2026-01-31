@@ -32,7 +32,7 @@ classifiers = [
 reportlens = "robotframework_reportlens.cli:main"
 
 [project.urls]
-Repository = "https://github.com/your-org/robotframework-reportlens"
+Repository = "https://github.com/deekshith-poojary98/robotframework-reportlens"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -40,3 +40,11 @@ include = ["robotframework_reportlens*"]
 
 [tool.setuptools.package-data]
 robotframework_reportlens = ["template/*.html"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov", "ruff"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
