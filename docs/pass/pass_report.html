@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.25, maximum-scale=5, user-scalable=yes">
+  <title>Robot Framework Test Report</title>
+  <link rel="icon" href="https://docs.robotframework.org/img/rf_favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+/* ========== CSS Reset & Base ========== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    /* ========== CSS Variables (Dark Theme Default) ========== */
+    :root {
+      --background: hsl(220, 16%, 10%);
+      --foreground: hsl(220, 10%, 92%);
+      --card: hsl(220, 16%, 12%);
+      --card-foreground: hsl(220, 10%, 92%);
+      --popover: hsl(220, 16%, 14%);
+      --primary: hsl(220, 14%, 75%);
+      --primary-foreground: hsl(220, 16%, 10%);
+      --secondary: hsl(220, 14%, 18%);
+      --secondary-foreground: hsl(220, 10%, 75%);
+      --muted: hsl(220, 14%, 16%);
+      --muted-foreground: hsl(220, 10%, 55%);
+      --accent: hsl(220, 14%, 20%);
+      --border: hsl(220, 14%, 20%);
+      --sidebar: hsl(220, 16%, 8%);
+      --sidebar-foreground: hsl(220, 10%, 85%);
+      
+      /* Status Colors */
+      --status-pass: hsl(142deg 81.68% 25.4%);
+      --status-pass-fg: hsl(142, 52%, 95%);
+      --status-pass-muted: hsl(142, 40%, 18%);
+      --status-fail: hsl(0, 65%, 55%);
+      --status-fail-fg: hsl(0, 65%, 98%);
+      --status-fail-muted: hsl(0, 50%, 18%);
+      --status-skip: hsl(45, 70%, 50%);
+      --status-skip-fg: hsl(45, 70%, 10%);
+      --status-skip-muted: hsl(45, 50%, 18%);
+      
+      /* Log Colors */
+      --log-info: hsl(210, 60%, 55%);
+      --log-warn: hsl(38, 90%, 55%);
+      --log-error: hsl(0, 75%, 60%);
+      --log-debug: hsl(220, 10%, 50%);
+      
+      --radius: 6px;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    /* Light Theme */
+    .light {
+      --background: hsl(220, 20%, 97%);
+      --foreground: hsl(220, 16%, 12%);
+      --card: hsl(0, 0%, 100%);
+      --card-foreground: hsl(220, 16%, 12%);
+      --muted: hsl(220, 14%, 92%);
+      --muted-foreground: hsl(220, 10%, 45%);
+      --accent: hsl(220, 14%, 90%);
+      --border: hsl(220, 14%, 88%);
+      --sidebar: hsl(220, 20%, 95%);
+      --sidebar-foreground: hsl(220, 16%, 20%);
+      --status-pass: hsl(142, 60%, 30%);
+      --status-pass-muted: hsl(142, 45%, 92%);
+      --status-fail: hsl(0, 72%, 50%);
+      --status-fail-muted: hsl(0, 55%, 95%);
+      --status-skip: hsl(45, 80%, 42%);
+      --status-skip-muted: hsl(45, 60%, 92%);
+    }
+    /* ========== Base Styles ========== */
+    html, body {
+      height: 100%;
+      min-height: 100%;
+      overflow: auto;
+      font-family: var(--font-sans);
+      background: var(--background);
+      color: var(--foreground);
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: hsl(220, 14%, 14%);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(220, 10%, 22%);
+    }
+    .light ::-webkit-scrollbar-thumb {
+      background: hsl(220, 10%, 65%);
+    }
+    .light ::-webkit-scrollbar-thumb:hover {
+      background: hsl(220, 10%, 50%);
+    }
+    .light .panel-header,
+    .light .test-tree-bar {
+      background: hsl(220, 14%, 86%);
+    }
+    /* ========== Layout ========== */
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-width: 1024px;
+      width: 100%;
+      height: 100vh;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    /* ========== Header ========== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .project-badge {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .light .project-badge {
+      filter: invert(1);
+    }
+    .project-info h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--foreground);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .project-info p {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--muted-foreground);
+    }
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .stat-total {
+      color: var(--muted-foreground);
+    }
+    .stat-total strong {
+      color: var(--foreground);
+    }
+    .stat-pass { color: var(--status-pass); display: flex; align-items: center; gap: 4px; }
+    .stat-fail { color: var(--status-fail); display: flex; align-items: center; gap: 4px; }
+    .stat-skip { color: var(--status-skip); display: flex; align-items: center; gap: 4px; }
+    .divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+    }
+    .pass-rate {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pass-rate-bar {
+      width: 96px;
+      height: 6px;
+      background: var(--muted);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .pass-rate-fill {
+      height: 100%;
+      background: var(--status-pass);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .pass-rate-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-foreground);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .time-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+    .time-info span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      color: var(--foreground);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-icon:hover {
+      background: var(--accent);
+    }
+    /* ========== Status Badge ========== */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .status-badge.pass { background: var(--status-pass); color: var(--status-pass-fg); }
+    .status-badge.fail { background: var(--status-fail); color: var(--status-fail-fg); }
+    .status-badge.skip { background: var(--status-skip); color: var(--status-skip-fg); }
+    .status-badge.sm { padding: 2px 6px; font-size: 11px; }
+    .status-badge.lg { padding: 4px 10px; font-size: 13px; }
+    .header .status-badge.lg {
+      padding: 2px 8px;
+      font-size: 11px;
+      gap: 3px;
+    }
+    .header .status-badge.lg svg {
+      width: 14px;
+      height: 14px;
+    }
+    /* ========== Main Content ========== */
+    .main-content {
+      position: relative;
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    /* ========== Sidebar ========== */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 320px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      transition: width 0.2s ease;
+      overflow: hidden;
+    }
+    .sidebar.collapsed {
+      width: 0;
+    }
+    .sidebar-toggle {
+      position: absolute;
+      left: 320px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 32px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: none;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      cursor: pointer;
+      transition: left 0.2s ease, background 0.15s;
+      color: var(--muted-foreground);
+    }
+    .light .sidebar-toggle {
+      color: var(--foreground);
+    }
+    .sidebar-toggle:hover {
+      background: var(--accent);
+    }
+    .sidebar.collapsed + .sidebar-toggle {
+      left: 0;
+    }
+    .sidebar-toggle.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar-toggle:not(.hidden) {
+      transition: opacity 0.3s ease;
+    }
+    /* ========== Search & Filters ========== */
+    .search-filter {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-input {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .search-input input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      color: var(--foreground);
+      outline: none;
+    }
+    .search-input input::placeholder {
+      color: var(--muted-foreground);
+    }
+    .search-input input:focus {
+      border-color: var(--primary);
+    }
+    .search-input svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-foreground);
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-select {
+      flex: 1;
+      padding: 6px 10px;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--foreground);
+      cursor: pointer;
+      outline: none;
+    }
+    .filter-select:focus {
+      border-color: var(--primary);
+    }
+    /* ========== Failed Tests Summary ========== */
+    .failed-summary {
+      border-bottom: 1px solid var(--border);
+    }
+    .failed-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--status-fail-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-fail);
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .failed-summary-header:hover {
+      background: hsla(0, 50%, 18%, 0.8);
+    }
+    .light .failed-summary-header:hover {
+      background: hsl(0, 45%, 92%);
+    }
+    .failed-summary-list {
+      max-height: 156px;
+      overflow-y: auto;
+    }
+    .failed-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .failed-item:hover {
+      background: var(--accent);
+    }
+    .failed-item.selected {
+      background: var(--accent);
+    }
+    .failed-item-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--foreground);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .failed-item-error {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--status-fail);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* ========== Test Tree ========== */
+    .test-tree-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: hsla(220, 14%, 16%, 0.5);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .test-tree-bar button {
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .test-tree-bar button:hover {
+      background: var(--accent);
+      color: var(--foreground);
+    }
+    .test-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    .tree-node {
+      user-select: none;
+    }
+    .tree-node-header {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .tree-node-header:hover {
+      background: var(--accent);
+    }
+    .tree-node-header.selected {
+      background: var(--accent);
+    }
+    .tree-expand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      color: var(--muted-foreground);
+    }
+    .tree-icon {
+      display: flex;
+      align-items: center;
+      margin-right: 4px;
+    }
+    .tree-icon.pass { color: var(--status-pass); }
+    .tree-icon.fail { color: var(--status-fail); }
+    .tree-icon.skip { color: var(--status-skip); }
+    .tree-name {
+      flex: 1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tree-name.suite {
+      font-weight: 500;
+    }
+    .tree-stats {
+      display: flex;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .tree-node-header:hover .tree-stats {
+      opacity: 1;
+    }
+    .tree-stats .pass { color: var(--status-pass); }
+    .tree-stats .fail { color: var(--status-fail); }
+    .tree-stats .skip { color: var(--status-skip); }
+    .tree-children {
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+      margin-left: 8px;
+    }
+    /* ========== Main Panel ========== */
+    .main-panel {
+      flex: 1;
+      min-width: 0;
+      background: var(--background);
+      display: flex;
+      flex-direction: column;
+    }
+    /* ========== Empty State ========== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--muted-foreground);
+      text-align: center;
+      padding: 32px;
+    }
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--foreground);
+      margin-bottom: 8px;
+    }
+    .empty-state p {
+      font-size: 13px;
+    }
+    /* ========== Test Detail ========== */
+    .test-detail {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .test-header {
+      padding: 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .test-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .test-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+    .test-header .doc {
+      font-size: 13px;
+      color: var(--muted-foreground);
+      margin-top: 4px;
+    }
+    .test-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--muted-foreground);
+    }
+    .test-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .test-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: var(--muted);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--muted-foreground);
+      text-align: center;
+    }
+    /* ========== Failure Banner ========== */
+    .failure-banner {
+      padding: 12px 8px 12px 16px;
+      background: var(--status-fail-muted);
+      border-bottom: 1px solid hsla(0, 65%, 55%, 0.3);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .failure-header > svg {
+      flex-shrink: 0;
+      color: var(--status-fail);
+    }
+    .failure-content {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+    }
+    .failure-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .failure-header span {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-fail);
+    }
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .btn-copy:hover {
+      color: var(--foreground);
+    }
+    .failure-message {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .suite-warnings-banner {
+      padding: 12px 8px 12px 16px;
+      background: var(--status-skip-muted);
+      border-bottom: 1px solid var(--border);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .suite-warnings-content {
+      min-width: 0;
+      min-height: 0;
+    }
+    .suite-warnings-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .suite-warnings-header > svg {
+      flex-shrink: 0;
+      color: var(--status-skip);
+    }
+    .suite-warnings-header span {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-skip);
+    }
+    .suite-warnings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .suite-warning-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .suite-warning-badge {
+      flex-shrink: 0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .suite-warning-item.suite-warning-warn .suite-warning-badge {
+      background: hsla(38, 90%, 55%, 0.25);
+      color: var(--log-warn);
+    }
+    .suite-warning-item.suite-warning-error .suite-warning-badge {
+      background: hsla(0, 75%, 60%, 0.25);
+      color: var(--log-error);
+    }
+    .suite-warning-text {
+      flex: 1;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    /* ========== Detail Panels ========== */
+    .detail-panels {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    .panel {
+      display: flex;
+      flex-direction: column;
+      width: 50%;
+      min-height: 0;
+    }
+    .panel:first-child {
+      border-right: 1px solid var(--border);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: hsla(220, 14%, 16%, 0.5);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .panel-header button {
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .panel-header button:hover {
+      background: var(--accent);
+      color: var(--foreground);
+    }
+    .panel-header-keyword-name {
+      color: var(--muted-foreground);
+      font-weight: 400;
+    }
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    /* ========== Keyword Tree ========== */
+    .keyword-node {
+      border-bottom: 1px solid var(--border);
+    }
+    .keyword-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 12px;
+    }
+    .keyword-header:hover {
+      background: var(--accent);
+    }
+    .keyword-header.selected {
+      background: var(--accent);
+    }
+    .keyword-expand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      width: 16px;
+      flex-shrink: 0;
+      color: var(--muted-foreground);
+    }
+    .keyword-type {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: var(--muted);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .keyword-type.setup { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
+    .keyword-type.teardown { background: hsla(270, 50%, 55%, 0.2); color: hsl(270, 50%, 65%); }
+    .keyword-error-indicator {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      color: var(--log-error);
+    }
+    .keyword-error-indicator .icon { width: 16px; height: 16px; }
+    .keyword-name {
+      flex: 1;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .keyword-duration {
+      font-size: 11px;
+      font-family: var(--font-sans);
+      color: var(--muted-foreground);
+    }
+    .keyword-children {
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+      margin-left: 8px;
+    }
+    /* ========== Log Viewer ========== */
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-family: var(--font-sans);
+    }
+    .log-entry-clickable {
+      cursor: pointer;
+    }
+    .log-entry-clickable:hover {
+      background: var(--accent);
+    }
+    .log-time {
+      flex-shrink: 0;
+      color: var(--muted-foreground);
+      white-space: nowrap;
+    }
+    .log-level {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .log-level.info { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
+    .log-level.warn { background: hsla(38, 90%, 55%, 0.2); color: var(--log-warn); }
+    .log-level.error { background: hsla(0, 75%, 60%, 0.2); color: var(--log-error); }
+    .log-level.debug { background: var(--muted); color: var(--log-debug); }
+    .log-level.skip { background: hsla(45, 70%, 50%, 0.25); color: var(--status-skip); }
+    .log-level.trace { background: hsla(220, 10%, 50%, 0.2); color: var(--log-debug); }
+    .log-level.pass { background: hsla(142, 52%, 45%, 0.25); color: var(--status-pass-fg); }
+    .log-level.fail { background: hsla(0, 65%, 55%, 0.25); color: var(--status-fail); }
+    .log-message {
+      flex: 1;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .log-message a {
+      color: hsl(175, 55%, 65%);
+      text-decoration: underline;
+    }
+    .log-message a:hover {
+      color: hsl(175, 55%, 82%);
+    }
+    .light .log-message a {
+      color: hsl(195, 70%, 42%);
+    }
+    .light .log-message a:hover {
+      color: hsl(195, 70%, 32%);
+    }
+    .log-entry-copy {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--muted-foreground);
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+    }
+    .log-entry:hover .log-entry-copy {
+      opacity: 1;
+    }
+    .log-entry-copy:hover {
+      color: var(--foreground);
+      background: var(--accent);
+    }
+    .log-entry-copy .icon {
+      width: 14px;
+      height: 14px;
+    }
+    .log-empty {
+      padding: 32px;
+      text-align: center;
+      color: var(--muted-foreground);
+      font-size: 13px;
+    }
+    .log-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      flex-wrap: wrap;
+    }
+    .log-filter-icon {
+      display: flex;
+      align-items: center;
+      color: var(--muted-foreground);
+      flex-shrink: 0;
+    }
+    .log-filter-icon .icon { width: 16px; height: 16px; }
+    .log-filter-all,
+    .log-filter-btn {
+      padding: 4px 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: var(--foreground);
+      transition: background 0.15s, color 0.15s;
+    }
+    .log-filter-all:hover,
+    .log-filter-btn:hover {
+      background: var(--accent);
+    }
+    .log-filter-all.selected,
+    .log-filter-btn.selected {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+    .log-filter-btn.error { color: var(--log-error); }
+    .log-filter-btn.error.selected { background: hsla(0, 75%, 60%, 0.2); color: var(--log-error); }
+    .log-filter-btn.warn { color: var(--log-warn); }
+    .log-filter-btn.warn.selected { background: hsla(38, 90%, 55%, 0.2); color: var(--log-warn); }
+    .log-filter-btn.info { color: var(--log-info); }
+    .log-filter-btn.info.selected { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
+    .log-filter-btn.debug { color: var(--log-debug); }
+    .log-filter-btn.debug.selected { background: var(--muted); color: var(--log-debug); }
+    .log-filter-btn.trace { color: var(--log-debug); }
+    .log-filter-btn.trace.selected { background: hsla(220, 10%, 50%, 0.2); color: var(--log-debug); }
+    .log-filter-btn.fail { color: var(--status-fail); }
+    .log-filter-btn.fail.selected { background: hsla(0, 65%, 55%, 0.25); color: var(--status-fail); }
+    .log-filter-btn.pass { color: var(--status-pass); }
+    .log-filter-btn.pass.selected { background: hsla(142, 52%, 45%, 0.25); color: var(--status-pass); }
+    .log-filter-btn.skip { color: var(--status-skip); }
+    .log-filter-btn.skip.selected { background: hsla(45, 70%, 50%, 0.25); color: var(--status-skip); }
+    .keyword-log-meta {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--muted);
+      font-size: 12px;
+    }
+    .keyword-log-doc,
+    .keyword-log-args {
+      margin-bottom: 8px;
+    }
+    .keyword-log-doc:last-child,
+    .keyword-log-args:last-child {
+      margin-bottom: 0;
+    }
+    .keyword-log-label {
+      display: block;
+      font-weight: 600;
+      color: var(--muted-foreground);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+    .keyword-log-doc-text {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .keyword-log-args-list {
+      font-family: var(--font-mono);
+      color: var(--foreground);
+    }
+    /* ========== Icons (inline SVG) ========== */
+    .icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+    .icon.sm { width: 14px; height: 14px; }
+    .icon.lg { width: 20px; height: 20px; }
+    /* ========== Fixed layout: same on all screens; zoom and scroll to use ========== */
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+  <script type="application/json" id="report-data">{"generated": "2026-01-31T16:32:12.344523", "generator": "Robot 7.4.1 (Python 3.12.8 on win32)", "startTime": "2026-01-31T16:32:12.346890", "endTime": "2026-01-31T16:32:12.346890", "duration": 172, "statistics": {"total": 24, "passed": 21, "failed": 0, "skipped": 3, "passRate": 87}, "errors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}, {"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}, {"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}, {"time": "2026-01-31T16:32:12.389647", "level": "ERROR", "text": "Error: Sample error from Accounts suite (for report banner)"}, {"time": "2026-01-31T16:32:12.467889", "level": "ERROR", "text": "Error: This is an error message"}, {"time": "2026-01-31T16:32:12.468888", "level": "WARN", "text": "Warning: This is a warning message"}], "rootSuite": {"id": "s1", "name": "E-COMMERCE PLATFORM", "fullName": "E-COMMERCE PLATFORM", "status": "PASS", "startTime": "2026-01-31T16:32:12.346890", "endTime": "2026-01-31T16:32:12.346890", "duration": 172, "statistics": {"total": 0, "passed": 0, "failed": 0, "skipped": 0}, "tests": [], "suites": [{"id": "s1-s1", "name": "Accounts", "fullName": "Test.Accounts", "status": "PASS", "startTime": "2026-01-31T16:32:12.385612", "endTime": "2026-01-31T16:32:12.385612", "duration": 19, "statistics": {"total": 5, "passed": 5, "failed": 0, "skipped": 0}, "tests": [{"id": "s1-s1-t1", "name": "Accounts: List Accounts Returns Non Empty", "fullName": "Test.Accounts.Accounts: List Accounts Returns Non Empty", "status": "PASS", "tags": ["accounts", "list", "smoke"], "duration": 4, "message": "", "startTime": "2026-01-31T16:32:12.387615", "endTime": "2026-01-31T16:32:12.387615", "keywords": [{"id": "kw-s1-s1-t1-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.388613", "endTime": "2026-01-31T16:32:12.388613", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s1-t1-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.388613", "endTime": "2026-01-31T16:32:12.388613", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t1-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.388613", "level": "INFO", "message": "Starting test: Accounts: List Accounts Returns Non Empty"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t1-1", "name": "Accounts: List Accounts For User", "type": "KEYWORD", "status": "PASS", "duration": 2, "startTime": "2026-01-31T16:32:12.388613", "endTime": "2026-01-31T16:32:12.388613", "arguments": ["1"], "documentation": "Stub: would return list of accounts for user.", "messages": [{"id": "kw-s1-s1-t1-1-msg-0", "timestamp": "2026-01-31T16:32:12.390613", "level": "INFO", "message": "@{accounts} = [ account_1 | account_2 ]"}], "keywords": [{"id": "kw-s1-s1-t1-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.388613", "endTime": "2026-01-31T16:32:12.388613", "arguments": ["List accounts for user_id=${user_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t1-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.388613", "level": "INFO", "message": "List accounts for user_id=1 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t1-1-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.388613", "endTime": "2026-01-31T16:32:12.388613", "arguments": ["Error: Sample error from Accounts suite (for report banner)", "level=ERROR"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t1-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.389647", "level": "ERROR", "message": "Error: Sample error from Accounts suite (for report banner)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t1-1-2", "name": "Create List", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.389647", "endTime": "2026-01-31T16:32:12.389647", "arguments": ["account_1", "account_2"], "documentation": "Returns a list containing given items.", "messages": [{"id": "kw-s1-s1-t1-1-2-msg-0", "timestamp": "2026-01-31T16:32:12.389647", "level": "INFO", "message": "@{accounts} = [ account_1 | account_2 ]"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t1-2", "name": "Length Should Be", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.390613", "endTime": "2026-01-31T16:32:12.390613", "arguments": ["${accounts}", "2"], "documentation": "Verifies that the length of the given item is correct.", "messages": [{"id": "kw-s1-s1-t1-2-msg-0", "timestamp": "2026-01-31T16:32:12.390613", "level": "INFO", "message": "Length is 2."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t1-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.390613", "endTime": "2026-01-31T16:32:12.390613", "arguments": ["Accounts: ${accounts}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t1-3-msg-0", "timestamp": "2026-01-31T16:32:12.391615", "level": "INFO", "message": "Accounts: ['account_1', 'account_2']"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t1-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.391615", "endTime": "2026-01-31T16:32:12.391615", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s1-t1-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.391615", "endTime": "2026-01-31T16:32:12.391615", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t1-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.391615", "level": "INFO", "message": "Ending test: Accounts: List Accounts Returns Non Empty"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: list accounts for user.", "suiteErrors": []}, {"id": "s1-s1-t2", "name": "Accounts: Create Account Returns Id", "fullName": "Test.Accounts.Accounts: Create Account Returns Id", "status": "PASS", "tags": ["accounts", "create"], "duration": 4, "message": "", "startTime": "2026-01-31T16:32:12.392612", "endTime": "2026-01-31T16:32:12.392612", "keywords": [{"id": "kw-s1-s1-t2-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.392612", "endTime": "2026-01-31T16:32:12.392612", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s1-t2-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.392612", "endTime": "2026-01-31T16:32:12.392612", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t2-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.392612", "level": "INFO", "message": "Starting test: Accounts: Create Account Returns Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t2-1", "name": "Accounts: Create Account", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.393650", "endTime": "2026-01-31T16:32:12.393650", "arguments": ["5", "My Account"], "documentation": "Stub: would create new account.", "messages": [{"id": "kw-s1-s1-t2-1-msg-0", "timestamp": "2026-01-31T16:32:12.394614", "level": "INFO", "message": "${account_id} = acc_5_001"}], "keywords": [{"id": "kw-s1-s1-t2-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.393650", "endTime": "2026-01-31T16:32:12.393650", "arguments": ["Create account ${account_name} for user_id=${user_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t2-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.393650", "level": "INFO", "message": "Create account My Account for user_id=5 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t2-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.393650", "endTime": "2026-01-31T16:32:12.393650", "arguments": ["acc_${user_id}_001"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s1-t2-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.393650", "level": "INFO", "message": "${account_id} = acc_5_001"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t2-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.394614", "endTime": "2026-01-31T16:32:12.394614", "arguments": ["${account_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s1-t2-2-msg-0", "timestamp": "2026-01-31T16:32:12.394614", "level": "INFO", "message": "Length is 9."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t2-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.394614", "endTime": "2026-01-31T16:32:12.394614", "arguments": ["Created: ${account_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t2-3-msg-0", "timestamp": "2026-01-31T16:32:12.395614", "level": "INFO", "message": "Created: acc_5_001"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t2-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.395614", "endTime": "2026-01-31T16:32:12.395614", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s1-t2-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.395614", "endTime": "2026-01-31T16:32:12.395614", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t2-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.395614", "level": "INFO", "message": "Ending test: Accounts: Create Account Returns Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: create account.", "suiteErrors": []}, {"id": "s1-s1-t3", "name": "Accounts: Delete Account Succeeds", "fullName": "Test.Accounts.Accounts: Delete Account Succeeds", "status": "PASS", "tags": ["accounts", "delete"], "duration": 3, "message": "", "startTime": "2026-01-31T16:32:12.397615", "endTime": "2026-01-31T16:32:12.397615", "keywords": [{"id": "kw-s1-s1-t3-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.397615", "endTime": "2026-01-31T16:32:12.397615", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s1-t3-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.397615", "endTime": "2026-01-31T16:32:12.397615", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t3-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.398614", "level": "INFO", "message": "Starting test: Accounts: Delete Account Succeeds"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t3-1", "name": "Accounts: Delete Account", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.399431", "endTime": "2026-01-31T16:32:12.399431", "arguments": ["acc_99_001"], "documentation": "Stub: would delete account.", "messages": [], "keywords": [{"id": "kw-s1-s1-t3-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.399431", "endTime": "2026-01-31T16:32:12.399431", "arguments": ["Delete account ${account_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t3-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.399431", "level": "INFO", "message": "Delete account acc_99_001 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t3-1-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.399431", "endTime": "2026-01-31T16:32:12.399431", "arguments": ["Account deleted (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t3-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.400536", "level": "INFO", "message": "Account deleted (stub)"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t3-2", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.401503", "endTime": "2026-01-31T16:32:12.401503", "arguments": ["Delete completed (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t3-2-msg-0", "timestamp": "2026-01-31T16:32:12.401503", "level": "INFO", "message": "Delete completed (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t3-3", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.401503", "endTime": "2026-01-31T16:32:12.401503", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s1-t3-3-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.401503", "endTime": "2026-01-31T16:32:12.401503", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t3-3-0-msg-0", "timestamp": "2026-01-31T16:32:12.401503", "level": "INFO", "message": "Ending test: Accounts: Delete Account Succeeds"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: delete account.", "suiteErrors": []}, {"id": "s1-s1-t4", "name": "Accounts: Get Balance Returns Number", "fullName": "Test.Accounts.Accounts: Get Balance Returns Number", "status": "PASS", "tags": ["accounts", "balance"], "duration": 2, "message": "", "startTime": "2026-01-31T16:32:12.402492", "endTime": "2026-01-31T16:32:12.402492", "keywords": [{"id": "kw-s1-s1-t4-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.402492", "endTime": "2026-01-31T16:32:12.402492", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s1-t4-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.402492", "endTime": "2026-01-31T16:32:12.402492", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t4-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.403137", "level": "INFO", "message": "Starting test: Accounts: Get Balance Returns Number"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t4-1", "name": "Accounts: Get Account Balance", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.403137", "endTime": "2026-01-31T16:32:12.403137", "arguments": ["acc_1_001"], "documentation": "Stub: would return balance.", "messages": [{"id": "kw-s1-s1-t4-1-msg-0", "timestamp": "2026-01-31T16:32:12.403776", "level": "INFO", "message": "${balance} = 1000.00"}], "keywords": [{"id": "kw-s1-s1-t4-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.403137", "endTime": "2026-01-31T16:32:12.403137", "arguments": ["Get balance for ${account_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t4-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.403776", "level": "INFO", "message": "Get balance for acc_1_001 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t4-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.403776", "endTime": "2026-01-31T16:32:12.403776", "arguments": ["1000.00"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s1-t4-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.403776", "level": "INFO", "message": "${balance} = 1000.00"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t4-2", "name": "Should Be Equal As Numbers", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.403776", "endTime": "2026-01-31T16:32:12.403776", "arguments": ["${balance}", "1000.00"], "documentation": "Fails if objects are unequal after converting them to real numbers.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t4-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.403776", "endTime": "2026-01-31T16:32:12.403776", "arguments": ["Balance: ${balance}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t4-3-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "Balance: 1000.00"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t4-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s1-t4-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t4-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "Ending test: Accounts: Get Balance Returns Number"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: get balance.", "suiteErrors": []}, {"id": "s1-s1-t5", "name": "Accounts: Account Exists Returns True", "fullName": "Test.Accounts.Accounts: Account Exists Returns True", "status": "PASS", "tags": ["accounts", "exists"], "duration": 0, "message": "", "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "keywords": [{"id": "kw-s1-s1-t5-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s1-t5-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t5-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "Starting test: Accounts: Account Exists Returns True"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t5-1", "name": "Accounts: Account Exists", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["acc_1_001"], "documentation": "Stub: would check if account exists.", "messages": [{"id": "kw-s1-s1-t5-1-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "${exists} = ['True', 'True']"}], "keywords": [{"id": "kw-s1-s1-t5-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["Check exists ${account_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t5-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "Check exists acc_1_001 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t5-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["True"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s1-t5-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "${exists} = True"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s1-t5-2", "name": "Should Be True", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["${exists}"], "documentation": "Fails if the given condition is not true.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t5-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["Exists: ${exists}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t5-3-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "Exists: ['True', 'True']"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s1-t5-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s1-t5-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s1-t5-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.404810", "level": "INFO", "message": "Ending test: Accounts: Account Exists Returns True"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: account exists check.", "suiteErrors": []}], "suites": [], "source": "C:\\Testing\\E-Commerce Platform\\test\\accounts.robot", "errors": []}, {"id": "s1-s2", "name": "Payments", "fullName": "Test.Payments", "status": "PASS", "startTime": "2026-01-31T16:32:12.404810", "endTime": "2026-01-31T16:32:12.404810", "duration": 27, "statistics": {"total": 5, "passed": 5, "failed": 0, "skipped": 0}, "tests": [{"id": "s1-s2-t1", "name": "Payments: Charge Card Returns Charge Id", "fullName": "Test.Payments.Payments: Charge Card Returns Charge Id", "status": "PASS", "tags": ["charge", "payments", "smoke"], "duration": 3, "message": "", "startTime": "2026-01-31T16:32:12.412831", "endTime": "2026-01-31T16:32:12.412831", "keywords": [{"id": "kw-s1-s2-t1-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.412831", "endTime": "2026-01-31T16:32:12.412831", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s2-t1-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.412831", "endTime": "2026-01-31T16:32:12.412831", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t1-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.412831", "level": "INFO", "message": "Starting test: Payments: Charge Card Returns Charge Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t1-1", "name": "Payments: Charge Card", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.413831", "endTime": "2026-01-31T16:32:12.413831", "arguments": ["1", "99.99", "USD"], "documentation": "Stub: would charge payment method.", "messages": [{"id": "kw-s1-s2-t1-1-msg-0", "timestamp": "2026-01-31T16:32:12.414917", "level": "INFO", "message": "${charge_id} = ch_001"}], "keywords": [{"id": "kw-s1-s2-t1-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.413831", "endTime": "2026-01-31T16:32:12.413831", "arguments": ["Charge ${amount} ${currency} for account ${account_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t1-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.413831", "level": "INFO", "message": "Charge 99.99 USD for account 1 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t1-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.413831", "endTime": "2026-01-31T16:32:12.413831", "arguments": ["ch_001"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s2-t1-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.414381", "level": "INFO", "message": "${charge_id} = ch_001"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t1-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.414917", "endTime": "2026-01-31T16:32:12.414917", "arguments": ["${charge_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s2-t1-2-msg-0", "timestamp": "2026-01-31T16:32:12.414917", "level": "INFO", "message": "Length is 6."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t1-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.415991", "endTime": "2026-01-31T16:32:12.415991", "arguments": ["Charge id: ${charge_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t1-3-msg-0", "timestamp": "2026-01-31T16:32:12.415991", "level": "INFO", "message": "Charge id: ch_001"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t1-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.415991", "endTime": "2026-01-31T16:32:12.415991", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s2-t1-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.415991", "endTime": "2026-01-31T16:32:12.415991", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t1-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.415991", "level": "INFO", "message": "Ending test: Payments: Charge Card Returns Charge Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: charge card.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s2-t2", "name": "Payments: Refund Payment Returns Refund Id", "fullName": "Test.Payments.Payments: Refund Payment Returns Refund Id", "status": "PASS", "tags": ["payments", "refund"], "duration": 3, "message": "", "startTime": "2026-01-31T16:32:12.415991", "endTime": "2026-01-31T16:32:12.415991", "keywords": [{"id": "kw-s1-s2-t2-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 2, "startTime": "2026-01-31T16:32:12.415991", "endTime": "2026-01-31T16:32:12.415991", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s2-t2-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.415991", "endTime": "2026-01-31T16:32:12.415991", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t2-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.415991", "level": "INFO", "message": "Starting test: Payments: Refund Payment Returns Refund Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t2-1", "name": "Payments: Refund Payment", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.418588", "endTime": "2026-01-31T16:32:12.418588", "arguments": ["ch_001", "50.00"], "documentation": "Stub: would refund a charge.", "messages": [{"id": "kw-s1-s2-t2-1-msg-0", "timestamp": "2026-01-31T16:32:12.418588", "level": "INFO", "message": "${refund_id} = rf_001"}], "keywords": [{"id": "kw-s1-s2-t2-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.418588", "endTime": "2026-01-31T16:32:12.418588", "arguments": ["Refund charge ${charge_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t2-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.418588", "level": "INFO", "message": "Refund charge ch_001 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t2-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.418588", "endTime": "2026-01-31T16:32:12.418588", "arguments": ["rf_001"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s2-t2-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.418588", "level": "INFO", "message": "${refund_id} = rf_001"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t2-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.418588", "endTime": "2026-01-31T16:32:12.418588", "arguments": ["${refund_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s2-t2-2-msg-0", "timestamp": "2026-01-31T16:32:12.418588", "level": "INFO", "message": "Length is 6."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t2-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.419595", "endTime": "2026-01-31T16:32:12.419595", "arguments": ["Refund id: ${refund_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t2-3-msg-0", "timestamp": "2026-01-31T16:32:12.419595", "level": "INFO", "message": "Refund id: rf_001"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t2-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.419595", "endTime": "2026-01-31T16:32:12.419595", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s2-t2-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.419595", "endTime": "2026-01-31T16:32:12.419595", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t2-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.419595", "level": "INFO", "message": "Ending test: Payments: Refund Payment Returns Refund Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: refund.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s2-t3", "name": "Payments: Get Payment History Returns List", "fullName": "Test.Payments.Payments: Get Payment History Returns List", "status": "PASS", "tags": ["history", "payments"], "duration": 3, "message": "", "startTime": "2026-01-31T16:32:12.419595", "endTime": "2026-01-31T16:32:12.419595", "keywords": [{"id": "kw-s1-s2-t3-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.420596", "endTime": "2026-01-31T16:32:12.420596", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s2-t3-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.420596", "endTime": "2026-01-31T16:32:12.420596", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t3-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.420596", "level": "INFO", "message": "Starting test: Payments: Get Payment History Returns List"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t3-1", "name": "Payments: Get Payment History", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.420596", "endTime": "2026-01-31T16:32:12.420596", "arguments": ["1", "5"], "documentation": "Stub: would return list of payments.", "messages": [{"id": "kw-s1-s2-t3-1-msg-0", "timestamp": "2026-01-31T16:32:12.421621", "level": "INFO", "message": "@{history} = [ payment_1 | payment_2 ]"}], "keywords": [{"id": "kw-s1-s2-t3-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.420596", "endTime": "2026-01-31T16:32:12.420596", "arguments": ["Get payment history for ${account_id} limit=${limit} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t3-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.420596", "level": "INFO", "message": "Get payment history for 1 limit=5 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t3-1-1", "name": "Create List", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.420596", "endTime": "2026-01-31T16:32:12.420596", "arguments": ["payment_1", "payment_2"], "documentation": "Returns a list containing given items.", "messages": [{"id": "kw-s1-s2-t3-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.420596", "level": "INFO", "message": "@{history} = [ payment_1 | payment_2 ]"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t3-2", "name": "Length Should Be", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.421766", "endTime": "2026-01-31T16:32:12.421766", "arguments": ["${history}", "2"], "documentation": "Verifies that the length of the given item is correct.", "messages": [{"id": "kw-s1-s2-t3-2-msg-0", "timestamp": "2026-01-31T16:32:12.421766", "level": "INFO", "message": "Length is 2."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t3-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.421766", "endTime": "2026-01-31T16:32:12.421766", "arguments": ["History: ${history}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t3-3-msg-0", "timestamp": "2026-01-31T16:32:12.421766", "level": "INFO", "message": "History: ['payment_1', 'payment_2']"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t3-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.421766", "endTime": "2026-01-31T16:32:12.421766", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s2-t3-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.421766", "endTime": "2026-01-31T16:32:12.421766", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t3-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.421766", "level": "INFO", "message": "Ending test: Payments: Get Payment History Returns List"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: payment history.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s2-t4", "name": "Payments: Get Charge Status Returns Succeeded", "fullName": "Test.Payments.Payments: Get Charge Status Returns Succeeded", "status": "PASS", "tags": ["payments", "status"], "duration": 0, "message": "", "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "keywords": [{"id": "kw-s1-s2-t4-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s2-t4-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t4-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "Starting test: Payments: Get Charge Status Returns Succeeded"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t4-1", "name": "Payments: Get Charge Status", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["ch_001"], "documentation": "Stub: would return charge status.", "messages": [{"id": "kw-s1-s2-t4-1-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "${status} = succeeded"}], "keywords": [{"id": "kw-s1-s2-t4-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["Get status for charge ${charge_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t4-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "Get status for charge ch_001 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t4-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["succeeded"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s2-t4-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "${status} = succeeded"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t4-2", "name": "Should Be Equal", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["${status}", "succeeded"], "documentation": "Fails if the given objects are unequal.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t4-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["Status: ${status}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t4-3-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "Status: succeeded"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t4-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s2-t4-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t4-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "Ending test: Payments: Get Charge Status Returns Succeeded"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: charge status.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s2-t5", "name": "Payments: Add Payment Method Returns Method Id", "fullName": "Test.Payments.Payments: Add Payment Method Returns Method Id", "status": "PASS", "tags": ["method", "payments"], "duration": 8, "message": "", "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "keywords": [{"id": "kw-s1-s2-t5-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s2-t5-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t5-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.423363", "level": "INFO", "message": "Starting test: Payments: Add Payment Method Returns Method Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t5-1", "name": "Payments: Add Payment Method", "type": "KEYWORD", "status": "PASS", "duration": 5, "startTime": "2026-01-31T16:32:12.423363", "endTime": "2026-01-31T16:32:12.423363", "arguments": ["1", "tok_abc123"], "documentation": "Stub: would add card/payment method.", "messages": [{"id": "kw-s1-s2-t5-1-msg-0", "timestamp": "2026-01-31T16:32:12.428484", "level": "INFO", "message": "${method_id} = pm_001"}], "keywords": [{"id": "kw-s1-s2-t5-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.428484", "endTime": "2026-01-31T16:32:12.428484", "arguments": ["Add payment method for account ${account_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t5-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.428484", "level": "INFO", "message": "Add payment method for account 1 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t5-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.428484", "endTime": "2026-01-31T16:32:12.428484", "arguments": ["pm_001"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s2-t5-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.428484", "level": "INFO", "message": "${method_id} = pm_001"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s2-t5-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.428484", "endTime": "2026-01-31T16:32:12.428484", "arguments": ["${method_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s2-t5-2-msg-0", "timestamp": "2026-01-31T16:32:12.429493", "level": "INFO", "message": "Length is 6."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t5-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.429493", "endTime": "2026-01-31T16:32:12.429493", "arguments": ["Method id: ${method_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t5-3-msg-0", "timestamp": "2026-01-31T16:32:12.429493", "level": "INFO", "message": "Method id: pm_001"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s2-t5-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.430185", "endTime": "2026-01-31T16:32:12.430185", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s2-t5-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.430185", "endTime": "2026-01-31T16:32:12.430185", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s2-t5-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.430185", "level": "INFO", "message": "Ending test: Payments: Add Payment Method Returns Method Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: add payment method.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}], "suites": [], "source": "C:\\Testing\\E-Commerce Platform\\test\\payments.robot", "errors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\payments.robot' on line 51: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s3", "name": "User-Creation", "fullName": "Test.User-Creation", "status": "PASS", "startTime": "2026-01-31T16:32:12.433465", "endTime": "2026-01-31T16:32:12.433465", "duration": 22, "statistics": {"total": 5, "passed": 5, "failed": 0, "skipped": 0}, "tests": [{"id": "s1-s3-t1", "name": "User Creation: Register Returns User Id", "fullName": "Test.User-Creation.User Creation: Register Returns User Id", "status": "PASS", "tags": ["register", "smoke", "user_creation"], "duration": 1, "message": "", "startTime": "2026-01-31T16:32:12.435460", "endTime": "2026-01-31T16:32:12.435460", "keywords": [{"id": "kw-s1-s3-t1-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.435460", "endTime": "2026-01-31T16:32:12.435460", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s3-t1-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.435460", "endTime": "2026-01-31T16:32:12.435460", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t1-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "Starting test: User Creation: Register Returns User Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t1-1", "name": "User Creation: Register New User", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["new@example.com", "SecurePass123", "New User"], "documentation": "Stub: would create user with email/password.", "messages": [{"id": "kw-s1-s3-t1-1-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "${user_id} = 1001"}], "keywords": [{"id": "kw-s1-s3-t1-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["Register user email=${email} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t1-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "Register user email=new@example.com (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t1-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["1001"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s3-t1-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "${user_id} = 1001"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t1-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["${user_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s3-t1-2-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "Length is 4."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t1-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["User id: ${user_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t1-3-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "User id: 1001"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t1-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s3-t1-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t1-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "Ending test: User Creation: Register Returns User Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: register new user.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s3-t2", "name": "User Creation: Validate Email Format Accepts Valid", "fullName": "Test.User-Creation.User Creation: Validate Email Format Accepts Valid", "status": "PASS", "tags": ["user_creation", "validation"], "duration": 4, "message": "", "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "keywords": [{"id": "kw-s1-s3-t2-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s3-t2-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.436460", "endTime": "2026-01-31T16:32:12.436460", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t2-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.436460", "level": "INFO", "message": "Starting test: User Creation: Validate Email Format Accepts Valid"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t2-1", "name": "User Creation: Validate Email Format", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.439850", "endTime": "2026-01-31T16:32:12.439850", "arguments": ["valid@example.com"], "documentation": "Stub: would validate email format.", "messages": [{"id": "kw-s1-s3-t2-1-msg-0", "timestamp": "2026-01-31T16:32:12.439850", "level": "INFO", "message": "${valid} = True"}], "keywords": [{"id": "kw-s1-s3-t2-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.439850", "endTime": "2026-01-31T16:32:12.439850", "arguments": ["Validate email ${email} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t2-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.439850", "level": "INFO", "message": "Validate email valid@example.com (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t2-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.439850", "endTime": "2026-01-31T16:32:12.439850", "arguments": ["True"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s3-t2-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.439850", "level": "INFO", "message": "${valid} = True"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t2-2", "name": "Should Be True", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.439850", "endTime": "2026-01-31T16:32:12.439850", "arguments": ["${valid}"], "documentation": "Fails if the given condition is not true.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t2-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.440857", "endTime": "2026-01-31T16:32:12.440857", "arguments": ["Email valid (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t2-3-msg-0", "timestamp": "2026-01-31T16:32:12.440857", "level": "INFO", "message": "Email valid (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t2-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.440857", "endTime": "2026-01-31T16:32:12.440857", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s3-t2-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.440857", "endTime": "2026-01-31T16:32:12.440857", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t2-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.440857", "level": "INFO", "message": "Ending test: User Creation: Validate Email Format Accepts Valid"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: email validation.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s3-t3", "name": "User Creation: Validate Password Strength Accepts Strong", "fullName": "Test.User-Creation.User Creation: Validate Password Strength Accepts Strong", "status": "PASS", "tags": ["user_creation", "validation"], "duration": 2, "message": "", "startTime": "2026-01-31T16:32:12.441857", "endTime": "2026-01-31T16:32:12.441857", "keywords": [{"id": "kw-s1-s3-t3-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.441857", "endTime": "2026-01-31T16:32:12.441857", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s3-t3-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.442857", "endTime": "2026-01-31T16:32:12.442857", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t3-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.442857", "level": "INFO", "message": "Starting test: User Creation: Validate Password Strength Accepts Strong"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t3-1", "name": "User Creation: Validate Password Strength", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.443252", "endTime": "2026-01-31T16:32:12.443252", "arguments": ["MyStr0ng!Pass"], "documentation": "Stub: would check password strength.", "messages": [{"id": "kw-s1-s3-t3-1-msg-0", "timestamp": "2026-01-31T16:32:12.443252", "level": "INFO", "message": "${strong} = True"}], "keywords": [{"id": "kw-s1-s3-t3-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.443252", "endTime": "2026-01-31T16:32:12.443252", "arguments": ["Validate password strength (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t3-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.443252", "level": "INFO", "message": "Validate password strength (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t3-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.443252", "endTime": "2026-01-31T16:32:12.443252", "arguments": ["True"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s3-t3-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.443252", "level": "INFO", "message": "${strong} = True"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t3-2", "name": "Should Be True", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.443252", "endTime": "2026-01-31T16:32:12.443252", "arguments": ["${strong}"], "documentation": "Fails if the given condition is not true.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t3-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.443252", "endTime": "2026-01-31T16:32:12.443252", "arguments": ["Password strong (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t3-3-msg-0", "timestamp": "2026-01-31T16:32:12.444270", "level": "INFO", "message": "Password strong (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t3-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.444270", "endTime": "2026-01-31T16:32:12.444270", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s3-t3-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.444270", "endTime": "2026-01-31T16:32:12.444270", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t3-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.444270", "level": "INFO", "message": "Ending test: User Creation: Validate Password Strength Accepts Strong"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: password strength.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s3-t4", "name": "User Creation: Send Invite Returns Invite Id", "fullName": "Test.User-Creation.User Creation: Send Invite Returns Invite Id", "status": "PASS", "tags": ["invite", "user_creation"], "duration": 7, "message": "", "startTime": "2026-01-31T16:32:12.445272", "endTime": "2026-01-31T16:32:12.445272", "keywords": [{"id": "kw-s1-s3-t4-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 2, "startTime": "2026-01-31T16:32:12.445272", "endTime": "2026-01-31T16:32:12.445272", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s3-t4-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.446270", "endTime": "2026-01-31T16:32:12.446270", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t4-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.447272", "level": "INFO", "message": "Starting test: User Creation: Send Invite Returns Invite Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t4-1", "name": "User Creation: Send Invite", "type": "KEYWORD", "status": "PASS", "duration": 3, "startTime": "2026-01-31T16:32:12.447272", "endTime": "2026-01-31T16:32:12.447272", "arguments": ["invitee@example.com", "1"], "documentation": "Stub: would send invite email.", "messages": [{"id": "kw-s1-s3-t4-1-msg-0", "timestamp": "2026-01-31T16:32:12.450706", "level": "INFO", "message": "${invite_id} = invite_001"}], "keywords": [{"id": "kw-s1-s3-t4-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.448269", "endTime": "2026-01-31T16:32:12.448269", "arguments": ["Send invite to ${email} from ${inviter_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t4-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.448269", "level": "INFO", "message": "Send invite to invitee@example.com from 1 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t4-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.448269", "endTime": "2026-01-31T16:32:12.448269", "arguments": ["invite_001"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s3-t4-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.448269", "level": "INFO", "message": "${invite_id} = invite_001"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t4-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.450706", "endTime": "2026-01-31T16:32:12.450706", "arguments": ["${invite_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s3-t4-2-msg-0", "timestamp": "2026-01-31T16:32:12.451717", "level": "INFO", "message": "Length is 10."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t4-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.451717", "endTime": "2026-01-31T16:32:12.451717", "arguments": ["Invite id: ${invite_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t4-3-msg-0", "timestamp": "2026-01-31T16:32:12.451717", "level": "INFO", "message": "Invite id: invite_001"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t4-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.451717", "endTime": "2026-01-31T16:32:12.451717", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s3-t4-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.451717", "endTime": "2026-01-31T16:32:12.451717", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t4-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.452713", "level": "INFO", "message": "Ending test: User Creation: Send Invite Returns Invite Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: send invite.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s3-t5", "name": "User Creation: Accept Invite Returns User Id", "fullName": "Test.User-Creation.User Creation: Accept Invite Returns User Id", "status": "PASS", "tags": ["invite", "user_creation"], "duration": 1, "message": "", "startTime": "2026-01-31T16:32:12.454073", "endTime": "2026-01-31T16:32:12.454073", "keywords": [{"id": "kw-s1-s3-t5-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.454946", "endTime": "2026-01-31T16:32:12.454946", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s3-t5-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.454946", "endTime": "2026-01-31T16:32:12.454946", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t5-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.454946", "level": "INFO", "message": "Starting test: User Creation: Accept Invite Returns User Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t5-1", "name": "User Creation: Accept Invite", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": ["invite_001", "NewPassword123"], "documentation": "Stub: would accept invite and create user.", "messages": [{"id": "kw-s1-s3-t5-1-msg-0", "timestamp": "2026-01-31T16:32:12.455954", "level": "INFO", "message": "${user_id} = 1002"}], "keywords": [{"id": "kw-s1-s3-t5-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": ["Accept invite ${invite_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t5-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.455954", "level": "INFO", "message": "Accept invite invite_001 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t5-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": ["1002"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s3-t5-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.455954", "level": "INFO", "message": "${user_id} = 1002"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s3-t5-2", "name": "Should Not Be Empty", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": ["${user_id}"], "documentation": "Verifies that the given item is not empty.", "messages": [{"id": "kw-s1-s3-t5-2-msg-0", "timestamp": "2026-01-31T16:32:12.455954", "level": "INFO", "message": "Length is 4."}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t5-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": ["Created user id: ${user_id}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t5-3-msg-0", "timestamp": "2026-01-31T16:32:12.455954", "level": "INFO", "message": "Created user id: 1002"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s3-t5-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s3-t5-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.455954", "endTime": "2026-01-31T16:32:12.455954", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s3-t5-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.455954", "level": "INFO", "message": "Ending test: User Creation: Accept Invite Returns User Id"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: accept invite.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}], "suites": [], "source": "C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot", "errors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user-creation.robot' on line 58: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4", "name": "User Profile", "fullName": "Test.User Profile", "status": "PASS", "startTime": "2026-01-31T16:32:12.460908", "endTime": "2026-01-31T16:32:12.460908", "duration": 56, "statistics": {"total": 9, "passed": 6, "failed": 0, "skipped": 3}, "tests": [{"id": "s1-s4-t1", "name": "Profile: Get Profile Returns Dict", "fullName": "Test.User Profile.Profile: Get Profile Returns Dict", "status": "PASS", "tags": ["get", "profile", "smoke"], "duration": 6, "message": "", "startTime": "2026-01-31T16:32:12.464790", "endTime": "2026-01-31T16:32:12.464790", "keywords": [{"id": "kw-s1-s4-t1-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.464790", "endTime": "2026-01-31T16:32:12.464790", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t1-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.465932", "endTime": "2026-01-31T16:32:12.465932", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.465932", "level": "INFO", "message": "Starting test: Profile: Get Profile Returns Dict"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t1-1", "name": "Profile: Get Profile By User Id", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.467454", "endTime": "2026-01-31T16:32:12.467454", "arguments": ["42"], "documentation": "Stub: would fetch profile from API/DB.", "messages": [{"id": "kw-s1-s4-t1-1-msg-0", "timestamp": "2026-01-31T16:32:12.468888", "level": "INFO", "message": "${profile} = {'id': '42', 'name': 'Stub User', 'email': 'stub@example.com'}"}], "keywords": [{"id": "kw-s1-s4-t1-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.467889", "endTime": "2026-01-31T16:32:12.467889", "arguments": ["Get profile for user_id=${user_id} (stub)", "level=INFO"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.467889", "level": "INFO", "message": "Get profile for user_id=42 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-1-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.467889", "endTime": "2026-01-31T16:32:12.467889", "arguments": ["Error: This is an error message", "level=ERROR"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.467889", "level": "ERROR", "message": "Error: This is an error message"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-1-2", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.468888", "endTime": "2026-01-31T16:32:12.468888", "arguments": ["Warning: This is a warning message", "level=WARN"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-1-2-msg-0", "timestamp": "2026-01-31T16:32:12.468888", "level": "WARN", "message": "Warning: This is a warning message"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-1-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.468888", "endTime": "2026-01-31T16:32:12.468888", "arguments": ["Debug: This is a debug message", "level=DEBUG"], "documentation": "Logs the given message with the given level.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-1-4", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.468888", "endTime": "2026-01-31T16:32:12.468888", "arguments": ["Trace: This is a trace message", "level=TRACE"], "documentation": "Logs the given message with the given level.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-1-5", "name": "Create Dictionary", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.468888", "endTime": "2026-01-31T16:32:12.468888", "arguments": ["id=${user_id}", "name=Stub User", "email=stub@example.com"], "documentation": "Creates and returns a dictionary based on the given ``items``.", "messages": [{"id": "kw-s1-s4-t1-1-5-msg-0", "timestamp": "2026-01-31T16:32:12.468888", "level": "INFO", "message": "&{profile} = { id=42 | name=Stub User | email=stub@example.com }"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t1-2", "name": "Dictionary Should Contain Key", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.470392", "endTime": "2026-01-31T16:32:12.470392", "arguments": ["${profile}", "email"], "documentation": "Keyword to check if a dictionary contains a key.", "messages": [], "keywords": [{"id": "kw-s1-s4-t1-2-0", "name": "Should Contain", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.470392", "endTime": "2026-01-31T16:32:12.470392", "arguments": ["${dictionary}", "${key}"], "documentation": "Fails if ``container`` does not contain ``item`` one or more times.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-2-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.470392", "endTime": "2026-01-31T16:32:12.470392", "arguments": ["Dictionary contains key: ${key}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-2-1-msg-0", "timestamp": "2026-01-31T16:32:12.470392", "level": "INFO", "message": "Dictionary contains key: email"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t1-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.470392", "endTime": "2026-01-31T16:32:12.470392", "arguments": ["Profile: ${profile}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-3-msg-0", "timestamp": "2026-01-31T16:32:12.470392", "level": "INFO", "message": "Profile: {'id': '42', 'name': 'Stub User', 'email': 'stub@example.com'}"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t1-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.471396", "endTime": "2026-01-31T16:32:12.471396", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t1-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.471396", "endTime": "2026-01-31T16:32:12.471396", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t1-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.471396", "level": "INFO", "message": "Ending test: Profile: Get Profile Returns Dict"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: get profile by user id.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t2", "name": "Profile: Update Profile Field Succeeds", "fullName": "Test.User Profile.Profile: Update Profile Field Succeeds", "status": "PASS", "tags": ["profile", "update"], "duration": 2, "message": "", "startTime": "2026-01-31T16:32:12.471396", "endTime": "2026-01-31T16:32:12.471396", "keywords": [{"id": "kw-s1-s4-t2-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.472396", "endTime": "2026-01-31T16:32:12.472396", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t2-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.472396", "endTime": "2026-01-31T16:32:12.472396", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t2-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.472396", "level": "INFO", "message": "Starting test: Profile: Update Profile Field Succeeds"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t2-1", "name": "Profile: Update Profile Field", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.472396", "endTime": "2026-01-31T16:32:12.472396", "arguments": ["1", "name", "New Name"], "documentation": "Stub: would update a single profile field.", "messages": [], "keywords": [{"id": "kw-s1-s4-t2-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.472396", "endTime": "2026-01-31T16:32:12.472396", "arguments": ["Update profile ${field}=${value} for user_id=${user_id} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t2-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.472396", "level": "INFO", "message": "Update profile name=New Name for user_id=1 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t2-1-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.472396", "endTime": "2026-01-31T16:32:12.472396", "arguments": ["Update successful (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t2-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.473414", "level": "INFO", "message": "Update successful (stub)"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t2-2", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.473414", "endTime": "2026-01-31T16:32:12.473414", "arguments": ["Field updated (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t2-2-msg-0", "timestamp": "2026-01-31T16:32:12.473414", "level": "INFO", "message": "Field updated (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t2-3", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.473414", "endTime": "2026-01-31T16:32:12.473414", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t2-3-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.473414", "endTime": "2026-01-31T16:32:12.473414", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t2-3-0-msg-0", "timestamp": "2026-01-31T16:32:12.473414", "level": "INFO", "message": "Ending test: Profile: Update Profile Field Succeeds"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: update single field.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t3", "name": "Profile: Get User Preferences Returns Dict", "fullName": "Test.User Profile.Profile: Get User Preferences Returns Dict", "status": "PASS", "tags": ["preferences", "profile"], "duration": 7, "message": "", "startTime": "2026-01-31T16:32:12.473414", "endTime": "2026-01-31T16:32:12.473414", "keywords": [{"id": "kw-s1-s4-t3-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.475507", "endTime": "2026-01-31T16:32:12.475507", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t3-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.475507", "endTime": "2026-01-31T16:32:12.475507", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t3-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.475507", "level": "INFO", "message": "Starting test: Profile: Get User Preferences Returns Dict"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t3-1", "name": "Profile: Get User Preferences", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.476515", "endTime": "2026-01-31T16:32:12.476515", "arguments": ["10"], "documentation": "Stub: would return user preferences.", "messages": [{"id": "kw-s1-s4-t3-1-msg-0", "timestamp": "2026-01-31T16:32:12.477513", "level": "INFO", "message": "${prefs} = {'theme': 'dark', 'language': 'en', 'notifications': 'True'}"}], "keywords": [{"id": "kw-s1-s4-t3-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.476515", "endTime": "2026-01-31T16:32:12.476515", "arguments": ["Get preferences for user_id=${user_id} (stub)", "level=INFO"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t3-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.476515", "level": "INFO", "message": "Get preferences for user_id=10 (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t3-1-1", "name": "Create Dictionary", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.476515", "endTime": "2026-01-31T16:32:12.476515", "arguments": ["theme=dark", "language=en", "notifications=True"], "documentation": "Creates and returns a dictionary based on the given ``items``.", "messages": [{"id": "kw-s1-s4-t3-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.476515", "level": "INFO", "message": "&{prefs} = { theme=dark | language=en | notifications=True }"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t3-2", "name": "Dictionary Should Contain Key", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.477513", "endTime": "2026-01-31T16:32:12.477513", "arguments": ["${prefs}", "theme"], "documentation": "Keyword to check if a dictionary contains a key.", "messages": [], "keywords": [{"id": "kw-s1-s4-t3-2-0", "name": "Should Contain", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.477513", "endTime": "2026-01-31T16:32:12.477513", "arguments": ["${dictionary}", "${key}"], "documentation": "Fails if ``container`` does not contain ``item`` one or more times.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t3-2-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.478520", "endTime": "2026-01-31T16:32:12.478520", "arguments": ["Dictionary contains key: ${key}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t3-2-1-msg-0", "timestamp": "2026-01-31T16:32:12.478520", "level": "INFO", "message": "Dictionary contains key: theme"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t3-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.479523", "endTime": "2026-01-31T16:32:12.479523", "arguments": ["Preferences: ${prefs}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t3-3-msg-0", "timestamp": "2026-01-31T16:32:12.479523", "level": "INFO", "message": "Preferences: {'theme': 'dark', 'language': 'en', 'notifications': 'True'}"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t3-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.480516", "endTime": "2026-01-31T16:32:12.480516", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t3-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t3-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.481189", "level": "INFO", "message": "Ending test: Profile: Get User Preferences Returns Dict"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: get preferences.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t4", "name": "Profile: Set User Preference Succeeds", "fullName": "Test.User Profile.Profile: Set User Preference Succeeds", "status": "PASS", "tags": ["preferences", "profile"], "duration": 0, "message": "", "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "keywords": [{"id": "kw-s1-s4-t4-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t4-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t4-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.481189", "level": "INFO", "message": "Starting test: Profile: Set User Preference Succeeds"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t4-1", "name": "Profile: Set User Preference", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["5", "theme", "light"], "documentation": "Stub: would set one preference.", "messages": [], "keywords": [{"id": "kw-s1-s4-t4-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["Set preference ${key}=${value} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t4-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.481189", "level": "INFO", "message": "Set preference theme=light (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t4-1-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["Preference saved (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t4-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.481189", "level": "INFO", "message": "Preference saved (stub)"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t4-2", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["Preference set (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t4-2-msg-0", "timestamp": "2026-01-31T16:32:12.481189", "level": "INFO", "message": "Preference set (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t4-3", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t4-3-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t4-3-0-msg-0", "timestamp": "2026-01-31T16:32:12.481189", "level": "INFO", "message": "Ending test: Profile: Set User Preference Succeeds"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: set preference.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t5", "name": "Profile: Upload Avatar Returns Url", "fullName": "Test.User Profile.Profile: Upload Avatar Returns Url", "status": "PASS", "tags": ["avatar", "profile"], "duration": 11, "message": "", "startTime": "2026-01-31T16:32:12.481189", "endTime": "2026-01-31T16:32:12.481189", "keywords": [{"id": "kw-s1-s4-t5-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.489248", "endTime": "2026-01-31T16:32:12.489248", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t5-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.489248", "endTime": "2026-01-31T16:32:12.489248", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t5-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.489248", "level": "INFO", "message": "Starting test: Profile: Upload Avatar Returns Url"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t5-1", "name": "Profile: Upload Avatar", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.490258", "endTime": "2026-01-31T16:32:12.490258", "arguments": ["7", "/tmp/avatar.png"], "documentation": "Stub: would upload avatar image.", "messages": [{"id": "kw-s1-s4-t5-1-msg-0", "timestamp": "2026-01-31T16:32:12.491259", "level": "INFO", "message": "${url} = https://example.com/avatars/7.png"}], "keywords": [{"id": "kw-s1-s4-t5-1-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.490258", "endTime": "2026-01-31T16:32:12.490258", "arguments": ["Upload avatar for user_id=${user_id} path=${file_path} (stub)"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t5-1-0-msg-0", "timestamp": "2026-01-31T16:32:12.490258", "level": "INFO", "message": "Upload avatar for user_id=7 path=/tmp/avatar.png (stub)"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t5-1-1", "name": "Set Variable", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.490258", "endTime": "2026-01-31T16:32:12.490258", "arguments": ["https://example.com/avatars/${user_id}.png"], "documentation": "Returns the given values which can then be assigned to a variables.", "messages": [{"id": "kw-s1-s4-t5-1-1-msg-0", "timestamp": "2026-01-31T16:32:12.491259", "level": "INFO", "message": "${url} = https://example.com/avatars/7.png"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t5-2", "name": "Should Contain", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.491259", "endTime": "2026-01-31T16:32:12.491259", "arguments": ["${url}", ".png"], "documentation": "Fails if ``container`` does not contain ``item`` one or more times.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t5-3", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.491259", "endTime": "2026-01-31T16:32:12.491259", "arguments": ["Avatar URL: ${url}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t5-3-msg-0", "timestamp": "2026-01-31T16:32:12.491259", "level": "INFO", "message": "Avatar URL: https://example.com/avatars/7.png"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t5-4", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.492253", "endTime": "2026-01-31T16:32:12.492253", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t5-4-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.492253", "endTime": "2026-01-31T16:32:12.492253", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t5-4-0-msg-0", "timestamp": "2026-01-31T16:32:12.492253", "level": "INFO", "message": "Ending test: Profile: Upload Avatar Returns Url"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Stub test: upload avatar returns URL.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t6", "name": "Profile: Test With Test-Level Setup And Teardown", "fullName": "Test.User Profile.Profile: Test With Test-Level Setup And Teardown", "status": "PASS", "tags": ["profile", "structure"], "duration": 6, "message": "", "startTime": "2026-01-31T16:32:12.493254", "endTime": "2026-01-31T16:32:12.493254", "keywords": [{"id": "kw-s1-s4-t6-0", "name": "Test-Level Setup", "type": "SETUP", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.494007", "endTime": "2026-01-31T16:32:12.494007", "arguments": [], "documentation": "Test-level setup keyword (runs before test body).", "messages": [], "keywords": [{"id": "kw-s1-s4-t6-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.494007", "endTime": "2026-01-31T16:32:12.494007", "arguments": ["Test-level setup: preparing for test"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t6-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.495307", "level": "INFO", "message": "Test-level setup: preparing for test"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t6-1", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.495307", "endTime": "2026-01-31T16:32:12.495307", "arguments": ["Main test step"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t6-1-msg-0", "timestamp": "2026-01-31T16:32:12.496308", "level": "INFO", "message": "Main test step"}], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t6-2", "name": "No Operation", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.496308", "endTime": "2026-01-31T16:32:12.496308", "arguments": [], "documentation": "Does absolutely nothing.", "messages": [], "keywords": [], "failMessage": ""}, {"id": "kw-s1-s4-t6-3", "name": "Test-Level Teardown", "type": "TEARDOWN", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.497305", "endTime": "2026-01-31T16:32:12.497305", "arguments": [], "documentation": "Test-level teardown keyword (runs after test body).", "messages": [], "keywords": [{"id": "kw-s1-s4-t6-3-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.497305", "endTime": "2026-01-31T16:32:12.497305", "arguments": ["Test-level teardown: cleaning up"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t6-3-0-msg-0", "timestamp": "2026-01-31T16:32:12.498301", "level": "INFO", "message": "Test-level teardown: cleaning up"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Uses test-level [Setup] and [Teardown] so they appear in the report (SETUP/TEARDOWN in Keyword Execution).", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t7", "name": "Profile: Skipped Not Implemented Yet", "fullName": "Test.User Profile.Profile: Skipped Not Implemented Yet", "status": "SKIP", "tags": ["profile", "skip", "wip"], "duration": 4, "message": "Not implemented yet.", "startTime": "2026-01-31T16:32:12.501301", "endTime": "2026-01-31T16:32:12.501301", "keywords": [{"id": "kw-s1-s4-t7-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.502301", "endTime": "2026-01-31T16:32:12.502301", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t7-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.502301", "endTime": "2026-01-31T16:32:12.502301", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t7-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.503304", "level": "INFO", "message": "Starting test: Profile: Skipped Not Implemented Yet"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t7-1", "name": "Skip", "type": "KEYWORD", "status": "SKIP", "duration": 0, "startTime": "2026-01-31T16:32:12.503304", "endTime": "2026-01-31T16:32:12.503304", "arguments": ["Not implemented yet."], "documentation": "Skips the rest of the current test.", "messages": [{"id": "kw-s1-s4-t7-1-msg-0", "timestamp": "2026-01-31T16:32:12.504300", "level": "SKIP", "message": "Not implemented yet."}], "keywords": [], "failMessage": "Not implemented yet."}, {"id": "kw-s1-s4-t7-2", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.505301", "endTime": "2026-01-31T16:32:12.505301", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t7-2-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.505301", "endTime": "2026-01-31T16:32:12.505301", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t7-2-0-msg-0", "timestamp": "2026-01-31T16:32:12.505301", "level": "INFO", "message": "Ending test: Profile: Skipped Not Implemented Yet"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Placeholder test - not implemented yet.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t8", "name": "Profile: Skipped Deprecated Flow", "fullName": "Test.User Profile.Profile: Skipped Deprecated Flow", "status": "SKIP", "tags": ["deprecated", "profile"], "duration": 3, "message": "Deprecated: use Profile: Get Profile Returns Dict instead.", "startTime": "2026-01-31T16:32:12.506298", "endTime": "2026-01-31T16:32:12.506298", "keywords": [{"id": "kw-s1-s4-t8-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.507300", "endTime": "2026-01-31T16:32:12.507300", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t8-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.507300", "endTime": "2026-01-31T16:32:12.507300", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t8-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.507960", "level": "INFO", "message": "Starting test: Profile: Skipped Deprecated Flow"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t8-1", "name": "Skip", "type": "KEYWORD", "status": "SKIP", "duration": 1, "startTime": "2026-01-31T16:32:12.507960", "endTime": "2026-01-31T16:32:12.507960", "arguments": ["Deprecated: use Profile: Get Profile Returns Dict instead."], "documentation": "Skips the rest of the current test.", "messages": [{"id": "kw-s1-s4-t8-1-msg-0", "timestamp": "2026-01-31T16:32:12.509074", "level": "SKIP", "message": "Deprecated: use Profile: Get Profile Returns Dict instead."}], "keywords": [], "failMessage": "Deprecated: use Profile: Get Profile Returns Dict instead."}, {"id": "kw-s1-s4-t8-2", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.509074", "endTime": "2026-01-31T16:32:12.509074", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t8-2-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.509074", "endTime": "2026-01-31T16:32:12.509074", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t8-2-0-msg-0", "timestamp": "2026-01-31T16:32:12.510112", "level": "INFO", "message": "Ending test: Profile: Skipped Deprecated Flow"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Skipped: deprecated profile flow.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}, {"id": "s1-s4-t9", "name": "Profile: Skipped Blocked By Bug", "fullName": "Test.User Profile.Profile: Skipped Blocked By Bug", "status": "SKIP", "tags": ["blocked", "profile"], "duration": 3, "message": "Blocked by ticket PROFILE-123.", "startTime": "2026-01-31T16:32:12.510112", "endTime": "2026-01-31T16:32:12.510112", "keywords": [{"id": "kw-s1-s4-t9-0", "name": "Log Test Start", "type": "SETUP", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.511084", "endTime": "2026-01-31T16:32:12.511084", "arguments": [], "documentation": "Logs test start.", "messages": [], "keywords": [{"id": "kw-s1-s4-t9-0-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.511084", "endTime": "2026-01-31T16:32:12.511084", "arguments": ["Starting test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t9-0-0-msg-0", "timestamp": "2026-01-31T16:32:12.512082", "level": "INFO", "message": "Starting test: Profile: Skipped Blocked By Bug"}], "keywords": [], "failMessage": ""}], "failMessage": ""}, {"id": "kw-s1-s4-t9-1", "name": "Skip", "type": "KEYWORD", "status": "SKIP", "duration": 1, "startTime": "2026-01-31T16:32:12.512082", "endTime": "2026-01-31T16:32:12.512082", "arguments": ["Blocked by ticket PROFILE-123."], "documentation": "Skips the rest of the current test.", "messages": [{"id": "kw-s1-s4-t9-1-msg-0", "timestamp": "2026-01-31T16:32:12.513087", "level": "SKIP", "message": "Blocked by ticket PROFILE-123."}], "keywords": [], "failMessage": "Blocked by ticket PROFILE-123."}, {"id": "kw-s1-s4-t9-2", "name": "Log Test End", "type": "TEARDOWN", "status": "PASS", "duration": 1, "startTime": "2026-01-31T16:32:12.513087", "endTime": "2026-01-31T16:32:12.513087", "arguments": [], "documentation": "Logs test end.", "messages": [], "keywords": [{"id": "kw-s1-s4-t9-2-0", "name": "Log", "type": "KEYWORD", "status": "PASS", "duration": 0, "startTime": "2026-01-31T16:32:12.514092", "endTime": "2026-01-31T16:32:12.514092", "arguments": ["Ending test: ${TEST NAME}"], "documentation": "Logs the given message with the given level.", "messages": [{"id": "kw-s1-s4-t9-2-0-msg-0", "timestamp": "2026-01-31T16:32:12.514092", "level": "INFO", "message": "Ending test: Profile: Skipped Blocked By Bug"}], "keywords": [], "failMessage": ""}], "failMessage": ""}], "documentation": "Skipped until backend bug is fixed.", "suiteErrors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}], "suites": [], "source": "C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot", "errors": [{"time": "2026-01-31T16:32:12.323529", "level": "WARN", "text": "Error in file 'C:\\Testing\\E-Commerce Platform\\test\\user_profile.robot' on line 60: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead."}]}], "source": "C:\\Testing\\E-Commerce Platform\\test", "errors": []}}</script>
+  <script>
+const reportData = JSON.parse(document.getElementById("report-data").textContent);
+    // ========== Icons ==========
+    const icons = {
+      search: `<svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+      check: `<svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+      x: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`,
+      minus: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>`,
+      chevronRight: `<svg class="icon sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`,
+      chevronDown: `<svg class="icon sm" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`,
+      folder: `<svg class="icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+      file: `<svg class="icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+      clock: `<svg class="icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+      calendar: `<svg class="icon sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+      sun: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+      moon: `<svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+      panelLeft: `<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>`,
+      panelLeftClose: `<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m16 15-3-3 3-3"/></svg>`,
+      alert: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      tag: `<svg class="icon sm" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>`,
+      copy: `<svg class="icon sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+      clipboard: `<svg class="icon sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`,
+      filter: `<svg class="icon sm" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`
+    };
+    // ========== State ==========
+    let state = {
+      isDark: true,
+      sidebarCollapsed: false,
+      sidebarToggleVisible: true,
+      sidebarToggleHideTimeout: null,
+      selectedTest: null,
+      selectedKeyword: null,
+      logsCleared: false,
+      logLevelFilter: "all",
+      searchQuery: "",
+      statusFilter: "ALL",
+      tagFilter: "",
+      expandedSuites: new Set(),
+      expandedKeywords: new Set(),
+      failedSummaryOpen: true
+    };
+    function scheduleSidebarToggleHide() {
+      if (state.sidebarToggleHideTimeout) clearTimeout(state.sidebarToggleHideTimeout);
+      state.sidebarToggleHideTimeout = setTimeout(() => {
+        state.sidebarToggleVisible = false;
+        state.sidebarToggleHideTimeout = null;
+        document.getElementById("sidebar-toggle")?.classList.add("hidden");
+      }, 5000);
+    }
+    // Auto-expand suites with failures
+    function expandFailedSuites(suite) {
+      if (suite.statistics.failed > 0) {
+        state.expandedSuites.add(suite.id);
+      }
+      suite.suites.forEach(expandFailedSuites);
+    }
+    if (reportData.rootSuite) {
+      if (reportData.rootSuite) expandFailedSuites(reportData.rootSuite);
+      if (getFailedTests(reportData.rootSuite).length > 0) {
+        state.expandedSuites.add(reportData.rootSuite.id);
+      }
+    }
+    // ========== Utilities ==========
+    function formatDuration(ms) {
+      if (ms < 1000) return `${ms}ms`;
+      if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+      const min = Math.floor(ms / 60000);
+      const sec = Math.floor((ms % 60000) / 1000);
+      return `${min}m ${sec}s`;
+    }
+    function formatTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+    function formatTreeName(name) {
+      return (name || "").replace(/_/g, " ").replace(/-/g, " ");
+    }
+    function formatDateTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+    function getStatusIcon(status) {
+      if (status === "PASS") return icons.check;
+      if (status === "FAIL") return icons.x;
+      return icons.minus;
+    }
+    function getStatusClass(status) {
+      return status.toLowerCase();
+    }
+    function getAllTests(suite) {
+      let tests = [...suite.tests];
+      suite.suites.forEach(s => tests = tests.concat(getAllTests(s)));
+      return tests;
+    }
+    function getFailedTests(suite) {
+      return getAllTests(suite).filter(t => t.status === "FAIL");
+    }
+    function filterTest(test) {
+      if (state.statusFilter !== "ALL" && test.status !== state.statusFilter) return false;
+      if (state.searchQuery && !test.name.toLowerCase().includes(state.searchQuery.toLowerCase())) return false;
+      if (state.tagFilter && !test.tags.includes(state.tagFilter)) return false;
+      return true;
+    }
+    function suiteHasVisibleTests(suite) {
+      if (suite.tests.some(filterTest)) return true;
+      return suite.suites.some(suiteHasVisibleTests);
+    }
+    function getExpandableSuiteIds(suite) {
+      const ids = [];
+      if (!suite || !suiteHasVisibleTests(suite)) return ids;
+      const hasChildren = suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests);
+      if (hasChildren) ids.push(suite.id);
+      (suite.suites || []).forEach(s => ids.push(...getExpandableSuiteIds(s)));
+      return ids;
+    }
+    function getAllMessages(keywords) {
+      let msgs = [];
+      keywords.forEach(kw => {
+        if (kw.messages) msgs = msgs.concat(kw.messages);
+        if (kw.keywords) msgs = msgs.concat(getAllMessages(kw.keywords));
+      });
+      return msgs;
+    }
+    function getAllMessagesWithKeyword(keywords) {
+      const result = [];
+      keywords.forEach(kw => {
+        if (kw.messages) kw.messages.forEach(m => result.push({ message: m, keyword: kw }));
+        if (kw.keywords) result.push(...getAllMessagesWithKeyword(kw.keywords));
+      });
+      return result;
+    }
+    /** All messages from a keyword and all its descendants (for expandable keywords). */
+    function getMessagesFromKeywordSubtree(keyword) {
+      const result = [];
+      if (keyword.messages) keyword.messages.forEach(m => result.push({ message: m, keyword }));
+      if (keyword.keywords) keyword.keywords.forEach(child => result.push(...getMessagesFromKeywordSubtree(child)));
+      return result;
+    }
+    /** True if the keyword subtree has at least one message with the given level (e.g. "ERROR"). */
+    function keywordHasLogLevel(keyword, level) {
+      const messages = getMessagesFromKeywordSubtree(keyword).map(({ message }) => message);
+      return messages.some(m => (m.level || "INFO").toUpperCase() === level);
+    }
+    function findKeywordById(keywords, id) {
+      for (const kw of keywords) {
+        if (kw.id === id) return kw;
+        if (kw.keywords) {
+          const found = findKeywordById(kw.keywords, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    function getKeywordPath(keywords, targetId, path = []) {
+      for (const kw of keywords) {
+        const currentPath = [...path, kw.id];
+        if (kw.id === targetId) return currentPath;
+        if (kw.keywords) {
+          const found = getKeywordPath(kw.keywords, targetId, currentPath);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    function getExpandableKeywordIds(keywords) {
+      const ids = [];
+      keywords.forEach(kw => {
+        if (kw.keywords && kw.keywords.length > 0) {
+          ids.push(kw.id);
+          ids.push(...getExpandableKeywordIds(kw.keywords));
+        }
+      });
+      return ids;
+    }
+    function getAllTags(suite) {
+      const tags = new Set();
+      getAllTests(suite).forEach(t => t.tags.forEach(tag => tags.add(tag)));
+      return Array.from(tags).sort();
+    }
+    // ========== Render Functions ==========
+    function render() {
+      document.body.className = state.isDark ? "" : "light";
+      document.getElementById("app").innerHTML = `
+        <div class="app">
+          ${renderHeader()}
+          <div class="main-content">
+            ${renderSidebar()}
+            ${renderSidebarToggle()}
+            ${renderMainPanel()}
+          </div>
+        </div>
+      `;
+      attachEventListeners();
+    }
+    function renderHeader() {
+      const { statistics, rootSuite, startTime, duration } = reportData;
+      return `
+        <header class="header">
+          <div class="header-left">
+            <img class="project-badge" src="https://docs.robotframework.org/img/robot-framework-dark.svg" alt="Robot Framework Logo">
+            <div class="project-info">
+              <h1>${rootSuite.name}</h1>
+              <p>${reportData.generator}</p>
+            </div>
+            <span class="status-badge lg ${getStatusClass(rootSuite.status)}">
+              ${getStatusIcon(rootSuite.status)}
+              <span>${rootSuite.status === "PASS" ? "Passed" : rootSuite.status === "FAIL" ? "Failed" : "Skipped"}</span>
+            </span>
+          </div>
+          <div class="header-center">
+            <div class="stats">
+              <span class="stat-total"><strong>${statistics.total}</strong> tests</span>
+              <span class="stat-pass">${icons.check} ${statistics.passed}</span>
+              <span class="stat-fail">${icons.x} ${statistics.failed}</span>
+              <span class="stat-skip">${icons.minus} ${statistics.skipped}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="pass-rate">
+              <div class="pass-rate-bar">
+                <div class="pass-rate-fill" style="width: ${statistics.passRate}%"></div>
+              </div>
+              <span class="pass-rate-text">${statistics.passRate}%</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="time-info">
+              <span>${icons.calendar} ${formatDateTime(startTime)}</span>
+              <span>${icons.clock} ${formatDuration(duration)}</span>
+            </div>
+            <button class="btn-icon" id="theme-toggle">
+              ${state.isDark ? icons.sun : icons.moon}
+            </button>
+          </div>
+        </header>
+      `;
+    }
+    function renderSidebar() {
+      const allTags = getAllTags(reportData.rootSuite);
+      const failedTests = getFailedTests(reportData.rootSuite);
+      
+      return `
+        <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}">
+          <div class="search-filter">
+            <div class="search-input">
+              ${icons.search}
+              <input type="text" placeholder="Search tests..." value="${state.searchQuery}" id="search-input">
+            </div>
+            <div class="filter-row">
+              <select class="filter-select" id="status-filter">
+                <option value="ALL" ${state.statusFilter === "ALL" ? "selected" : ""}>All Status</option>
+                <option value="PASS" ${state.statusFilter === "PASS" ? "selected" : ""}>Passed</option>
+                <option value="FAIL" ${state.statusFilter === "FAIL" ? "selected" : ""}>Failed</option>
+                <option value="SKIP" ${state.statusFilter === "SKIP" ? "selected" : ""}>Skipped</option>
+              </select>
+              <select class="filter-select" id="tag-filter">
+                <option value="">All Tags</option>
+                ${allTags.map(t => `<option value="${t}" ${state.tagFilter === t ? "selected" : ""}>${t}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          ${failedTests.length > 0 ? `
+            <div class="failed-summary">
+              <button class="failed-summary-header" id="toggle-failed">
+                ${state.failedSummaryOpen ? icons.chevronDown : icons.chevronRight}
+                ${icons.x}
+                <span>${failedTests.length} Failed Test${failedTests.length > 1 ? "s" : ""}</span>
+              </button>
+              ${state.failedSummaryOpen ? `
+                <div class="failed-summary-list">
+                  ${failedTests.map(t => `
+                    <button class="failed-item ${state.selectedTest?.id === t.id ? "selected" : ""}" data-test-id="${t.id}">
+                      <div class="failed-item-name">${t.name}</div>
+                      <div class="failed-item-error">${t.message || "No error message"}</div>
+                    </button>
+                  `).join("")}
+                </div>
+              ` : ""}
+            </div>
+          ` : ""}
+          <div class="test-tree-bar">
+            <span>${reportData.rootSuite ? getAllTests(reportData.rootSuite).filter(filterTest).length : 0} tests</span>
+            <button id="test-tree-expand-collapse-btn">${(function() {
+              if (!reportData.rootSuite) return "Expand all";
+              const expandableIds = getExpandableSuiteIds(reportData.rootSuite);
+              const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedSuites.has(id));
+              return allExpanded ? "Collapse all" : "Expand all";
+            })()}</button>
+          </div>
+          <div class="test-tree">
+            ${renderTestTree(reportData.rootSuite)}
+          </div>
+        </aside>
+      `;
+    }
+    function renderTestTree(suite, depth = 0) {
+      if (!suiteHasVisibleTests(suite)) return "";
+      
+      const isExpanded = state.expandedSuites.has(suite.id);
+      const visibleTests = suite.tests.filter(filterTest);
+      const hasChildren = visibleTests.length > 0 || suite.suites.some(suiteHasVisibleTests);
+      
+      const suiteTitle = (suite.fullName || suite.name || "").replace(/"/g, "&quot;");
+      return `
+        <div class="tree-node">
+          <div class="tree-node-header" data-suite-id="${suite.id}" title="${suiteTitle}">
+            <span class="tree-expand">${hasChildren ? (isExpanded ? icons.chevronDown : icons.chevronRight) : ""}</span>
+            <span class="tree-icon ${getStatusClass(suite.status)}">${icons.folder}</span>
+            <span class="tree-name suite">${formatTreeName(suite.name)}</span>
+            <span class="tree-stats">
+              ${suite.statistics.passed > 0 ? `<span class="pass">${suite.statistics.passed}</span>` : ""}
+              ${suite.statistics.failed > 0 ? `<span class="fail">${suite.statistics.failed}</span>` : ""}
+              ${suite.statistics.skipped > 0 ? `<span class="skip">${suite.statistics.skipped}</span>` : ""}
+            </span>
+          </div>
+          ${isExpanded ? `
+            <div class="tree-children">
+              ${visibleTests.map(t => {
+                const testTitle = (t.fullName || t.name || "").replace(/"/g, "&quot;");
+                return `
+                <div class="tree-node">
+                  <div class="tree-node-header ${state.selectedTest?.id === t.id ? "selected" : ""}" data-test-id="${t.id}" title="${testTitle}">
+                    <span class="tree-expand"></span>
+                    <span class="tree-icon ${getStatusClass(t.status)}">${getStatusIcon(t.status)}</span>
+                    <span class="tree-name">${formatTreeName(t.name)}</span>
+                  </div>
+                </div>
+              `;
+              }).join("")}
+              ${suite.suites.map(s => renderTestTree(s, depth + 1)).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+    function renderSidebarToggle() {
+      const hidden = !state.sidebarCollapsed && !state.sidebarToggleVisible;
+      return `
+        <button class="sidebar-toggle ${hidden ? "hidden" : ""}" id="sidebar-toggle" style="left: ${state.sidebarCollapsed ? "0" : "320px"}">
+          ${state.sidebarCollapsed ? icons.panelLeft : icons.panelLeftClose}
+        </button>
+      `;
+    }
+    function renderMainPanel() {
+      if (!state.selectedTest) {
+        return `
+          <main class="main-panel">
+            <div class="empty-state">
+              ${icons.clipboard}
+              <h3>No Test Selected</h3>
+              <p>Select a test from the sidebar to view details</p>
+            </div>
+          </main>
+        `;
+      }
+      const test = state.selectedTest;
+      const messagesWithKeyword = state.selectedKeyword 
+        ? getMessagesFromKeywordSubtree(state.selectedKeyword)
+        : getAllMessagesWithKeyword(test.keywords);
+      const messages = (messagesWithKeyword || []).map(({ message }) => message);
+      return `
+        <main class="main-panel">
+          <div class="test-detail">
+            <div class="test-header">
+              <div class="test-header-top">
+                <div>
+                  <h2>${test.name}</h2>
+                  ${test.documentation ? `<p class="doc">${test.documentation}</p>` : ""}
+                </div>
+                <span class="status-badge lg ${getStatusClass(test.status)}">
+                  ${getStatusIcon(test.status)}
+                  <span>${test.status === "PASS" ? "Passed" : test.status === "FAIL" ? "Failed" : "Skipped"}</span>
+                </span>
+              </div>
+              <div class="test-meta">
+                <span>${icons.clock} ${formatDuration(test.duration)}</span>
+                ${test.tags.length > 0 ? `
+                  <div class="test-tags">
+                    ${icons.tag}
+                    ${test.tags.slice(0, 5).map(t => `<span class="tag">${t}</span>`).join("")}
+                    ${test.tags.length > 5 ? `<span class="tag">+${test.tags.length - 5}</span>` : ""}
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+            ${test.status === "FAIL" && test.message ? `
+              <div class="failure-banner">
+                <div class="failure-content">
+                  <div class="failure-header">
+                    ${icons.x}
+                    <span>Failure Reason</span>
+                    <button class="btn-copy" id="copy-error">${icons.copy} Copy</button>
+                  </div>
+                  <pre class="failure-message">${test.message}</pre>
+                </div>
+              </div>
+            ` : ""}
+            ${test.suiteErrors && test.suiteErrors.length > 0 ? `
+              <div class="suite-warnings-banner">
+                <div class="suite-warnings-content">
+                  <div class="suite-warnings-header">
+                    ${icons.alert}
+                    <span>Warnings and Errors (${test.suiteErrors.length})</span>
+                    <button class="btn-copy" id="copy-warnings">${icons.copy} Copy</button>
+                  </div>
+                  <div class="suite-warnings-list">
+                    ${test.suiteErrors.map(e => {
+                      const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                      return `<div class="suite-warning-item suite-warning-${(e.level || "WARN").toLowerCase()}">
+                        <span class="suite-warning-badge">${(e.level || "WARN").toUpperCase()}</span>
+                        <span class="suite-warning-text">${esc(e.text || "")}</span>
+                      </div>`;
+                    }).join("")}
+                  </div>
+                </div>
+              </div>
+            ` : ""}
+            <div class="detail-panels">
+              <div class="panel">
+                <div class="panel-header">
+                  <span>Keyword Execution (${test.keywords.length})</span>
+                  <button id="keyword-expand-collapse-btn">${(function() {
+                    const expandableIds = getExpandableKeywordIds(test.keywords);
+                    const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
+                    return allExpanded ? "Collapse all" : "Expand all";
+                  })()}</button>
+                </div>
+                <div class="panel-content">
+                  ${renderKeywordTree(test.keywords)}
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${state.selectedKeyword.name}</span>` : ""}</span>
+                  <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
+                </div>
+                ${state.logsCleared ? "" : (() => {
+                  const kw = state.selectedKeyword;
+                  const hasKwMeta = kw && ((kw.documentation || kw.doc) || (kw.arguments && kw.arguments.length > 0));
+                  const docText = kw ? (kw.documentation || kw.doc || "").trim() : "";
+                  const argsList = kw && kw.arguments && kw.arguments.length > 0 ? kw.arguments : [];
+                  const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                  const kwMetaBlock = hasKwMeta ? `
+                    <div class="keyword-log-meta">
+                      ${docText ? `<div class="keyword-log-doc"><span class="keyword-log-label">Documentation</span><pre class="keyword-log-doc-text">${escapeHtml(docText)}</pre></div>` : ""}
+                      ${argsList.length ? `<div class="keyword-log-args"><span class="keyword-log-label">Arguments</span><span class="keyword-log-args-list">${argsList.map(a => escapeHtml(String(a))).join(", ")}</span></div>` : ""}
+                    </div>` : "";
+                  const levelOrder = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE", "PASS", "FAIL", "SKIP"];
+                  const levelCounts = {};
+                  messages.forEach(m => {
+                    const l = (m.level || "INFO").toUpperCase();
+                    levelCounts[l] = (levelCounts[l] || 0) + 1;
+                  });
+                  const totalCount = messages.length;
+                  const levelsWithCount = levelOrder.filter(l => (levelCounts[l] || 0) > 0);
+                  const filterBar = totalCount > 0 ? `
+                    <div class="log-filter-bar">
+                      <span class="log-filter-icon">${icons.filter}</span>
+                      <button type="button" class="log-filter-all ${state.logLevelFilter === "all" ? "selected" : ""}" data-level="all">All (${totalCount})</button>
+                      ${levelsWithCount.map(level => "<button type=\"button\" class=\"log-filter-btn " + level.toLowerCase() + " " + (state.logLevelFilter === level ? "selected" : "") + "\" data-level=\"" + level + "\">" + level + " (" + levelCounts[level] + ")</button>").join("")}
+                    </div>` : "";
+                  return filterBar;
+                })()}
+                <div class="panel-content">
+                  ${state.logsCleared ? `<div class="log-empty">Logs cleared. Click <strong>Show all</strong> to view logs again.</div>` : (() => {
+                    const kw = state.selectedKeyword;
+                    const hasKwMeta = kw && ((kw.documentation || kw.doc) || (kw.arguments && kw.arguments.length > 0));
+                    const docText = kw ? (kw.documentation || kw.doc || "").trim() : "";
+                    const argsList = kw && kw.arguments && kw.arguments.length > 0 ? kw.arguments : [];
+                    const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                    const kwMetaBlock = hasKwMeta ? `
+                    <div class="keyword-log-meta">
+                      ${docText ? `<div class="keyword-log-doc"><span class="keyword-log-label">Documentation</span><pre class="keyword-log-doc-text">${escapeHtml(docText)}</pre></div>` : ""}
+                      ${argsList.length ? `<div class="keyword-log-args"><span class="keyword-log-label">Arguments</span><span class="keyword-log-args-list">${argsList.map(a => escapeHtml(String(a))).join(", ")}</span></div>` : ""}
+                    </div>` : "";
+                    const levelOrder = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE", "PASS", "FAIL", "SKIP"];
+                    const levelCounts = {};
+                    messages.forEach(m => {
+                      const l = (m.level || "INFO").toUpperCase();
+                      levelCounts[l] = (levelCounts[l] || 0) + 1;
+                    });
+                    const totalCount = messages.length;
+                    const filteredMessages = state.logLevelFilter === "all"
+                      ? messages
+                      : messages.filter(m => (m.level || "INFO").toUpperCase() === state.logLevelFilter);
+                    const filteredMessagesWithKeyword = messagesWithKeyword == null
+                      ? null
+                      : state.logLevelFilter === "all"
+                        ? messagesWithKeyword
+                        : messagesWithKeyword.filter(({ message: m }) => (m.level || "INFO").toUpperCase() === state.logLevelFilter);
+                    const listToRender = messagesWithKeyword != null ? filteredMessagesWithKeyword : filteredMessages;
+                    const logEntries = totalCount > 0 ? (messagesWithKeyword != null
+                      ? listToRender.map(({ message: m, keyword }) => `
+                    <div class="log-entry log-entry-clickable" data-keyword-id="${keyword.id}" title="Click to expand keyword: ${(keyword.name || "").replace(/"/g, "&quot;")}">
+                      <span class="log-time">${formatTime(m.timestamp)}</span>
+                      <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      <span class="log-message">${m.message}</span>
+                      <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
+                    </div>
+                  `).join("")
+                      : listToRender.map(m => `
+                    <div class="log-entry">
+                      <span class="log-time">${formatTime(m.timestamp)}</span>
+                      <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      <span class="log-message">${m.message}</span>
+                      <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
+                    </div>
+                  `).join("")) : `<div class="log-empty">No log messages</div>`;
+                    return kwMetaBlock + logEntries;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      `;
+    }
+    function keywordHasErrorLog(keyword) {
+      if (keyword.messages && keyword.messages.some(m => (m.level || "").toUpperCase() === "ERROR")) return true;
+      if (keyword.keywords) return keyword.keywords.some(kw => keywordHasErrorLog(kw));
+      return false;
+    }
+    function renderKeywordTree(keywords, depth = 0) {
+      return keywords.map(kw => {
+        const isExpanded = state.expandedKeywords.has(kw.id);
+        const hasChildren = kw.keywords && kw.keywords.length > 0;
+        const hasErrorLog = keywordHasErrorLog(kw);
+        return `
+          <div class="keyword-node">
+            <div class="keyword-header ${state.selectedKeyword?.id === kw.id ? "selected" : ""}" data-keyword-id="${kw.id}" title="${(kw.name || "").replace(/"/g, "&quot;")}">
+              <span class="keyword-expand">${hasChildren ? (isExpanded ? icons.chevronDown : icons.chevronRight) : ""}</span>
+              <span class="tree-icon ${getStatusClass(kw.status)}">${getStatusIcon(kw.status)}</span>
+              ${hasErrorLog ? `<span class="keyword-error-indicator" title="Contains ERROR-level log">${icons.alert}</span>` : ""}
+              ${kw.type !== "KEYWORD" ? `<span class="keyword-type ${kw.type.toLowerCase()}">${kw.type}</span>` : ""}
+              <span class="keyword-name">${kw.name}</span>
+              <span class="keyword-duration">${formatDuration(kw.duration)}</span>
+            </div>
+            ${hasChildren && isExpanded ? `
+              <div class="keyword-children">
+                ${renderKeywordTree(kw.keywords, depth + 1)}
+              </div>
+            ` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+    // ========== Event Listeners ==========
+    function attachEventListeners() {
+      // Theme toggle
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        state.isDark = !state.isDark;
+        render();
+      });
+      // Sidebar toggle
+      document.getElementById("sidebar-toggle")?.addEventListener("click", () => {
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        if (!state.sidebarCollapsed) {
+          state.sidebarToggleVisible = true;
+          scheduleSidebarToggleHide();
+        }
+        render();
+      });
+      // Show sidebar toggle on hover over test-tree or sidebar (no full re-render so tree stays clickable)
+      function showSidebarToggleOnHover() {
+        if (state.sidebarCollapsed) return;
+        state.sidebarToggleVisible = true;
+        document.getElementById("sidebar-toggle")?.classList.remove("hidden");
+        scheduleSidebarToggleHide();
+      }
+      document.querySelector(".test-tree")?.addEventListener("mouseenter", showSidebarToggleOnHover);
+      document.querySelector(".sidebar")?.addEventListener("mouseenter", showSidebarToggleOnHover);
+      // Search
+      document.getElementById("search-input")?.addEventListener("input", (e) => {
+        state.searchQuery = e.target.value;
+        render();
+        const input = document.getElementById("search-input");
+        if (input) {
+          input.focus();
+          input.setSelectionRange(state.searchQuery.length, state.searchQuery.length);
+        }
+      });
+      // Status filter
+      document.getElementById("status-filter")?.addEventListener("change", (e) => {
+        state.statusFilter = e.target.value;
+        render();
+      });
+      // Tag filter
+      document.getElementById("tag-filter")?.addEventListener("change", (e) => {
+        state.tagFilter = e.target.value;
+        render();
+      });
+      // Failed summary toggle
+      document.getElementById("toggle-failed")?.addEventListener("click", () => {
+        state.failedSummaryOpen = !state.failedSummaryOpen;
+        render();
+      });
+      // Failed item clicks
+      document.querySelectorAll(".failed-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const testId = el.dataset.testId;
+          state.selectedTest = getAllTests(reportData.rootSuite).find(t => t.id === testId);
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          render();
+        });
+      });
+      // Suite clicks (toggle expand)
+      document.querySelectorAll("[data-suite-id]").forEach(el => {
+        el.addEventListener("click", () => {
+          const suiteId = el.dataset.suiteId;
+          if (state.expandedSuites.has(suiteId)) {
+            state.expandedSuites.delete(suiteId);
+          } else {
+            state.expandedSuites.add(suiteId);
+          }
+          render();
+        });
+      });
+      // Test clicks
+      document.querySelectorAll("[data-test-id]").forEach(el => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const testId = el.dataset.testId;
+          state.selectedTest = getAllTests(reportData.rootSuite).find(t => t.id === testId);
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          render();
+        });
+      });
+      // Keyword clicks
+      document.querySelectorAll("[data-keyword-id]").forEach(el => {
+        el.addEventListener("click", () => {
+          const keywordId = el.dataset.keywordId;
+          const findKeyword = (keywords) => {
+            for (const kw of keywords) {
+              if (kw.id === keywordId) return kw;
+              if (kw.keywords) {
+                const found = findKeyword(kw.keywords);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+          
+          const kw = findKeyword(state.selectedTest.keywords);
+          if (kw) {
+            if (state.selectedKeyword?.id === kw.id) {
+              // Toggle expand if already selected
+              if (state.expandedKeywords.has(kw.id)) {
+                state.expandedKeywords.delete(kw.id);
+              } else {
+                state.expandedKeywords.add(kw.id);
+              }
+            } else {
+              state.selectedKeyword = kw;
+              state.logsCleared = false;
+              state.expandedKeywords.add(kw.id);
+              if (state.logLevelFilter !== "all" && !keywordHasLogLevel(kw, state.logLevelFilter)) {
+                state.logLevelFilter = "all";
+              }
+            }
+            render();
+          }
+        });
+      });
+      // Show all / Clear all logs toggle
+      document.getElementById("show-all-logs")?.addEventListener("click", () => {
+        if (state.logsCleared) {
+          state.logsCleared = false;
+        } else if (state.selectedKeyword) {
+          state.selectedKeyword = null;
+        } else {
+          state.logsCleared = true;
+        }
+        render();
+      });
+      // Log level filter
+      document.querySelectorAll(".log-filter-all, .log-filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.logLevelFilter = btn.dataset.level || "all";
+          render();
+        });
+      });
+      // Copy single log message (button shown on hover)
+      document.querySelectorAll(".log-entry-copy").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const entry = btn.closest(".log-entry");
+          const msgEl = entry?.querySelector(".log-message");
+          if (msgEl) {
+            navigator.clipboard.writeText(msgEl.textContent).then(() => {
+              const orig = btn.innerHTML;
+              btn.innerHTML = icons.check;
+              btn.setAttribute("title", "Copied");
+              setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.setAttribute("title", "Copy message");
+              }, 1500);
+            });
+          }
+        });
+      });
+      // Test tree: Expand all / Collapse all
+      document.getElementById("test-tree-expand-collapse-btn")?.addEventListener("click", () => {
+        if (!reportData.rootSuite) return;
+        const expandableIds = getExpandableSuiteIds(reportData.rootSuite);
+        const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedSuites.has(id));
+        if (allExpanded) {
+          expandableIds.forEach(id => state.expandedSuites.delete(id));
+        } else {
+          expandableIds.forEach(id => state.expandedSuites.add(id));
+        }
+        render();
+      });
+      // Keyword panel: Expand all / Collapse all
+      document.getElementById("keyword-expand-collapse-btn")?.addEventListener("click", () => {
+        if (!state.selectedTest) return;
+        const expandableIds = getExpandableKeywordIds(state.selectedTest.keywords);
+        const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
+        if (allExpanded) {
+          expandableIds.forEach(id => state.expandedKeywords.delete(id));
+        } else {
+          expandableIds.forEach(id => state.expandedKeywords.add(id));
+        }
+        render();
+      });
+      // Click log entry to expand and select the keyword it belongs to
+      document.querySelectorAll(".log-entry[data-keyword-id]").forEach(el => {
+        el.addEventListener("click", () => {
+          const kwId = el.dataset.keywordId;
+          const kw = findKeywordById(state.selectedTest.keywords, kwId);
+          if (kw) {
+            state.selectedKeyword = kw;
+            state.logsCleared = false;
+            state.expandedKeywords.add(kw.id);
+            if (state.logLevelFilter !== "all" && !keywordHasLogLevel(kw, state.logLevelFilter)) {
+              state.logLevelFilter = "all";
+            }
+            const path = getKeywordPath(state.selectedTest.keywords, kwId);
+            if (path) path.forEach(id => state.expandedKeywords.add(id));
+            render();
+          }
+        });
+      });
+      // Copy error
+      document.getElementById("copy-error")?.addEventListener("click", async () => {
+        if (state.selectedTest?.message) {
+          await navigator.clipboard.writeText(state.selectedTest.message);
+          const btn = document.getElementById("copy-error");
+          btn.innerHTML = `${icons.check} Copied`;
+          setTimeout(() => {
+            btn.innerHTML = `${icons.copy} Copy`;
+          }, 2000);
+        }
+      });
+      // Copy warnings and errors
+      document.getElementById("copy-warnings")?.addEventListener("click", async () => {
+        if (state.selectedTest?.suiteErrors?.length) {
+          const text = state.selectedTest.suiteErrors
+            .map(e => `${(e.level || "WARN")} ${e.text || ""}`.trim())
+            .join("\n");
+          await navigator.clipboard.writeText(text);
+          const btn = document.getElementById("copy-warnings");
+          btn.innerHTML = `${icons.check} Copied`;
+          setTimeout(() => {
+            btn.innerHTML = `${icons.copy} Copy`;
+          }, 2000);
+        }
+      });
+    }
+    // ========== Auto-select first failed test ==========
+    const failedTests = reportData.rootSuite ? getFailedTests(reportData.rootSuite) : [];
+    if (failedTests.length > 0) {
+      state.selectedTest = failedTests[0];
+    }
+    // ========== Initial Render ==========
+    render();
+    if (!state.sidebarCollapsed) scheduleSidebarToggleHide();
+  </script>
+</body>
+</html>

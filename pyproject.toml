@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotframework-reportlens"
+version = "0.1.0"
+description = "Generate a modern, interactive HTML report from Robot Framework output.xml"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Deekshith Poojary", email = "deekshithpoojary355@gmail.com"}
+]
+keywords = ["robotframework", "report", "html", "testing", "cli", "log"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Framework :: Robot Framework",
+]
+
+[project.scripts]
+reportlens = "robotframework_reportlens.cli:main"
+
+[project.urls]
+Repository = "https://github.com/your-org/robotframework-reportlens"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["robotframework_reportlens*"]
+
+[tool.setuptools.package-data]
+robotframework_reportlens = ["template/*.html"]

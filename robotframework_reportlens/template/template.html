@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.25, maximum-scale=5, user-scalable=yes">
+  <title>Robot Framework Test Report</title>
+  <link rel="icon" type="image/x-icon" href="https://docs.robotframework.org/img/robot-framework-dark.svg">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========== CSS Reset & Base ========== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    /* ========== CSS Variables (Dark Theme Default) ========== */
+    :root {
+      --background: hsl(220, 16%, 10%);
+      --foreground: hsl(220, 10%, 92%);
+      --card: hsl(220, 16%, 12%);
+      --card-foreground: hsl(220, 10%, 92%);
+      --popover: hsl(220, 16%, 14%);
+      --primary: hsl(220, 14%, 75%);
+      --primary-foreground: hsl(220, 16%, 10%);
+      --secondary: hsl(220, 14%, 18%);
+      --secondary-foreground: hsl(220, 10%, 75%);
+      --muted: hsl(220, 14%, 16%);
+      --muted-foreground: hsl(220, 10%, 55%);
+      --accent: hsl(220, 14%, 20%);
+      --border: hsl(220, 14%, 20%);
+      --sidebar: hsl(220, 16%, 8%);
+      --sidebar-foreground: hsl(220, 10%, 85%);
+      
+      /* Status Colors */
+      --status-pass: hsl(142deg 81.68% 25.4%);
+      --status-pass-fg: hsl(142, 52%, 95%);
+      --status-pass-muted: hsl(142, 40%, 18%);
+      --status-fail: hsl(0, 65%, 55%);
+      --status-fail-fg: hsl(0, 65%, 98%);
+      --status-fail-muted: hsl(0, 50%, 18%);
+      --status-skip: hsl(45, 70%, 50%);
+      --status-skip-fg: hsl(45, 70%, 10%);
+      --status-skip-muted: hsl(45, 50%, 18%);
+      
+      /* Log Colors */
+      --log-info: hsl(210, 60%, 55%);
+      --log-warn: hsl(38, 90%, 55%);
+      --log-error: hsl(0, 75%, 60%);
+      --log-debug: hsl(220, 10%, 50%);
+      
+      --radius: 6px;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    /* Light Theme */
+    .light {
+      --background: hsl(220, 20%, 97%);
+      --foreground: hsl(220, 16%, 12%);
+      --card: hsl(0, 0%, 100%);
+      --card-foreground: hsl(220, 16%, 12%);
+      --muted: hsl(220, 14%, 92%);
+      --muted-foreground: hsl(220, 10%, 45%);
+      --accent: hsl(220, 14%, 90%);
+      --border: hsl(220, 14%, 88%);
+      --sidebar: hsl(220, 20%, 95%);
+      --sidebar-foreground: hsl(220, 16%, 20%);
+      --status-pass: hsl(142, 60%, 30%);
+      --status-pass-muted: hsl(142, 45%, 92%);
+      --status-fail: hsl(0, 72%, 50%);
+      --status-fail-muted: hsl(0, 55%, 95%);
+      --status-skip: hsl(45, 80%, 42%);
+      --status-skip-muted: hsl(45, 60%, 92%);
+    }
+    /* ========== Base Styles ========== */
+    html, body {
+      height: 100%;
+      min-height: 100%;
+      overflow: auto;
+      font-family: var(--font-sans);
+      background: var(--background);
+      color: var(--foreground);
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: hsl(220, 14%, 14%);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(220, 10%, 22%);
+    }
+    .light ::-webkit-scrollbar-thumb {
+      background: hsl(220, 10%, 65%);
+    }
+    .light ::-webkit-scrollbar-thumb:hover {
+      background: hsl(220, 10%, 50%);
+    }
+    .light .panel-header,
+    .light .test-tree-bar {
+      background: hsl(220, 14%, 86%);
+    }
+    /* ========== Layout ========== */
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-width: 1024px;
+      width: 100%;
+      height: 100vh;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    /* ========== Header ========== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .project-badge {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .light .project-badge {
+      filter: invert(1);
+    }
+    .project-info h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--foreground);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .project-info p {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--muted-foreground);
+    }
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .stat-total {
+      color: var(--muted-foreground);
+    }
+    .stat-total strong {
+      color: var(--foreground);
+    }
+    .stat-pass { color: var(--status-pass); display: flex; align-items: center; gap: 4px; }
+    .stat-fail { color: var(--status-fail); display: flex; align-items: center; gap: 4px; }
+    .stat-skip { color: var(--status-skip); display: flex; align-items: center; gap: 4px; }
+    .divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+    }
+    .pass-rate {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pass-rate-bar {
+      width: 96px;
+      height: 6px;
+      background: var(--muted);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .pass-rate-fill {
+      height: 100%;
+      background: var(--status-pass);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .pass-rate-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-foreground);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .time-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+    .time-info span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      color: var(--foreground);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-icon:hover {
+      background: var(--accent);
+    }
+    /* ========== Status Badge ========== */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .status-badge.pass { background: var(--status-pass); color: var(--status-pass-fg); }
+    .status-badge.fail { background: var(--status-fail); color: var(--status-fail-fg); }
+    .status-badge.skip { background: var(--status-skip); color: var(--status-skip-fg); }
+    .status-badge.sm { padding: 2px 6px; font-size: 11px; }
+    .status-badge.lg { padding: 4px 10px; font-size: 13px; }
+    .header .status-badge.lg {
+      padding: 2px 8px;
+      font-size: 11px;
+      gap: 3px;
+    }
+    .header .status-badge.lg svg {
+      width: 14px;
+      height: 14px;
+    }
+    /* ========== Main Content ========== */
+    .main-content {
+      position: relative;
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    /* ========== Sidebar ========== */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: 320px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      transition: width 0.2s ease;
+      overflow: hidden;
+    }
+    .sidebar.collapsed {
+      width: 0;
+    }
+    .sidebar-toggle {
+      position: absolute;
+      left: 320px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 32px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: none;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      cursor: pointer;
+      transition: left 0.2s ease, background 0.15s;
+      color: var(--muted-foreground);
+    }
+    .light .sidebar-toggle {
+      color: var(--foreground);
+    }
+    .sidebar-toggle:hover {
+      background: var(--accent);
+    }
+    .sidebar.collapsed + .sidebar-toggle {
+      left: 0;
+    }
+    .sidebar-toggle.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .sidebar-toggle:not(.hidden) {
+      transition: opacity 0.3s ease;
+    }
+    /* ========== Search & Filters ========== */
+    .search-filter {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-input {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .search-input input {
+      width: 100%;
+      padding: 8px 12px 8px 36px;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      color: var(--foreground);
+      outline: none;
+    }
+    .search-input input::placeholder {
+      color: var(--muted-foreground);
+    }
+    .search-input input:focus {
+      border-color: var(--primary);
+    }
+    .search-input svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-foreground);
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-select {
+      flex: 1;
+      padding: 6px 10px;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--foreground);
+      cursor: pointer;
+      outline: none;
+    }
+    .filter-select:focus {
+      border-color: var(--primary);
+    }
+    /* ========== Failed Tests Summary ========== */
+    .failed-summary {
+      border-bottom: 1px solid var(--border);
+    }
+    .failed-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--status-fail-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-fail);
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .failed-summary-header:hover {
+      background: hsla(0, 50%, 18%, 0.8);
+    }
+    .light .failed-summary-header:hover {
+      background: hsl(0, 45%, 92%);
+    }
+    .failed-summary-list {
+      max-height: 156px;
+      overflow-y: auto;
+    }
+    .failed-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .failed-item:hover {
+      background: var(--accent);
+    }
+    .failed-item.selected {
+      background: var(--accent);
+    }
+    .failed-item-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--foreground);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .failed-item-error {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--status-fail);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* ========== Test Tree ========== */
+    .test-tree-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: hsla(220, 14%, 16%, 0.5);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .test-tree-bar button {
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .test-tree-bar button:hover {
+      background: var(--accent);
+      color: var(--foreground);
+    }
+    .test-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    .tree-node {
+      user-select: none;
+    }
+    .tree-node-header {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .tree-node-header:hover {
+      background: var(--accent);
+    }
+    .tree-node-header.selected {
+      background: var(--accent);
+    }
+    .tree-expand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      color: var(--muted-foreground);
+    }
+    .tree-icon {
+      display: flex;
+      align-items: center;
+      margin-right: 4px;
+    }
+    .tree-icon.pass { color: var(--status-pass); }
+    .tree-icon.fail { color: var(--status-fail); }
+    .tree-icon.skip { color: var(--status-skip); }
+    .tree-name {
+      flex: 1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tree-name.suite {
+      font-weight: 500;
+    }
+    .tree-stats {
+      display: flex;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .tree-node-header:hover .tree-stats {
+      opacity: 1;
+    }
+    .tree-stats .pass { color: var(--status-pass); }
+    .tree-stats .fail { color: var(--status-fail); }
+    .tree-stats .skip { color: var(--status-skip); }
+    .tree-children {
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+      margin-left: 8px;
+    }
+    /* ========== Main Panel ========== */
+    .main-panel {
+      flex: 1;
+      min-width: 0;
+      background: var(--background);
+      display: flex;
+      flex-direction: column;
+    }
+    /* ========== Empty State ========== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--muted-foreground);
+      text-align: center;
+      padding: 32px;
+    }
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--foreground);
+      margin-bottom: 8px;
+    }
+    .empty-state p {
+      font-size: 13px;
+    }
+    /* ========== Test Detail ========== */
+    .test-detail {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .test-header {
+      padding: 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .test-header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .test-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+    .test-header .doc {
+      font-size: 13px;
+      color: var(--muted-foreground);
+      margin-top: 4px;
+    }
+    .test-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--muted-foreground);
+    }
+    .test-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .test-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: var(--muted);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--muted-foreground);
+      text-align: center;
+    }
+    /* ========== Failure Banner ========== */
+    .failure-banner {
+      padding: 12px 8px 12px 16px;
+      background: var(--status-fail-muted);
+      border-bottom: 1px solid hsla(0, 65%, 55%, 0.3);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .failure-header > svg {
+      flex-shrink: 0;
+      color: var(--status-fail);
+    }
+    .failure-content {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+    }
+    .failure-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .failure-header span {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-fail);
+    }
+    .btn-copy {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .btn-copy:hover {
+      color: var(--foreground);
+    }
+    .failure-message {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .suite-warnings-banner {
+      padding: 12px 8px 12px 16px;
+      background: var(--status-skip-muted);
+      border-bottom: 1px solid var(--border);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .suite-warnings-content {
+      min-width: 0;
+      min-height: 0;
+    }
+    .suite-warnings-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .suite-warnings-header > svg {
+      flex-shrink: 0;
+      color: var(--status-skip);
+    }
+    .suite-warnings-header span {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-skip);
+    }
+    .suite-warnings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+    .suite-warning-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .suite-warning-badge {
+      flex-shrink: 0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .suite-warning-item.suite-warning-warn .suite-warning-badge {
+      background: hsla(38, 90%, 55%, 0.25);
+      color: var(--log-warn);
+    }
+    .suite-warning-item.suite-warning-error .suite-warning-badge {
+      background: hsla(0, 75%, 60%, 0.25);
+      color: var(--log-error);
+    }
+    .suite-warning-text {
+      flex: 1;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    /* ========== Detail Panels ========== */
+    .detail-panels {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    .panel {
+      display: flex;
+      flex-direction: column;
+      width: 50%;
+      min-height: 0;
+    }
+    .panel:first-child {
+      border-right: 1px solid var(--border);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: hsla(220, 14%, 16%, 0.5);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .panel-header button {
+      padding: 4px 8px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 11px;
+      color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .panel-header button:hover {
+      background: var(--accent);
+      color: var(--foreground);
+    }
+    .panel-header-keyword-name {
+      color: var(--muted-foreground);
+      font-weight: 400;
+    }
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    /* ========== Keyword Tree ========== */
+    .keyword-node {
+      border-bottom: 1px solid var(--border);
+    }
+    .keyword-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 12px;
+    }
+    .keyword-header:hover {
+      background: var(--accent);
+    }
+    .keyword-header.selected {
+      background: var(--accent);
+    }
+    .keyword-expand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      width: 16px;
+      flex-shrink: 0;
+      color: var(--muted-foreground);
+    }
+    .keyword-type {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: var(--muted);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .keyword-type.setup { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
+    .keyword-type.teardown { background: hsla(270, 50%, 55%, 0.2); color: hsl(270, 50%, 65%); }
+    .keyword-error-indicator {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      color: var(--log-error);
+    }
+    .keyword-error-indicator .icon { width: 16px; height: 16px; }
+    .keyword-name {
+      flex: 1;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .keyword-duration {
+      font-size: 11px;
+      font-family: var(--font-sans);
+      color: var(--muted-foreground);
+    }
+    .keyword-children {
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+      margin-left: 8px;
+    }
+    /* ========== Log Viewer ========== */
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 5px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-family: var(--font-sans);
+    }
+    .log-entry-clickable {
+      cursor: pointer;
+    }
+    .log-entry-clickable:hover {
+      background: var(--accent);
+    }
+    .log-time {
+      flex-shrink: 0;
+      color: var(--muted-foreground);
+      white-space: nowrap;
+    }
+    .log-level {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .log-level.info { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
+    .log-level.warn { background: hsla(38, 90%, 55%, 0.2); color: var(--log-warn); }
+    .log-level.error { background: hsla(0, 75%, 60%, 0.2); color: var(--log-error); }
+    .log-level.debug { background: var(--muted); color: var(--log-debug); }
+    .log-level.skip { background: hsla(45, 70%, 50%, 0.25); color: var(--status-skip); }
+    .log-level.trace { background: hsla(220, 10%, 50%, 0.2); color: var(--log-debug); }
+    .log-level.pass { background: hsla(142, 52%, 45%, 0.25); color: var(--status-pass-fg); }
+    .log-level.fail { background: hsla(0, 65%, 55%, 0.25); color: var(--status-fail); }
+    .log-message {
+      flex: 1;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .log-message a {
+      color: hsl(175, 55%, 65%);
+      text-decoration: underline;
+    }
+    .log-message a:hover {
+      color: hsl(175, 55%, 82%);
+    }
+    .light .log-message a {
+      color: hsl(195, 70%, 42%);
+    }
+    .light .log-message a:hover {
+      color: hsl(195, 70%, 32%);
+    }
+    .log-entry-copy {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--muted-foreground);
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+    }
+    .log-entry:hover .log-entry-copy {
+      opacity: 1;
+    }
+    .log-entry-copy:hover {
+      color: var(--foreground);
+      background: var(--accent);
+    }
+    .log-entry-copy .icon {
+      width: 14px;
+      height: 14px;
+    }
+    .log-empty {
+      padding: 32px;
+      text-align: center;
+      color: var(--muted-foreground);
+      font-size: 13px;
+    }
+    .log-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8.9px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      flex-wrap: wrap;
+    }
+    .log-filter-icon {
+      display: flex;
+      align-items: center;
+      color: var(--muted-foreground);
+      flex-shrink: 0;
+    }
+    .log-filter-icon .icon { width: 16px; height: 16px; }
+    .log-filter-all,
+    .log-filter-btn {
+      padding: 4px 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: var(--foreground);
+      transition: background 0.15s, color 0.15s;
+    }
+    .log-filter-all:hover,
+    .log-filter-btn:hover {
+      background: var(--accent);
+    }
+    .log-filter-all.selected,
+    .log-filter-btn.selected {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+    .log-filter-btn.error { color: var(--log-error); }
+    .log-filter-btn.error.selected { background: hsla(0, 75%, 60%, 0.2); color: var(--log-error); }
+    .log-filter-btn.warn { color: var(--log-warn); }
+    .log-filter-btn.warn.selected { background: hsla(38, 90%, 55%, 0.2); color: var(--log-warn); }
+    .log-filter-btn.info { color: var(--log-info); }
+    .log-filter-btn.info.selected { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
+    .log-filter-btn.debug { color: var(--log-debug); }
+    .log-filter-btn.debug.selected { background: var(--muted); color: var(--log-debug); }
+    .log-filter-btn.trace { color: var(--log-debug); }
+    .log-filter-btn.trace.selected { background: hsla(220, 10%, 50%, 0.2); color: var(--log-debug); }
+    .log-filter-btn.fail { color: var(--status-fail); }
+    .log-filter-btn.fail.selected { background: hsla(0, 65%, 55%, 0.25); color: var(--status-fail); }
+    .log-filter-btn.pass { color: var(--status-pass); }
+    .log-filter-btn.pass.selected { background: hsla(142, 52%, 45%, 0.25); color: var(--status-pass); }
+    .log-filter-btn.skip { color: var(--status-skip); }
+    .log-filter-btn.skip.selected { background: hsla(45, 70%, 50%, 0.25); color: var(--status-skip); }
+    .keyword-log-meta {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--muted);
+      font-size: 12px;
+    }
+    .keyword-log-doc,
+    .keyword-log-args {
+      margin-bottom: 8px;
+    }
+    .keyword-log-doc:last-child,
+    .keyword-log-args:last-child {
+      margin-bottom: 0;
+    }
+    .keyword-log-label {
+      display: block;
+      font-weight: 600;
+      color: var(--muted-foreground);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+    .keyword-log-doc-text {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--foreground);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .keyword-log-args-list {
+      font-family: var(--font-mono);
+      color: var(--foreground);
+    }
+    /* ========== Icons (inline SVG) ========== */
+    .icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+    .icon.sm { width: 14px; height: 14px; }
+    .icon.lg { width: 20px; height: 20px; }
+    /* ========== Fixed layout: same on all screens; zoom and scroll to use ========== */
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+  <script>
+    // ========== Mock Data ==========
+    const mockData = (function() {
+      function createTest(id, name, status, tags, duration, keywords, message) {
+        function createKeyword(name, type, status, duration, messages, children, failMsg) {
+          const kwId = "kw-" + Math.random().toString(36).substr(2, 9);
+          const baseTime = Date.now() - duration;
+          return {
+            id: kwId,
+            name,
+            type,
+            status,
+            duration,
+            startTime: new Date(baseTime).toISOString(),
+            endTime: new Date(baseTime + duration).toISOString(),
+            arguments: [],
+            messages: (messages || []).map((m, i) => ({
+              id: "msg-" + kwId + "-" + i,
+              timestamp: new Date(baseTime + i * 100).toISOString(),
+              level: m.level || "INFO",
+              message: m.message
+            })),
+            keywords: children || [],
+            failMessage: failMsg || ""
+          };
+        }
+        const kws = keywords && keywords.length ? keywords : [
+          createKeyword("Setup", "SETUP", "PASS", Math.floor(duration * 0.2)),
+          createKeyword("Run Test", "KEYWORD", status, Math.floor(duration * 0.6)),
+          createKeyword("Teardown", "TEARDOWN", "PASS", Math.floor(duration * 0.2))
+        ];
+        return {
+          id, name, fullName: name, status, tags, duration, message: message || "",
+          startTime: new Date().toISOString(), endTime: new Date().toISOString(),
+          keywords: kws
+        };
+      }
+      const t1 = createTest("t1", "Sample Test", "PASS", ["smoke"], 1500, [
+        createKeyword("Open Browser", "KEYWORD", "PASS", 500, [
+          { level: "INFO", message: "Browser opened" },
+          { level: "INFO", message: "Navigated to URL" }
+        ]),
+        createKeyword("Login", "KEYWORD", "PASS", 800)
+      ]);
+      return {
+        generated: new Date().toISOString(),
+        generator: "Robot Framework (preview)",
+        startTime: new Date(Date.now() - 5000).toISOString(),
+        endTime: new Date().toISOString(),
+        duration: 5000,
+        statistics: { total: 1, passed: 1, failed: 0, skipped: 0, passRate: 100 },
+        errors: [],
+        rootSuite: {
+          id: "s1",
+          name: "Preview Suite",
+          fullName: "Preview Suite",
+          status: "PASS",
+          startTime: new Date(Date.now() - 5000).toISOString(),
+          endTime: new Date().toISOString(),
+          duration: 5000,
+          statistics: { total: 1, passed: 1, failed: 0, skipped: 0 },
+          tests: [t1],
+          suites: []
+        }
+      };
+    })();
+    // ========== Icons ==========
+    const icons = {
+      search: `<svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+      check: `<svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+      x: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>`,
+      minus: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>`,
+      chevronRight: `<svg class="icon sm" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`,
+      chevronDown: `<svg class="icon sm" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`,
+      folder: `<svg class="icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+      file: `<svg class="icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+      clock: `<svg class="icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+      calendar: `<svg class="icon sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+      sun: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+      moon: `<svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+      panelLeft: `<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>`,
+      panelLeftClose: `<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m16 15-3-3 3-3"/></svg>`,
+      alert: `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      tag: `<svg class="icon sm" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></svg>`,
+      copy: `<svg class="icon sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+      clipboard: `<svg class="icon sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`,
+      filter: `<svg class="icon sm" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`
+    };
+    // ========== State ==========
+    let state = {
+      isDark: true,
+      sidebarCollapsed: false,
+      sidebarToggleVisible: true,
+      sidebarToggleHideTimeout: null,
+      selectedTest: null,
+      selectedKeyword: null,
+      logsCleared: false,
+      logLevelFilter: "all",
+      searchQuery: "",
+      statusFilter: "ALL",
+      tagFilter: "",
+      expandedSuites: new Set(),
+      expandedKeywords: new Set(),
+      failedSummaryOpen: true
+    };
+    function scheduleSidebarToggleHide() {
+      if (state.sidebarToggleHideTimeout) clearTimeout(state.sidebarToggleHideTimeout);
+      state.sidebarToggleHideTimeout = setTimeout(() => {
+        state.sidebarToggleVisible = false;
+        state.sidebarToggleHideTimeout = null;
+        document.getElementById("sidebar-toggle")?.classList.add("hidden");
+      }, 5000);
+    }
+    // Auto-expand suites with failures
+    function expandFailedSuites(suite) {
+      if (suite.statistics.failed > 0) {
+        state.expandedSuites.add(suite.id);
+      }
+      suite.suites.forEach(expandFailedSuites);
+    }
+    if (mockData.rootSuite) {
+      expandFailedSuites(mockData.rootSuite);
+      if (getFailedTests(mockData.rootSuite).length > 0) {
+        state.expandedSuites.add(mockData.rootSuite.id);
+      }
+    }
+    // ========== Utilities ==========
+    function formatDuration(ms) {
+      if (ms < 1000) return `${ms}ms`;
+      if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+      const min = Math.floor(ms / 60000);
+      const sec = Math.floor((ms % 60000) / 1000);
+      return `${min}m ${sec}s`;
+    }
+    function formatTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+    function formatTreeName(name) {
+      return (name || "").replace(/_/g, " ").replace(/-/g, " ");
+    }
+    function formatDateTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+    function getStatusIcon(status) {
+      if (status === "PASS") return icons.check;
+      if (status === "FAIL") return icons.x;
+      return icons.minus;
+    }
+    function getStatusClass(status) {
+      return status.toLowerCase();
+    }
+    function getAllTests(suite) {
+      let tests = [...suite.tests];
+      suite.suites.forEach(s => tests = tests.concat(getAllTests(s)));
+      return tests;
+    }
+    function getFailedTests(suite) {
+      return getAllTests(suite).filter(t => t.status === "FAIL");
+    }
+    function filterTest(test) {
+      if (state.statusFilter !== "ALL" && test.status !== state.statusFilter) return false;
+      if (state.searchQuery && !test.name.toLowerCase().includes(state.searchQuery.toLowerCase())) return false;
+      if (state.tagFilter && !test.tags.includes(state.tagFilter)) return false;
+      return true;
+    }
+    function suiteHasVisibleTests(suite) {
+      if (suite.tests.some(filterTest)) return true;
+      return suite.suites.some(suiteHasVisibleTests);
+    }
+    function getExpandableSuiteIds(suite) {
+      const ids = [];
+      if (!suite || !suiteHasVisibleTests(suite)) return ids;
+      const hasChildren = suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests);
+      if (hasChildren) ids.push(suite.id);
+      (suite.suites || []).forEach(s => ids.push(...getExpandableSuiteIds(s)));
+      return ids;
+    }
+    function getAllMessages(keywords) {
+      let msgs = [];
+      keywords.forEach(kw => {
+        if (kw.messages) msgs = msgs.concat(kw.messages);
+        if (kw.keywords) msgs = msgs.concat(getAllMessages(kw.keywords));
+      });
+      return msgs;
+    }
+    function getAllMessagesWithKeyword(keywords) {
+      const result = [];
+      keywords.forEach(kw => {
+        if (kw.messages) kw.messages.forEach(m => result.push({ message: m, keyword: kw }));
+        if (kw.keywords) result.push(...getAllMessagesWithKeyword(kw.keywords));
+      });
+      return result;
+    }
+    /** All messages from a keyword and all its descendants (for expandable keywords). */
+    function getMessagesFromKeywordSubtree(keyword) {
+      const result = [];
+      if (keyword.messages) keyword.messages.forEach(m => result.push({ message: m, keyword }));
+      if (keyword.keywords) keyword.keywords.forEach(child => result.push(...getMessagesFromKeywordSubtree(child)));
+      return result;
+    }
+    /** True if the keyword subtree has at least one message with the given level (e.g. "ERROR"). */
+    function keywordHasLogLevel(keyword, level) {
+      const messages = getMessagesFromKeywordSubtree(keyword).map(({ message }) => message);
+      return messages.some(m => (m.level || "INFO").toUpperCase() === level);
+    }
+    function findKeywordById(keywords, id) {
+      for (const kw of keywords) {
+        if (kw.id === id) return kw;
+        if (kw.keywords) {
+          const found = findKeywordById(kw.keywords, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    function getKeywordPath(keywords, targetId, path = []) {
+      for (const kw of keywords) {
+        const currentPath = [...path, kw.id];
+        if (kw.id === targetId) return currentPath;
+        if (kw.keywords) {
+          const found = getKeywordPath(kw.keywords, targetId, currentPath);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    function getExpandableKeywordIds(keywords) {
+      const ids = [];
+      keywords.forEach(kw => {
+        if (kw.keywords && kw.keywords.length > 0) {
+          ids.push(kw.id);
+          ids.push(...getExpandableKeywordIds(kw.keywords));
+        }
+      });
+      return ids;
+    }
+    function getAllTags(suite) {
+      const tags = new Set();
+      getAllTests(suite).forEach(t => t.tags.forEach(tag => tags.add(tag)));
+      return Array.from(tags).sort();
+    }
+    // ========== Render Functions ==========
+    function render() {
+      document.body.className = state.isDark ? "" : "light";
+      document.getElementById("app").innerHTML = `
+        <div class="app">
+          ${renderHeader()}
+          <div class="main-content">
+            ${renderSidebar()}
+            ${renderSidebarToggle()}
+            ${renderMainPanel()}
+          </div>
+        </div>
+      `;
+      attachEventListeners();
+    }
+    function renderHeader() {
+      const { statistics, rootSuite, startTime, duration } = mockData;
+      return `
+        <header class="header">
+          <div class="header-left">
+            <img class="project-badge" src="https://docs.robotframework.org/img/robot-framework-dark.svg" alt="Robot Framework Logo">
+            <div class="project-info">
+              <h1>${rootSuite.name}</h1>
+              <p>${mockData.generator}</p>
+            </div>
+            <span class="status-badge lg ${getStatusClass(rootSuite.status)}">
+              ${getStatusIcon(rootSuite.status)}
+              <span>${rootSuite.status === "PASS" ? "Passed" : rootSuite.status === "FAIL" ? "Failed" : "Skipped"}</span>
+            </span>
+          </div>
+          <div class="header-center">
+            <div class="stats">
+              <span class="stat-total"><strong>${statistics.total}</strong> tests</span>
+              <span class="stat-pass">${icons.check} ${statistics.passed}</span>
+              <span class="stat-fail">${icons.x} ${statistics.failed}</span>
+              <span class="stat-skip">${icons.minus} ${statistics.skipped}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="pass-rate">
+              <div class="pass-rate-bar">
+                <div class="pass-rate-fill" style="width: ${statistics.passRate}%"></div>
+              </div>
+              <span class="pass-rate-text">${statistics.passRate}%</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="time-info">
+              <span>${icons.calendar} ${formatDateTime(startTime)}</span>
+              <span>${icons.clock} ${formatDuration(duration)}</span>
+            </div>
+            <button class="btn-icon" id="theme-toggle">
+              ${state.isDark ? icons.sun : icons.moon}
+            </button>
+          </div>
+        </header>
+      `;
+    }
+    function renderSidebar() {
+      const allTags = getAllTags(mockData.rootSuite);
+      const failedTests = getFailedTests(mockData.rootSuite);
+      
+      return `
+        <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}">
+          <div class="search-filter">
+            <div class="search-input">
+              ${icons.search}
+              <input type="text" placeholder="Search tests..." value="${state.searchQuery}" id="search-input">
+            </div>
+            <div class="filter-row">
+              <select class="filter-select" id="status-filter">
+                <option value="ALL" ${state.statusFilter === "ALL" ? "selected" : ""}>All Status</option>
+                <option value="PASS" ${state.statusFilter === "PASS" ? "selected" : ""}>Passed</option>
+                <option value="FAIL" ${state.statusFilter === "FAIL" ? "selected" : ""}>Failed</option>
+                <option value="SKIP" ${state.statusFilter === "SKIP" ? "selected" : ""}>Skipped</option>
+              </select>
+              <select class="filter-select" id="tag-filter">
+                <option value="">All Tags</option>
+                ${allTags.map(t => `<option value="${t}" ${state.tagFilter === t ? "selected" : ""}>${t}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          ${failedTests.length > 0 ? `
+            <div class="failed-summary">
+              <button class="failed-summary-header" id="toggle-failed">
+                ${state.failedSummaryOpen ? icons.chevronDown : icons.chevronRight}
+                ${icons.x}
+                <span>${failedTests.length} Failed Test${failedTests.length > 1 ? "s" : ""}</span>
+              </button>
+              ${state.failedSummaryOpen ? `
+                <div class="failed-summary-list">
+                  ${failedTests.map(t => `
+                    <button class="failed-item ${state.selectedTest?.id === t.id ? "selected" : ""}" data-test-id="${t.id}">
+                      <div class="failed-item-name">${t.name}</div>
+                      <div class="failed-item-error">${t.message || "No error message"}</div>
+                    </button>
+                  `).join("")}
+                </div>
+              ` : ""}
+            </div>
+          ` : ""}
+          <div class="test-tree-bar">
+            <span>${mockData.rootSuite ? getAllTests(mockData.rootSuite).filter(filterTest).length : 0} tests</span>
+            <button id="test-tree-expand-collapse-btn">${(function() {
+              if (!mockData.rootSuite) return "Expand all";
+              const expandableIds = getExpandableSuiteIds(mockData.rootSuite);
+              const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedSuites.has(id));
+              return allExpanded ? "Collapse all" : "Expand all";
+            })()}</button>
+          </div>
+          <div class="test-tree">
+            ${renderTestTree(mockData.rootSuite)}
+          </div>
+        </aside>
+      `;
+    }
+    function renderTestTree(suite, depth = 0) {
+      if (!suiteHasVisibleTests(suite)) return "";
+      
+      const isExpanded = state.expandedSuites.has(suite.id);
+      const visibleTests = suite.tests.filter(filterTest);
+      const hasChildren = visibleTests.length > 0 || suite.suites.some(suiteHasVisibleTests);
+      
+      const suiteTitle = (suite.fullName || suite.name || "").replace(/"/g, "&quot;");
+      return `
+        <div class="tree-node">
+          <div class="tree-node-header" data-suite-id="${suite.id}" title="${suiteTitle}">
+            <span class="tree-expand">${hasChildren ? (isExpanded ? icons.chevronDown : icons.chevronRight) : ""}</span>
+            <span class="tree-icon ${getStatusClass(suite.status)}">${icons.folder}</span>
+            <span class="tree-name suite">${formatTreeName(suite.name)}</span>
+            <span class="tree-stats">
+              ${suite.statistics.passed > 0 ? `<span class="pass">${suite.statistics.passed}</span>` : ""}
+              ${suite.statistics.failed > 0 ? `<span class="fail">${suite.statistics.failed}</span>` : ""}
+              ${suite.statistics.skipped > 0 ? `<span class="skip">${suite.statistics.skipped}</span>` : ""}
+            </span>
+          </div>
+          ${isExpanded ? `
+            <div class="tree-children">
+              ${visibleTests.map(t => {
+                const testTitle = (t.fullName || t.name || "").replace(/"/g, "&quot;");
+                return `
+                <div class="tree-node">
+                  <div class="tree-node-header ${state.selectedTest?.id === t.id ? "selected" : ""}" data-test-id="${t.id}" title="${testTitle}">
+                    <span class="tree-expand"></span>
+                    <span class="tree-icon ${getStatusClass(t.status)}">${getStatusIcon(t.status)}</span>
+                    <span class="tree-name">${formatTreeName(t.name)}</span>
+                  </div>
+                </div>
+              `;
+              }).join("")}
+              ${suite.suites.map(s => renderTestTree(s, depth + 1)).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+    function renderSidebarToggle() {
+      const hidden = !state.sidebarCollapsed && !state.sidebarToggleVisible;
+      return `
+        <button class="sidebar-toggle ${hidden ? "hidden" : ""}" id="sidebar-toggle" style="left: ${state.sidebarCollapsed ? "0" : "320px"}">
+          ${state.sidebarCollapsed ? icons.panelLeft : icons.panelLeftClose}
+        </button>
+      `;
+    }
+    function renderMainPanel() {
+      if (!state.selectedTest) {
+        return `
+          <main class="main-panel">
+            <div class="empty-state">
+              ${icons.clipboard}
+              <h3>No Test Selected</h3>
+              <p>Select a test from the sidebar to view details</p>
+            </div>
+          </main>
+        `;
+      }
+      const test = state.selectedTest;
+      const messagesWithKeyword = state.selectedKeyword 
+        ? getMessagesFromKeywordSubtree(state.selectedKeyword)
+        : getAllMessagesWithKeyword(test.keywords);
+      const messages = (messagesWithKeyword || []).map(({ message }) => message);
+      return `
+        <main class="main-panel">
+          <div class="test-detail">
+            <div class="test-header">
+              <div class="test-header-top">
+                <div>
+                  <h2>${test.name}</h2>
+                  ${test.documentation ? `<p class="doc">${test.documentation}</p>` : ""}
+                </div>
+                <span class="status-badge lg ${getStatusClass(test.status)}">
+                  ${getStatusIcon(test.status)}
+                  <span>${test.status === "PASS" ? "Passed" : test.status === "FAIL" ? "Failed" : "Skipped"}</span>
+                </span>
+              </div>
+              <div class="test-meta">
+                <span>${icons.clock} ${formatDuration(test.duration)}</span>
+                ${test.tags.length > 0 ? `
+                  <div class="test-tags">
+                    ${icons.tag}
+                    ${test.tags.slice(0, 5).map(t => `<span class="tag">${t}</span>`).join("")}
+                    ${test.tags.length > 5 ? `<span class="tag">+${test.tags.length - 5}</span>` : ""}
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+            ${test.status === "FAIL" && test.message ? `
+              <div class="failure-banner">
+                <div class="failure-content">
+                  <div class="failure-header">
+                    ${icons.x}
+                    <span>Failure Reason</span>
+                    <button class="btn-copy" id="copy-error">${icons.copy} Copy</button>
+                  </div>
+                  <pre class="failure-message">${test.message}</pre>
+                </div>
+              </div>
+            ` : ""}
+            ${test.suiteErrors && test.suiteErrors.length > 0 ? `
+              <div class="suite-warnings-banner">
+                <div class="suite-warnings-content">
+                  <div class="suite-warnings-header">
+                    ${icons.alert}
+                    <span>Warnings and Errors (${test.suiteErrors.length})</span>
+                    <button class="btn-copy" id="copy-warnings">${icons.copy} Copy</button>
+                  </div>
+                  <div class="suite-warnings-list">
+                    ${test.suiteErrors.map(e => {
+                      const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                      return `<div class="suite-warning-item suite-warning-${(e.level || "WARN").toLowerCase()}">
+                        <span class="suite-warning-badge">${(e.level || "WARN").toUpperCase()}</span>
+                        <span class="suite-warning-text">${esc(e.text || "")}</span>
+                      </div>`;
+                    }).join("")}
+                  </div>
+                </div>
+              </div>
+            ` : ""}
+            <div class="detail-panels">
+              <div class="panel">
+                <div class="panel-header">
+                  <span>Keyword Execution (${test.keywords.length})</span>
+                  <button id="keyword-expand-collapse-btn">${(function() {
+                    const expandableIds = getExpandableKeywordIds(test.keywords);
+                    const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
+                    return allExpanded ? "Collapse all" : "Expand all";
+                  })()}</button>
+                </div>
+                <div class="panel-content">
+                  ${renderKeywordTree(test.keywords)}
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${state.selectedKeyword.name}</span>` : ""}</span>
+                  <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
+                </div>
+                ${state.logsCleared ? "" : (() => {
+                  const kw = state.selectedKeyword;
+                  const hasKwMeta = kw && ((kw.documentation || kw.doc) || (kw.arguments && kw.arguments.length > 0));
+                  const docText = kw ? (kw.documentation || kw.doc || "").trim() : "";
+                  const argsList = kw && kw.arguments && kw.arguments.length > 0 ? kw.arguments : [];
+                  const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                  const kwMetaBlock = hasKwMeta ? `
+                    <div class="keyword-log-meta">
+                      ${docText ? `<div class="keyword-log-doc"><span class="keyword-log-label">Documentation</span><pre class="keyword-log-doc-text">${escapeHtml(docText)}</pre></div>` : ""}
+                      ${argsList.length ? `<div class="keyword-log-args"><span class="keyword-log-label">Arguments</span><span class="keyword-log-args-list">${argsList.map(a => escapeHtml(String(a))).join(", ")}</span></div>` : ""}
+                    </div>` : "";
+                  const levelOrder = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE", "PASS", "FAIL", "SKIP"];
+                  const levelCounts = {};
+                  messages.forEach(m => {
+                    const l = (m.level || "INFO").toUpperCase();
+                    levelCounts[l] = (levelCounts[l] || 0) + 1;
+                  });
+                  const totalCount = messages.length;
+                  const levelsWithCount = levelOrder.filter(l => (levelCounts[l] || 0) > 0);
+                  const filterBar = totalCount > 0 ? `
+                    <div class="log-filter-bar">
+                      <span class="log-filter-icon">${icons.filter}</span>
+                      <button type="button" class="log-filter-all ${state.logLevelFilter === "all" ? "selected" : ""}" data-level="all">All (${totalCount})</button>
+                      ${levelsWithCount.map(level => "<button type=\"button\" class=\"log-filter-btn " + level.toLowerCase() + " " + (state.logLevelFilter === level ? "selected" : "") + "\" data-level=\"" + level + "\">" + level + " (" + levelCounts[level] + ")</button>").join("")}
+                    </div>` : "";
+                  return filterBar;
+                })()}
+                <div class="panel-content">
+                  ${state.logsCleared ? `<div class="log-empty">Logs cleared. Click <strong>Show all</strong> to view logs again.</div>` : (() => {
+                    const kw = state.selectedKeyword;
+                    const hasKwMeta = kw && ((kw.documentation || kw.doc) || (kw.arguments && kw.arguments.length > 0));
+                    const docText = kw ? (kw.documentation || kw.doc || "").trim() : "";
+                    const argsList = kw && kw.arguments && kw.arguments.length > 0 ? kw.arguments : [];
+                    const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                    const kwMetaBlock = hasKwMeta ? `
+                    <div class="keyword-log-meta">
+                      ${docText ? `<div class="keyword-log-doc"><span class="keyword-log-label">Documentation</span><pre class="keyword-log-doc-text">${escapeHtml(docText)}</pre></div>` : ""}
+                      ${argsList.length ? `<div class="keyword-log-args"><span class="keyword-log-label">Arguments</span><span class="keyword-log-args-list">${argsList.map(a => escapeHtml(String(a))).join(", ")}</span></div>` : ""}
+                    </div>` : "";
+                    const levelOrder = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE", "PASS", "FAIL", "SKIP"];
+                    const levelCounts = {};
+                    messages.forEach(m => {
+                      const l = (m.level || "INFO").toUpperCase();
+                      levelCounts[l] = (levelCounts[l] || 0) + 1;
+                    });
+                    const totalCount = messages.length;
+                    const filteredMessages = state.logLevelFilter === "all"
+                      ? messages
+                      : messages.filter(m => (m.level || "INFO").toUpperCase() === state.logLevelFilter);
+                    const filteredMessagesWithKeyword = messagesWithKeyword == null
+                      ? null
+                      : state.logLevelFilter === "all"
+                        ? messagesWithKeyword
+                        : messagesWithKeyword.filter(({ message: m }) => (m.level || "INFO").toUpperCase() === state.logLevelFilter);
+                    const listToRender = messagesWithKeyword != null ? filteredMessagesWithKeyword : filteredMessages;
+                    const logEntries = totalCount > 0 ? (messagesWithKeyword != null
+                      ? listToRender.map(({ message: m, keyword }) => `
+                    <div class="log-entry log-entry-clickable" data-keyword-id="${keyword.id}" title="Click to expand keyword: ${(keyword.name || "").replace(/"/g, "&quot;")}">
+                      <span class="log-time">${formatTime(m.timestamp)}</span>
+                      <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      <span class="log-message">${m.message}</span>
+                      <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
+                    </div>
+                  `).join("")
+                      : listToRender.map(m => `
+                    <div class="log-entry">
+                      <span class="log-time">${formatTime(m.timestamp)}</span>
+                      <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      <span class="log-message">${m.message}</span>
+                      <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
+                    </div>
+                  `).join("")) : `<div class="log-empty">No log messages</div>`;
+                    return kwMetaBlock + logEntries;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      `;
+    }
+    function keywordHasErrorLog(keyword) {
+      if (keyword.messages && keyword.messages.some(m => (m.level || "").toUpperCase() === "ERROR")) return true;
+      if (keyword.keywords) return keyword.keywords.some(kw => keywordHasErrorLog(kw));
+      return false;
+    }
+    function renderKeywordTree(keywords, depth = 0) {
+      return keywords.map(kw => {
+        const isExpanded = state.expandedKeywords.has(kw.id);
+        const hasChildren = kw.keywords && kw.keywords.length > 0;
+        const hasErrorLog = keywordHasErrorLog(kw);
+        return `
+          <div class="keyword-node">
+            <div class="keyword-header ${state.selectedKeyword?.id === kw.id ? "selected" : ""}" data-keyword-id="${kw.id}" title="${(kw.name || "").replace(/"/g, "&quot;")}">
+              <span class="keyword-expand">${hasChildren ? (isExpanded ? icons.chevronDown : icons.chevronRight) : ""}</span>
+              <span class="tree-icon ${getStatusClass(kw.status)}">${getStatusIcon(kw.status)}</span>
+              ${hasErrorLog ? `<span class="keyword-error-indicator" title="Contains ERROR-level log">${icons.alert}</span>` : ""}
+              ${kw.type !== "KEYWORD" ? `<span class="keyword-type ${kw.type.toLowerCase()}">${kw.type}</span>` : ""}
+              <span class="keyword-name">${kw.name}</span>
+              <span class="keyword-duration">${formatDuration(kw.duration)}</span>
+            </div>
+            ${hasChildren && isExpanded ? `
+              <div class="keyword-children">
+                ${renderKeywordTree(kw.keywords, depth + 1)}
+              </div>
+            ` : ""}
+          </div>
+        `;
+      }).join("");
+    }
+    // ========== Event Listeners ==========
+    function attachEventListeners() {
+      // Theme toggle
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        state.isDark = !state.isDark;
+        render();
+      });
+      // Sidebar toggle
+      document.getElementById("sidebar-toggle")?.addEventListener("click", () => {
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        if (!state.sidebarCollapsed) {
+          state.sidebarToggleVisible = true;
+          scheduleSidebarToggleHide();
+        }
+        render();
+      });
+      // Show sidebar toggle on hover over test-tree or sidebar (no full re-render so tree stays clickable)
+      function showSidebarToggleOnHover() {
+        if (state.sidebarCollapsed) return;
+        state.sidebarToggleVisible = true;
+        document.getElementById("sidebar-toggle")?.classList.remove("hidden");
+        scheduleSidebarToggleHide();
+      }
+      document.querySelector(".test-tree")?.addEventListener("mouseenter", showSidebarToggleOnHover);
+      document.querySelector(".sidebar")?.addEventListener("mouseenter", showSidebarToggleOnHover);
+      // Search
+      document.getElementById("search-input")?.addEventListener("input", (e) => {
+        state.searchQuery = e.target.value;
+        render();
+        const input = document.getElementById("search-input");
+        if (input) {
+          input.focus();
+          input.setSelectionRange(state.searchQuery.length, state.searchQuery.length);
+        }
+      });
+      // Status filter
+      document.getElementById("status-filter")?.addEventListener("change", (e) => {
+        state.statusFilter = e.target.value;
+        render();
+      });
+      // Tag filter
+      document.getElementById("tag-filter")?.addEventListener("change", (e) => {
+        state.tagFilter = e.target.value;
+        render();
+      });
+      // Failed summary toggle
+      document.getElementById("toggle-failed")?.addEventListener("click", () => {
+        state.failedSummaryOpen = !state.failedSummaryOpen;
+        render();
+      });
+      // Failed item clicks
+      document.querySelectorAll(".failed-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const testId = el.dataset.testId;
+          state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          render();
+        });
+      });
+      // Suite clicks (toggle expand)
+      document.querySelectorAll("[data-suite-id]").forEach(el => {
+        el.addEventListener("click", () => {
+          const suiteId = el.dataset.suiteId;
+          if (state.expandedSuites.has(suiteId)) {
+            state.expandedSuites.delete(suiteId);
+          } else {
+            state.expandedSuites.add(suiteId);
+          }
+          render();
+        });
+      });
+      // Test clicks
+      document.querySelectorAll("[data-test-id]").forEach(el => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const testId = el.dataset.testId;
+          state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          render();
+        });
+      });
+      // Keyword clicks
+      document.querySelectorAll("[data-keyword-id]").forEach(el => {
+        el.addEventListener("click", () => {
+          const keywordId = el.dataset.keywordId;
+          const findKeyword = (keywords) => {
+            for (const kw of keywords) {
+              if (kw.id === keywordId) return kw;
+              if (kw.keywords) {
+                const found = findKeyword(kw.keywords);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+          
+          const kw = findKeyword(state.selectedTest.keywords);
+          if (kw) {
+            if (state.selectedKeyword?.id === kw.id) {
+              // Toggle expand if already selected
+              if (state.expandedKeywords.has(kw.id)) {
+                state.expandedKeywords.delete(kw.id);
+              } else {
+                state.expandedKeywords.add(kw.id);
+              }
+            } else {
+              state.selectedKeyword = kw;
+              state.logsCleared = false;
+              state.expandedKeywords.add(kw.id);
+              if (state.logLevelFilter !== "all" && !keywordHasLogLevel(kw, state.logLevelFilter)) {
+                state.logLevelFilter = "all";
+              }
+            }
+            render();
+          }
+        });
+      });
+      // Show all / Clear all logs toggle
+      document.getElementById("show-all-logs")?.addEventListener("click", () => {
+        if (state.logsCleared) {
+          state.logsCleared = false;
+        } else if (state.selectedKeyword) {
+          state.selectedKeyword = null;
+        } else {
+          state.logsCleared = true;
+        }
+        render();
+      });
+      // Log level filter
+      document.querySelectorAll(".log-filter-all, .log-filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.logLevelFilter = btn.dataset.level || "all";
+          render();
+        });
+      });
+      // Copy single log message (button shown on hover)
+      document.querySelectorAll(".log-entry-copy").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const entry = btn.closest(".log-entry");
+          const msgEl = entry?.querySelector(".log-message");
+          if (msgEl) {
+            navigator.clipboard.writeText(msgEl.textContent).then(() => {
+              const orig = btn.innerHTML;
+              btn.innerHTML = icons.check;
+              btn.setAttribute("title", "Copied");
+              setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.setAttribute("title", "Copy message");
+              }, 1500);
+            });
+          }
+        });
+      });
+      // Test tree: Expand all / Collapse all
+      document.getElementById("test-tree-expand-collapse-btn")?.addEventListener("click", () => {
+        if (!mockData.rootSuite) return;
+        const expandableIds = getExpandableSuiteIds(mockData.rootSuite);
+        const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedSuites.has(id));
+        if (allExpanded) {
+          expandableIds.forEach(id => state.expandedSuites.delete(id));
+        } else {
+          expandableIds.forEach(id => state.expandedSuites.add(id));
+        }
+        render();
+      });
+      // Keyword panel: Expand all / Collapse all
+      document.getElementById("keyword-expand-collapse-btn")?.addEventListener("click", () => {
+        if (!state.selectedTest) return;
+        const expandableIds = getExpandableKeywordIds(state.selectedTest.keywords);
+        const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
+        if (allExpanded) {
+          expandableIds.forEach(id => state.expandedKeywords.delete(id));
+        } else {
+          expandableIds.forEach(id => state.expandedKeywords.add(id));
+        }
+        render();
+      });
+      // Click log entry to expand and select the keyword it belongs to
+      document.querySelectorAll(".log-entry[data-keyword-id]").forEach(el => {
+        el.addEventListener("click", () => {
+          const kwId = el.dataset.keywordId;
+          const kw = findKeywordById(state.selectedTest.keywords, kwId);
+          if (kw) {
+            state.selectedKeyword = kw;
+            state.logsCleared = false;
+            state.expandedKeywords.add(kw.id);
+            if (state.logLevelFilter !== "all" && !keywordHasLogLevel(kw, state.logLevelFilter)) {
+              state.logLevelFilter = "all";
+            }
+            const path = getKeywordPath(state.selectedTest.keywords, kwId);
+            if (path) path.forEach(id => state.expandedKeywords.add(id));
+            render();
+          }
+        });
+      });
+      // Copy error
+      document.getElementById("copy-error")?.addEventListener("click", async () => {
+        if (state.selectedTest?.message) {
+          await navigator.clipboard.writeText(state.selectedTest.message);
+          const btn = document.getElementById("copy-error");
+          btn.innerHTML = `${icons.check} Copied`;
+          setTimeout(() => {
+            btn.innerHTML = `${icons.copy} Copy`;
+          }, 2000);
+        }
+      });
+      // Copy warnings and errors
+      document.getElementById("copy-warnings")?.addEventListener("click", async () => {
+        if (state.selectedTest?.suiteErrors?.length) {
+          const text = state.selectedTest.suiteErrors
+            .map(e => `${(e.level || "WARN")} ${e.text || ""}`.trim())
+            .join("\n");
+          await navigator.clipboard.writeText(text);
+          const btn = document.getElementById("copy-warnings");
+          btn.innerHTML = `${icons.check} Copied`;
+          setTimeout(() => {
+            btn.innerHTML = `${icons.copy} Copy`;
+          }, 2000);
+        }
+      });
+    }
+    // ========== Auto-select first failed test ==========
+    const failedTests = getFailedTests(mockData.rootSuite);
+    if (failedTests.length > 0) {
+      state.selectedTest = failedTests[0];
+    }
+    // ========== Initial Render ==========
+    render();
+    if (!state.sidebarCollapsed) scheduleSidebarToggleHide();
+  </script>
+</body>
+</html>
