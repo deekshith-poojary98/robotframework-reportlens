@@ -1,6 +1,6 @@
-# robotframework-reportlens
+# Robotframework ReportLens
 
-**robotframework-reportlens** (ReportLens) turns Robot Framework XML output (`output.xml`) into a single, self-contained HTML report with a modern, interactive UI.
+**ReportLens** turns Robot Framework XML output (`output.xml`) into a single, self-contained HTML report with a modern, interactive UI.
 
 ## Installation
 
@@ -50,7 +50,6 @@ python -m robotframework_reportlens output.xml -o report.html
 - **Failed-tests summary** – Quick access to failed tests from the sidebar
 - **Dark/light theme** – Toggle in the report header
 - **Fixed layout** – Same layout on all screens; zoom and scroll as needed
-- **Robot Framework favicon** – Report uses the official Robot Framework favicon
 
 ## How it works
 
@@ -71,4 +70,9 @@ ReportLens reads `output.xml`, parses suites, tests, keywords, and messages, the
 
 ## License
 
-MIT (or use and modify as needed).
+Apache License 2.0 - See [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
