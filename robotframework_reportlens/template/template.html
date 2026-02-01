@@ -318,14 +318,6 @@
     .sidebar.collapsed + .sidebar-toggle {
       left: 0;
     }
-    .sidebar-toggle.hidden {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    .sidebar-toggle:not(.hidden) {
-      transition: opacity 0.3s ease;
-    }
     /* ========== Search & Filters ========== */
     .search-filter {
       padding: 12px;
@@ -529,6 +521,25 @@
       border-left: 1px solid var(--border);
       margin-left: 8px;
     }
+    .suite-setup-block,
+    .suite-teardown-block {
+      padding-left: 8px;
+      margin-left: 8px;
+      border-left: 1px solid var(--border);
+    }
+    .suite-keyword-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+    .suite-keyword-row .keyword-type { font-size: 10px; }
+    .suite-keyword-row .keyword-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .suite-keyword-row.clickable { cursor: pointer; }
+    .suite-keyword-row.clickable:hover { background: var(--accent); }
+    .suite-keyword-row.clickable.selected { background: var(--accent); }
     /* ========== Main Panel ========== */
     .main-panel {
       flex: 1;
@@ -814,10 +825,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 2px 6px;
+      padding: 2px 5px;
       background: var(--muted);
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 500;
       color: var(--muted-foreground);
       text-transform: uppercase;
@@ -825,14 +836,16 @@
     }
     .keyword-type.setup { background: hsla(210, 60%, 55%, 0.2); color: var(--log-info); }
     .keyword-type.teardown { background: hsla(270, 50%, 55%, 0.2); color: hsl(270, 50%, 65%); }
+    .keyword-type.setup.fail, .keyword-type.teardown.fail { border: 0.1px solid var(--status-fail); }
+    .light .keyword-type.setup.fail, .light .keyword-type.teardown.fail { border-color: var(--status-fail); }
     .keyword-returned {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 2px 6px;
+      padding: 2px 5px;
       background: hsla(142, 40%, 25%, 0.35);
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 500;
       color: var(--status-pass-fg);
       text-transform: uppercase;
@@ -911,9 +924,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 500;
       text-transform: uppercase;
       flex-shrink: 0;
@@ -1170,9 +1183,8 @@
     let state = {
       isDark: true,
       sidebarCollapsed: false,
-      sidebarToggleVisible: true,
-      sidebarToggleHideTimeout: null,
       selectedTest: null,
+      selectedSuiteKeyword: null,
       selectedKeyword: null,
       logsCleared: false,
       logLevelFilter: "all",
@@ -1183,14 +1195,6 @@
       expandedKeywords: new Set(),
       failedSummaryOpen: true
     };
-    function scheduleSidebarToggleHide() {
-      if (state.sidebarToggleHideTimeout) clearTimeout(state.sidebarToggleHideTimeout);
-      state.sidebarToggleHideTimeout = setTimeout(() => {
-        state.sidebarToggleVisible = false;
-        state.sidebarToggleHideTimeout = null;
-        document.getElementById("sidebar-toggle")?.classList.add("hidden");
-      }, 5000);
-    }
     // Auto-expand suites with failures
     function expandFailedSuites(suite) {
       if (suite.statistics.failed > 0) {
@@ -1220,7 +1224,9 @@
       return (name || "").replace(/_/g, " ").replace(/-/g, " ");
     }
     function formatDateTime(iso) {
+      if (iso == null || String(iso).trim() === "") return "—";
       const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "—";
       return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
     }
     function getStatusIcon(status) {
@@ -1245,17 +1251,62 @@
       if (state.tagFilter && !test.tags.includes(state.tagFilter)) return false;
       return true;
     }
+    /** Keyword (setup/teardown/body) matches current status filter. */
+    function filterKeyword(kw) {
+      if (!kw) return false;
+      if (state.statusFilter === "ALL") return true;
+      return (kw.status || "PASS") === state.statusFilter;
+    }
     function suiteHasVisibleTests(suite) {
       if (suite.tests.some(filterTest)) return true;
+      if (state.statusFilter === "ALL") {
+        if (suite.setup || suite.teardown) return true;
+      } else {
+        if (suite.setup && suite.setup.status === state.statusFilter) return true;
+        if (suite.teardown && suite.teardown.status === state.statusFilter) return true;
+      }
       return suite.suites.some(suiteHasVisibleTests);
     }
     function getExpandableSuiteIds(suite) {
       const ids = [];
       if (!suite || !suiteHasVisibleTests(suite)) return ids;
-      const hasChildren = suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests);
+      const setupMatches = !suite.setup || state.statusFilter === "ALL" || suite.setup.status === state.statusFilter;
+      const teardownMatches = !suite.teardown || state.statusFilter === "ALL" || suite.teardown.status === state.statusFilter;
+      const hasChildren = suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests) || (suite.setup && setupMatches) || (suite.teardown && teardownMatches);
       if (hasChildren) ids.push(suite.id);
       (suite.suites || []).forEach(s => ids.push(...getExpandableSuiteIds(s)));
       return ids;
+    }
+    /** Suite IDs from root down to the suite that contains the test (for deep link expand). */
+    function getSuitePathToTest(suite, testId) {
+      if (!suite || !testId) return null;
+      const direct = (suite.tests || []).some(t => t.id === testId);
+      if (direct) return [suite.id];
+      for (const child of suite.suites || []) {
+        const path = getSuitePathToTest(child, testId);
+        if (path) return [suite.id, ...path];
+      }
+      return null;
+    }
+    /** Suite that directly contains the test with testId (for suite setup/teardown in Keyword Execution). */
+    function getSuiteForTest(suite, testId) {
+      if (!suite || !testId) return null;
+      if ((suite.tests || []).some(t => t.id === testId)) return suite;
+      for (const child of suite.suites || []) {
+        const found = getSuiteForTest(child, testId);
+        if (found) return found;
+      }
+      return null;
+    }
+    /** Find suite by id in the tree. */
+    function getSuiteById(suite, suiteId) {
+      if (!suite || !suiteId) return null;
+      if (suite.id === suiteId) return suite;
+      for (const child of suite.suites || []) {
+        const found = getSuiteById(child, suiteId);
+        if (found) return found;
+      }
+      return null;
     }
     function getAllMessages(keywords) {
       let msgs = [];
@@ -1337,6 +1388,23 @@
       const tags = new Set();
       getAllTests(suite).forEach(t => t.tags.forEach(tag => tags.add(tag)));
       return Array.from(tags).sort();
+    }
+    /** Test keywords in execution order: setup, body keywords, teardown. */
+    function getTestKeywordsInOrder(test) {
+      const list = [];
+      if (test.setup) list.push(test.setup);
+      list.push(...(test.keywords || []));
+      if (test.teardown) list.push(test.teardown);
+      return list;
+    }
+    /** Keywords for the main panel: when viewing a suite keyword, that keyword only; when viewing a test, test setup + body + teardown filtered by status. */
+    function getCurrentKeywordsInOrder() {
+      if (state.selectedSuiteKeyword) return [state.selectedSuiteKeyword.keyword];
+      if (state.selectedTest) {
+        const keywords = getTestKeywordsInOrder(state.selectedTest);
+        return state.statusFilter === "ALL" ? keywords : keywords.filter(filterKeyword);
+      }
+      return [];
     }
     // ========== Render Functions ==========
     function render() {
@@ -1458,7 +1526,9 @@
       
       const isExpanded = state.expandedSuites.has(suite.id);
       const visibleTests = suite.tests.filter(filterTest);
-      const hasChildren = visibleTests.length > 0 || suite.suites.some(suiteHasVisibleTests);
+      const setupMatchesFilter = !suite.setup || state.statusFilter === "ALL" || suite.setup.status === state.statusFilter;
+      const teardownMatchesFilter = !suite.teardown || state.statusFilter === "ALL" || suite.teardown.status === state.statusFilter;
+      const hasChildren = visibleTests.length > 0 || suite.suites.some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
       
       const suiteTitle = (suite.fullName || suite.name || "").replace(/"/g, "&quot;");
       return `
@@ -1474,6 +1544,15 @@
             </span>
           </div>
           ${isExpanded ? `
+            ${(suite.setup && setupMatchesFilter ? `
+            <div class="suite-setup-block">
+              <div class="suite-keyword-row clickable ${state.selectedSuiteKeyword?.keyword?.id === suite.setup.id ? "selected" : ""}" data-suite-id="${suite.id}" data-keyword-type="setup" title="View suite setup keyword and logs">
+                <span class="keyword-type setup ${(suite.setup.status || "") === "FAIL" ? "fail" : ""}">SETUP</span>
+                <span class="keyword-name">${formatTreeName(suite.setup.name || "")}</span>
+                <span class="keyword-duration">${formatDuration(suite.setup.duration)}</span>
+              </div>
+            </div>
+            ` : "")}
             <div class="tree-children">
               ${visibleTests.map(t => {
                 const testTitle = (t.fullName || t.name || "").replace(/"/g, "&quot;");
@@ -1489,35 +1568,135 @@
               }).join("")}
               ${suite.suites.map(s => renderTestTree(s, depth + 1)).join("")}
             </div>
+            ${(suite.teardown && teardownMatchesFilter ? `
+            <div class="suite-teardown-block">
+              <div class="suite-keyword-row clickable ${state.selectedSuiteKeyword?.keyword?.id === suite.teardown.id ? "selected" : ""}" data-suite-id="${suite.id}" data-keyword-type="teardown" title="View suite teardown keyword and logs">
+                <span class="keyword-type teardown ${(suite.teardown.status || "") === "FAIL" ? "fail" : ""}">TEARDOWN</span>
+                <span class="keyword-name">${formatTreeName(suite.teardown.name || "")}</span>
+                <span class="keyword-duration">${formatDuration(suite.teardown.duration)}</span>
+              </div>
+            </div>
+            ` : "")}
           ` : ""}
         </div>
       `;
     }
     function renderSidebarToggle() {
-      const hidden = !state.sidebarCollapsed && !state.sidebarToggleVisible;
       return `
-        <button class="sidebar-toggle ${hidden ? "hidden" : ""}" id="sidebar-toggle" style="left: ${state.sidebarCollapsed ? "0" : "320px"}">
+        <button class="sidebar-toggle" id="sidebar-toggle" style="left: ${state.sidebarCollapsed ? "0" : "320px"}">
           ${state.sidebarCollapsed ? icons.panelLeft : icons.panelLeftClose}
         </button>
       `;
     }
     function renderMainPanel() {
-      if (!state.selectedTest) {
+      if (!state.selectedTest && !state.selectedSuiteKeyword) {
         return `
           <main class="main-panel">
             <div class="empty-state">
               ${icons.clipboard}
               <h3>No Test Selected</h3>
-              <p>Select a test from the sidebar to view details</p>
+              <p>Select a test or a suite setup/teardown from the sidebar to view details</p>
             </div>
           </main>
         `;
       }
-      const test = state.selectedTest;
+      const keywordsInOrder = getCurrentKeywordsInOrder();
       const messagesWithKeyword = state.selectedKeyword 
-        ? sortLogEntriesByExecutionOrder(getMessagesFromKeywordSubtree(state.selectedKeyword), test.keywords)
-        : sortLogEntriesByExecutionOrder(getAllMessagesWithKeyword(test.keywords), test.keywords);
+        ? sortLogEntriesByExecutionOrder(getMessagesFromKeywordSubtree(state.selectedKeyword), keywordsInOrder)
+        : sortLogEntriesByExecutionOrder(getAllMessagesWithKeyword(keywordsInOrder), keywordsInOrder);
       const messages = (messagesWithKeyword || []).map(({ message }) => message);
+      if (state.selectedSuiteKeyword) {
+        const sk = state.selectedSuiteKeyword;
+        const label = sk.type === "setup" ? "Suite Setup" : "Suite Teardown";
+        const suiteName = (sk.suite.fullName || sk.suite.name || "").replace(/"/g, "&quot;");
+        return `
+        <main class="main-panel">
+          <div class="test-detail">
+            <div class="test-header">
+              <div class="test-header-top">
+                <div>
+                  <h2>${label}: ${(sk.keyword.name || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</h2>
+                  <p class="doc">${suiteName}</p>
+                </div>
+                <span class="status-badge lg ${getStatusClass(sk.keyword.status)}">
+                  ${getStatusIcon(sk.keyword.status)}
+                  <span>${sk.keyword.status === "PASS" ? "Passed" : sk.keyword.status === "FAIL" ? "Failed" : "Skipped"}</span>
+                </span>
+              </div>
+              <div class="test-meta">
+                <span>${icons.clock} ${formatDuration(sk.keyword.duration)}</span>
+              </div>
+            </div>
+            <div class="detail-panels">
+              <div class="panel">
+                <div class="panel-header">
+                  <span>Keyword Execution (${keywordsInOrder.length})</span>
+                  <button id="keyword-expand-collapse-btn">${(function() {
+                    const expandableIds = getExpandableKeywordIds(keywordsInOrder);
+                    const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
+                    return allExpanded ? "Collapse all" : "Expand all";
+                  })()}</button>
+                </div>
+                <div class="panel-content">
+                  ${renderKeywordTree(keywordsInOrder)}
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-header">
+                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${state.selectedKeyword.name}</span>` : ""}</span>
+                  <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
+                </div>
+                ${state.logsCleared ? "" : (() => {
+                  const levelOrder = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE", "PASS", "FAIL", "SKIP"];
+                  const levelCounts = {};
+                  messages.forEach(m => {
+                    const l = (m.level || "INFO").toUpperCase();
+                    levelCounts[l] = (levelCounts[l] || 0) + 1;
+                  });
+                  const totalCount = messages.length;
+                  const levelsWithCount = levelOrder.filter(l => (levelCounts[l] || 0) > 0);
+                  const filterBar = totalCount > 0 ? `
+                    <div class="log-filter-bar">
+                      <span class="log-filter-icon">${icons.filter}</span>
+                      <button type="button" class="log-filter-all ${state.logLevelFilter === "all" ? "selected" : ""}" data-level="all">All (${totalCount})</button>
+                      ${levelsWithCount.map(level => "<button type=\"button\" class=\"log-filter-btn " + level.toLowerCase() + " " + (state.logLevelFilter === level ? "selected" : "") + "\" data-level=\"" + level + "\">" + level + " (" + levelCounts[level] + ")</button>").join("")}
+                    </div>` : "";
+                  const filteredMessages = state.logLevelFilter === "all"
+                    ? messages
+                    : messages.filter(m => (m.level || "INFO").toUpperCase() === state.logLevelFilter);
+                  const filteredMessagesWithKeyword = state.logLevelFilter === "all"
+                    ? messagesWithKeyword
+                    : messagesWithKeyword.filter(({ message: m }) => (m.level || "INFO").toUpperCase() === state.logLevelFilter);
+                  const listToRender = filteredMessagesWithKeyword;
+                  const logEntries = totalCount > 0 ? (messagesWithKeyword != null
+                    ? listToRender.map(({ message: m, keyword }) => `
+                    <div class="log-entry log-entry-clickable" data-keyword-id="${keyword.id}" title="Click to expand keyword: ${(keyword.name || "").replace(/"/g, "&quot;")}">
+                      <span class="log-time">${formatTime(m.timestamp)}</span>
+                      <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
+                      <span class="log-message">${m.message}</span>
+                      <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
+                    </div>
+                  `).join("")
+                    : filteredMessages.map(m => `
+                    <div class="log-entry">
+                      <span class="log-time">${formatTime(m.timestamp)}</span>
+                      <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
+                      ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
+                      <span class="log-message">${m.message}</span>
+                      <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
+                    </div>
+                  `).join("")) : `<div class="log-empty">No log messages</div>`;
+                  return filterBar + logEntries;
+                })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        `;
+      }
+      const test = state.selectedTest;
       return `
         <main class="main-panel">
           <div class="test-detail">
@@ -1578,15 +1757,15 @@
             <div class="detail-panels">
               <div class="panel">
                 <div class="panel-header">
-                  <span>Keyword Execution (${test.keywords.length})</span>
+                  <span>Keyword Execution (${keywordsInOrder.length})</span>
                   <button id="keyword-expand-collapse-btn">${(function() {
-                    const expandableIds = getExpandableKeywordIds(test.keywords);
+                    const expandableIds = getExpandableKeywordIds(keywordsInOrder);
                     const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
                     return allExpanded ? "Collapse all" : "Expand all";
                   })()}</button>
                 </div>
                 <div class="panel-content">
-                  ${renderKeywordTree(test.keywords)}
+                  ${renderKeywordTree(keywordsInOrder)}
                 </div>
               </div>
               <div class="panel">
@@ -1717,21 +1896,8 @@
       // Sidebar toggle
       document.getElementById("sidebar-toggle")?.addEventListener("click", () => {
         state.sidebarCollapsed = !state.sidebarCollapsed;
-        if (!state.sidebarCollapsed) {
-          state.sidebarToggleVisible = true;
-          scheduleSidebarToggleHide();
-        }
         render();
       });
-      // Show sidebar toggle on hover over test-tree or sidebar (no full re-render so tree stays clickable)
-      function showSidebarToggleOnHover() {
-        if (state.sidebarCollapsed) return;
-        state.sidebarToggleVisible = true;
-        document.getElementById("sidebar-toggle")?.classList.remove("hidden");
-        scheduleSidebarToggleHide();
-      }
-      document.querySelector(".test-tree")?.addEventListener("mouseenter", showSidebarToggleOnHover);
-      document.querySelector(".sidebar")?.addEventListener("mouseenter", showSidebarToggleOnHover);
       // Search
       document.getElementById("search-input")?.addEventListener("input", (e) => {
         state.searchQuery = e.target.value;
@@ -1761,14 +1927,16 @@
       document.querySelectorAll(".failed-item").forEach(el => {
         el.addEventListener("click", () => {
           const testId = el.dataset.testId;
+          state.selectedSuiteKeyword = null;
           state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
           state.selectedKeyword = null;
           state.logsCleared = false;
+          if (state.selectedTest) location.hash = "test=" + state.selectedTest.id;
           render();
         });
       });
       // Suite clicks (toggle expand)
-      document.querySelectorAll("[data-suite-id]").forEach(el => {
+      document.querySelectorAll(".tree-node-header[data-suite-id]").forEach(el => {
         el.addEventListener("click", () => {
           const suiteId = el.dataset.suiteId;
           if (state.expandedSuites.has(suiteId)) {
@@ -1784,9 +1952,27 @@
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           const testId = el.dataset.testId;
+          state.selectedSuiteKeyword = null;
           state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
           state.selectedKeyword = null;
           state.logsCleared = false;
+          if (state.selectedTest) location.hash = "test=" + state.selectedTest.id;
+          render();
+        });
+      });
+      document.querySelectorAll(".suite-keyword-row.clickable").forEach(el => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const suiteId = el.dataset.suiteId;
+          const type = el.dataset.keywordType;
+          const suite = getSuiteById(mockData.rootSuite, suiteId);
+          if (!suite || (type !== "setup" && type !== "teardown")) return;
+          const keyword = type === "setup" ? suite.setup : suite.teardown;
+          if (!keyword) return;
+          state.selectedSuiteKeyword = { suite, keyword, type };
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          state.expandedKeywords.add(keyword.id);
           render();
         });
       });
@@ -1805,7 +1991,8 @@
             return null;
           };
           
-          const kw = findKeyword(state.selectedTest.keywords);
+          const keywordsInOrder = getCurrentKeywordsInOrder();
+          const kw = findKeyword(keywordsInOrder);
           if (kw) {
             if (state.selectedKeyword?.id === kw.id) {
               // Toggle expand if already selected
@@ -1878,8 +2065,9 @@
       });
       // Keyword panel: Expand all / Collapse all
       document.getElementById("keyword-expand-collapse-btn")?.addEventListener("click", () => {
-        if (!state.selectedTest) return;
-        const expandableIds = getExpandableKeywordIds(state.selectedTest.keywords);
+        const keywordsInOrder = getCurrentKeywordsInOrder();
+        if (keywordsInOrder.length === 0) return;
+        const expandableIds = getExpandableKeywordIds(keywordsInOrder);
         const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedKeywords.has(id));
         if (allExpanded) {
           expandableIds.forEach(id => state.expandedKeywords.delete(id));
@@ -1892,7 +2080,8 @@
       document.querySelectorAll(".log-entry[data-keyword-id]").forEach(el => {
         el.addEventListener("click", () => {
           const kwId = el.dataset.keywordId;
-          const kw = findKeywordById(state.selectedTest.keywords, kwId);
+          const keywordsInOrder = getCurrentKeywordsInOrder();
+          const kw = findKeywordById(keywordsInOrder, kwId);
           if (kw) {
             state.selectedKeyword = kw;
             state.logsCleared = false;
@@ -1900,7 +2089,7 @@
             if (state.logLevelFilter !== "all" && !keywordHasLogLevel(kw, state.logLevelFilter)) {
               state.logLevelFilter = "all";
             }
-            const path = getKeywordPath(state.selectedTest.keywords, kwId);
+            const path = getKeywordPath(keywordsInOrder, kwId);
             if (path) path.forEach(id => state.expandedKeywords.add(id));
             render();
           }
@@ -1932,14 +2121,34 @@
         }
       });
     }
-    // ========== Auto-select first failed test ==========
-    const failedTests = getFailedTests(mockData.rootSuite);
-    if (failedTests.length > 0) {
-      state.selectedTest = failedTests[0];
+    // ========== Deep link: #test=<id> ==========
+    let appliedDeepLink = false;
+    const hashMatch = /^#?test=(.+)$/.exec(window.location.hash || "");
+    const hashTestId = hashMatch ? decodeURIComponent(hashMatch[1].replace(/^#/, "").trim()) : null;
+    if (hashTestId && mockData.rootSuite) {
+      const test = getAllTests(mockData.rootSuite).find(t => t.id === hashTestId);
+      if (test) {
+        const path = getSuitePathToTest(mockData.rootSuite, hashTestId);
+        if (path) path.forEach(id => state.expandedSuites.add(id));
+        state.selectedTest = test;
+        state.selectedKeyword = null;
+        state.logsCleared = false;
+        appliedDeepLink = true;
+      }
+    }
+    // ========== Auto-select first failed test (if no deep link) ==========
+    if (!appliedDeepLink) {
+      const failedTests = getFailedTests(mockData.rootSuite);
+      if (failedTests.length > 0) {
+        state.selectedTest = failedTests[0];
+      }
     }
     // ========== Initial Render ==========
     render();
-    if (!state.sidebarCollapsed) scheduleSidebarToggleHide();
+    if (appliedDeepLink && state.selectedTest) {
+      const el = document.querySelector(`[data-test-id="${state.selectedTest.id}"]`);
+      if (el) el.scrollIntoView({ behavior: "auto", block: "nearest" });
+    }
   </script>
 </body>
 </html>

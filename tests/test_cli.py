@@ -1,10 +1,6 @@
 """Tests for the reportlens CLI."""
 
-from pathlib import Path
 from unittest.mock import patch
-
-import pytest
-
 from robotframework_reportlens.cli import main
 
 
@@ -50,3 +46,23 @@ def test_cli_generator_exception_returns_1(capsys, tmp_path):
     assert exit_code == 1
     out, err = capsys.readouterr()
     assert "Error" in err
+
+
+def test_cli_success_prints_message(capsys, tmp_path, sample_output_xml):
+    """With valid xml, main prints a message about the generated report."""
+    out_html = tmp_path / "report.html"
+    with patch("sys.argv", ["reportlens", str(sample_output_xml), "-o", str(out_html)]):
+        main()
+    out, err = capsys.readouterr()
+    assert "Report generated" in out
+    assert "report.html" in out or str(out_html.name) in out
+
+
+def test_cli_custom_output_filename(tmp_path, sample_output_xml):
+    """-o can specify a custom output path."""
+    custom = tmp_path / "custom_report.html"
+    with patch("sys.argv", ["reportlens", str(sample_output_xml), "-o", str(custom)]):
+        exit_code = main()
+    assert exit_code == 0
+    assert custom.exists()
+    assert custom.read_text(encoding="utf-8").count("report-data") >= 1

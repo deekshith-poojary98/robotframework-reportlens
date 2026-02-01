@@ -60,7 +60,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
       fail-fast: false
     
     runs-on: ubuntu-latest
@@ -230,17 +230,17 @@ jobs:
             comment += '### 🧪 Test Results\n';
             if (testResult === 'success') {
               comment += '✅ **All tests passed across all Python versions!**\n\n';
-              comment += '**Tested Python versions:** 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14 ✅\n';
+              comment += '**Tested Python versions:** 3.10, 3.11, 3.12, 3.13, 3.14 ✅\n';
             } else if (testResult === 'failure') {
               comment += '❌ **Test failures detected in one or more Python versions!**\n';
               comment += 'Please check the test logs for detailed failure information.\n';
-              comment += '\n**Note:** Tests run on Python 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, and 3.14\n';
+              comment += '\n**Note:** Tests run on Python 3.10, 3.11, 3.12, 3.13, and 3.14\n';
             } else {
               comment += '⚠️ **Test status unknown**\n';
             }
             
             // Coverage information - try to get from latest Python version
-            const pythonVersions = ['3.14', '3.13', '3.12', '3.11', '3.10', '3.9', '3.8'];
+            const pythonVersions = ['3.14', '3.13', '3.12', '3.11', '3.10'];
             let coverageFound = false;
             for (const pyVersion of pythonVersions) {
               const coveragePath = `artifacts/test-reports-py${pyVersion}/coverage.json`;

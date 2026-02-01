@@ -1,18 +1,46 @@
 *** Settings ***
 Documentation     Accounts: list, create, delete, balance (stub keywords, no real logic).
-Suite Setup       Log Suite Start
-Suite Teardown    Log Suite End
-Test Setup        Log Test Start
-Test Teardown     Log Test End
+Suite Setup       Run Suite Setup
+Suite Teardown    Run Suite Teardown
+
 
 *** Keywords ***
+Run Suite Setup
+    [Documentation]    Suite-level setup: multiple keywords run once before all tests.
+    Log Suite Start
+    Initialize Suite State
+    Log Suite Ready
+
 Log Suite Start
     [Documentation]    Logs suite start.
     Log    Starting suite: Accounts
 
+Initialize Suite State
+    [Documentation]    Initialize shared state for the suite.
+    Log    Initializing suite state
+    Log    Suite state initialized
+
+Log Suite Ready
+    [Documentation]    Logs that suite setup is complete.
+    Log    Suite setup complete: Accounts ready
+
+Run Suite Teardown
+    [Documentation]    Suite-level teardown: multiple keywords run once after all tests.
+    Log Cleaning Up Suite
+    Log Suite End
+    Log Suite Teardown Complete
+
+Log Cleaning Up Suite
+    [Documentation]    Begin suite teardown cleanup.
+    Log    Cleaning up suite: Accounts
+
 Log Suite End
     [Documentation]    Logs suite end.
     Log    Ending suite: Accounts
+
+Log Suite Teardown Complete
+    [Documentation]    Logs that suite teardown is complete.
+    Log    Suite teardown complete
 
 Log Test Start
     [Documentation]    Logs test start.
@@ -97,6 +125,8 @@ Accounts: Get Balance Returns Number
 Accounts: Account Exists Returns True
     [Documentation]    Stub test: account exists check.
     [Tags]    accounts    exists
+    [Setup]    Log Test Start
     ${exists}=    Accounts: Account Exists    acc_1_001
     Should Be True    ${exists}
     Log    Exists: ${exists}
+    [Teardown]    Log Test End
