@@ -4,11 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotframework-reportlens"
-version = "0.1.2"
+version = "0.1.3"
 description = "Generate a modern, interactive HTML report from Robot Framework output.xml"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "Apache-2.0"}
+dependencies = ["robotframework>=6.0"]
+license = "Apache-2.0"
 authors = [
     {name = "Deekshith Poojary", email = "deekshithpoojary355@gmail.com"}
 ]
@@ -16,7 +17,6 @@ keywords = ["robotframework", "report", "html", "testing", "cli", "log"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -48,3 +48,6 @@ dev = ["pytest>=7.0", "pytest-cov", "ruff", "build"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+filterwarnings = [
+    "ignore:cannot collect test class 'Test'.*:pytest.PytestCollectionWarning",
+]
