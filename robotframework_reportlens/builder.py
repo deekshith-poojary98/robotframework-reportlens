@@ -3,6 +3,8 @@ Build ReportModel from Robot Framework ExecutionResult.
 No XML parsing, no HTML. Uses robot.api.ExecutionResult only.
 """
 
+import re
+from datetime import datetime
 from pathlib import Path
 
 from robot.api import ExecutionResult
@@ -14,6 +16,43 @@ from .model import (
     Suite,
     Test,
 )
+
+# Robot legacy timestamp format: "YYYYMMDD HH:MM:SS.fff" (e.g. "20260201 14:04:20.902")
+_LEGACY_TS = re.compile(r"^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$")
+
+
+def _to_iso_time(ts) -> str:
+    """Normalize a timestamp to ISO 8601 string for the report/JS. Handles datetime, ISO str, Robot legacy str."""
+    if ts is None or (isinstance(ts, str) and not ts.strip()):
+        return ""
+    if hasattr(ts, "isoformat"):
+        return ts.isoformat()
+    s = str(ts).strip()
+    if not s:
+        return ""
+    if "T" in s:
+        try:
+            datetime.fromisoformat(s.replace("Z", "+00:00"))
+            return s
+        except ValueError:
+            pass
+    m = _LEGACY_TS.match(s)
+    if m:
+        y, mo, d, h, mi, sec = (int(m.group(i)) for i in range(1, 7))
+        frac = m.group(7)
+        if frac:
+            frac = frac.ljust(6, "0")[:6]
+            micro = int(frac)
+        else:
+            micro = 0
+        try:
+            return datetime(y, mo, d, h, mi, sec, micro).isoformat()
+        except ValueError:
+            return ""
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00")).isoformat()
+    except ValueError:
+        return ""
 
 
 def _elapsed_ms(robot_item) -> int:
@@ -250,18 +289,21 @@ def build_report_model(xml_path: str) -> ReportModel:
         skipped = sum(1 for t in _all_tests(root_suite) if t.status == "SKIP")
     total = passed + failed + skipped
     pass_rate = int((passed / total * 100)) if total > 0 else 0
-
-    # Generated / generator from result
+    # Generated / generator from result (generation_time is set from <robot generated="..."> when loading XML)
     gen = getattr(result, "generator", "Robot Framework") or "Robot Framework"
-    gen_time = getattr(result, "generation_time", None) or ""
-    if gen_time is not None and hasattr(gen_time, "isoformat"):
-        gen_time = gen_time.isoformat()
-    start_time = root_suite.start_time or str(gen_time)
+    gen_time = getattr(result, "generation_time", None) or getattr(result, "generated", None)
+    gen_str = _to_iso_time(gen_time) if gen_time else ""
+    # Report start: root suite start_time, then generation_time, then suite status start, then earliest test
+    start_time = _report_start_time(result, root)
+    if not start_time and root_suite.start_time:
+        start_time = _to_iso_time(root_suite.start_time)
+    if not start_time:
+        start_time = gen_str
     end_time = start_time
     duration_ms = root_suite.duration
 
     return ReportModel(
-        generated=str(gen_time),
+        generated=gen_str,
         generator=str(gen),
         start_time=start_time,
         end_time=end_time,
@@ -284,3 +326,40 @@ def _all_tests(suite: Suite) -> list:
     for s in suite.suites:
         out.extend(_all_tests(s))
     return out
+
+
+def _all_robot_tests(robot_suite):
+    """Yield all Robot test case objects from a Robot suite tree."""
+    for t in getattr(robot_suite, "tests", []) or []:
+        yield t
+    for s in getattr(robot_suite, "suites", []) or []:
+        yield from _all_robot_tests(s)
+
+
+def _report_start_time(result, robot_root) -> str:
+    """
+    Best available report start time as ISO string.
+    Order: root suite start_time, result generation_time, root suite status start, earliest test start.
+    """
+    candidates = []
+    if robot_root:
+        st = _start_time(robot_root)
+        if st:
+            candidates.append(st)
+    gen = getattr(result, "generation_time", None) or getattr(result, "generated", None)
+    if gen is not None and gen != "":
+        candidates.append(gen.isoformat() if hasattr(gen, "isoformat") else str(gen))
+    if not candidates and robot_root:
+        status = getattr(robot_root, "status", None)
+        if status is not None:
+            st = _start_time(status)
+            if st:
+                candidates.append(st)
+    if not candidates and robot_root:
+        for robot_test in _all_robot_tests(robot_root):
+            st = _start_time(robot_test)
+            if st:
+                candidates.append(st)
+    if not candidates:
+        return ""
+    return _to_iso_time(candidates[0])
