@@ -72,3 +72,12 @@ class TestBuildReportModel:
             assert hasattr(test, "teardown")
             assert test.setup is None
             assert test.teardown is None
+
+    def test_report_start_time_and_generated_set_from_xml(self, minimal_xml_path):
+        """Report start_time and generated come from XML (root suite or generation_time)."""
+        model = build_report_model(minimal_xml_path)
+        assert model.generated, "generated should be set from <robot generated='...'>"
+        assert model.start_time, "start_time should be set (suite/status or generation_time fallback)"
+        # Should be ISO-like so JS Date(iso) parses
+        assert "T" in model.start_time or model.start_time.startswith("202"), model.start_time
+        assert "T" in model.generated or model.generated.startswith("202"), model.generated
