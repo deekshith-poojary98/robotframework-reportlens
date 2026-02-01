@@ -90,12 +90,12 @@ pip install robotframework-reportlens
 reportlens output.xml -o report.html
 ```
 
-Requires **Python 3.8+**. No extra runtime dependencies (stdlib only).
+Requires **Python 3.10+**. No extra runtime dependencies (stdlib only).
 
 ### Development
 
 - Pytest test suite for CLI and report generator
-- GitHub Actions workflow: lint (Ruff), tests (Python 3.8–3.14), security (Bandit)
+- GitHub Actions workflow: lint (Ruff), tests (Python 3.10–3.14), security (Bandit)
 - Dev dependencies: `pip install -e ".[dev]"` (pytest, pytest-cov, ruff, build)
 
 ### Links
