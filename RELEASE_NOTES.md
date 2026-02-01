@@ -1,5 +1,35 @@
 # Release Notes
 
+## [0.1.3] - 2026-02-01
+
+### Improvements
+
+- **Internal report model and API**
+  - **Clean data model** – Parsing is decoupled from rendering. A pure Python report model (`ReportModel`, `Suite`, `Test`, `Keyword`, `LogMessage`) is built from Robot’s `ExecutionResult`; no manual XML traversal. IDs are deterministic and stable for deep linking.
+  - **Layers** – Builder (`builder.py`) builds the model from `ExecutionResult`; serializer (`serialize.py`) turns the model into the template payload; generator only assembles HTML and embeds JSON.
+- **Deep linking**
+  - **URL hash** – Reports support `report.html#test=<test_id>`. On load, the hash is parsed, the target test is resolved, parent suites are expanded, the test is selected and scrolled into view, and its details panel is shown. Invalid IDs are ignored without error.
+  - **Shareable links** – Selecting a test in the sidebar or failed list updates the URL hash so the link can be shared or refreshed.
+- **Suite and test setup/teardown**
+  - **Suite level** – Suite setup and teardown are captured from Robot’s result model and shown in the sidebar (before and after the test list). Clicking a suite setup or teardown row opens the main panel with that keyword’s tree and logs (same as test keywords).
+  - **Test level** – Test setup and teardown appear inside the test’s Keyword Execution panel in execution order (setup → body keywords → teardown). Suite setup/teardown are not shown inside a test; only test-level setup/teardown appear there.
+  - **Badges** – SETUP, TEARDOWN, RETURNS, and RETURNED badges use a consistent size (10px) in the sidebar and main panel.
+- **Report UI**
+  - **Sidebar toggle** – The sidebar collapse/expand button is always visible (auto-hide removed).
+  - **Suite expand** – Clicking suite setup or teardown rows no longer collapses the suite; only the suite header toggles expand/collapse.
+
+### Development
+
+- **Tests** – Added `test_builder.py` and `test_serialize.py`; more cases in `test_generator.py` and `test_cli.py` (34 tests total). Pytest filter added for model `Test` class collection warning.
+- **Build** – License in `pyproject.toml` updated to SPDX string (`"Apache-2.0"`); deprecated license classifier removed to fix setuptools deprecation warnings.
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
+---
+
 ## [0.1.2] - 2026-01-31
 
 ### Improvements
