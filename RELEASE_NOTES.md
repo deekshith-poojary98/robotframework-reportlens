@@ -14,6 +14,7 @@
   - **Suite level** – Suite setup and teardown are captured from Robot’s result model and shown in the sidebar (before and after the test list). Clicking a suite setup or teardown row opens the main panel with that keyword’s tree and logs (same as test keywords).
   - **Test level** – Test setup and teardown appear inside the test’s Keyword Execution panel in execution order (setup → body keywords → teardown). Suite setup/teardown are not shown inside a test; only test-level setup/teardown appear there.
   - **Badges** – SETUP, TEARDOWN, RETURNS, and RETURNED badges use a consistent size (10px) in the sidebar and main panel.
+  - **Failed suite setup/teardown** – When a suite-level setup or teardown fails, its SETUP or TEARDOWN badge in the sidebar shows a thin red border (0.1px) so failed suite keywords are easy to spot.
 - **Report UI**
   - **Sidebar toggle** – The sidebar collapse/expand button is always visible (auto-hide removed).
   - **Suite expand** – Clicking suite setup or teardown rows no longer collapses the suite; only the suite header toggles expand/collapse.
