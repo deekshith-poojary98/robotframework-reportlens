@@ -27,14 +27,19 @@ class TestReportGeneratorParsing:
 
     def test_parses_statistics(self, minimal_xml_path):
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
-        assert gen.statistics["total"]["pass"] == 1
-        assert gen.statistics["total"]["fail"] == 1
-        assert gen.statistics["total"]["skip"] == 0
+        data = gen._build_report_data()
+        stats = data["statistics"]
+        assert stats["passed"] == 1
+        assert stats["failed"] == 1
+        assert stats["skipped"] == 0
+        assert stats["total"] == 2
 
     def test_parses_errors(self, minimal_xml_path):
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
-        assert len(gen.errors) >= 1
-        first = gen.errors[0]
+        data = gen._build_report_data()
+        errors = data["errors"]
+        assert len(errors) >= 1
+        first = errors[0]
         assert "time" in first
         assert "level" in first
         assert "text" in first
@@ -63,6 +68,51 @@ class TestReportGeneratorParsing:
         names = [t["name"] for t in root["tests"]]
         assert "Passing Test" in names
         assert "Failing Test" in names
+
+    def test_root_suite_has_setup_teardown_keys(self, minimal_xml_path):
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        data = gen._build_report_data()
+        root = data["rootSuite"]
+        assert "setup" in root
+        assert "teardown" in root
+        assert root["setup"] is None
+        assert root["teardown"] is None
+
+    def test_test_has_setup_teardown_keys(self, minimal_xml_path):
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        data = gen._build_report_data()
+        for test in data["rootSuite"]["tests"]:
+            assert "setup" in test
+            assert "teardown" in test
+            assert test["setup"] is None
+            assert test["teardown"] is None
+
+    def test_root_suite_structure(self, minimal_xml_path):
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        data = gen._build_report_data()
+        root = data["rootSuite"]
+        assert "id" in root
+        assert "name" in root
+        assert "fullName" in root
+        assert "status" in root
+        assert "statistics" in root
+        assert "tests" in root
+        assert "suites" in root
+        assert root["id"] == "s1"
+        assert root["statistics"]["total"] == 2
+        assert root["statistics"]["passed"] == 1
+        assert root["statistics"]["failed"] == 1
+
+    def test_test_has_keywords_and_documentation(self, minimal_xml_path):
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        data = gen._build_report_data()
+        tests = data["rootSuite"]["tests"]
+        passing = next(t for t in tests if t["name"] == "Passing Test")
+        assert "keywords" in passing
+        assert len(passing["keywords"]) >= 1
+        assert passing["keywords"][0]["name"] == "Log"
+        assert "documentation" in passing
+        assert "A passing test" in passing["documentation"]
 
 
 class TestGenerateHtml:
@@ -95,3 +145,20 @@ class TestGenerateHtml:
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
         gen.generate_html(str(out))
         assert out.exists()
+
+    def test_generated_html_contains_report_data_script(self, minimal_xml_path, tmp_path):
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        assert 'id="report-data"' in content
+        assert "<script type=\"application/json\"" in content or "application/json" in content
+
+    def test_generated_html_contains_css_and_js(self, minimal_xml_path, tmp_path):
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        assert "<style>" in content
+        assert "</style>" in content
+        assert "<script>" in content or "reportData" in content
