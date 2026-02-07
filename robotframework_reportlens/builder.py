@@ -29,21 +29,50 @@ from .model import (
 
 # Robot legacy timestamp format: "YYYYMMDD HH:MM:SS.fff" (e.g. "20260201 14:04:20.902")
 _LEGACY_TS = re.compile(r"^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$")
+# ISO 8601 timezone suffix (Z or ±HH:MM) so we don't double-append
+_ISO_TZ = re.compile(r"(Z|[+-]\d{2}:\d{2})$")
+
+
+def _local_tz():
+    """Timezone of the machine where the report is built (same as Robot run). Naive timestamps are treated as this."""
+    return datetime.now().astimezone().tzinfo
+
+
+def _ensure_iso_tz(s: str) -> str:
+    """Ensure ISO string has timezone (Z or ±HH:MM). Appends Z if missing so JS Date.parse is reliable."""
+    if not s or not s.strip():
+        return s
+    s = s.strip()
+    if _ISO_TZ.search(s):
+        return s
+    return s.rstrip("Z") + "Z"
+
+
+def _naive_to_iso(dt: datetime) -> str:
+    """Convert datetime to ISO string with timezone. Naive datetimes are treated as local time (Robot run timezone)."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=_local_tz())
+    return dt.isoformat()
 
 
 def _to_iso_time(ts) -> str:
-    """Normalize a timestamp to ISO 8601 string for the report/JS. Handles datetime, ISO str, Robot legacy str."""
+    """
+    Normalize a timestamp to ISO 8601 with timezone for the report/JS.
+    Handles datetime, ISO strings, legacy Robot "YYYYMMDD HH:MM:SS.fff", or None.
+    Naive values (no timezone) are treated as local time (where Robot ran); output has offset e.g. +05:30.
+    Always returns a string ending with Z or ±HH:MM, or empty string if missing/invalid.
+    """
     if ts is None or (isinstance(ts, str) and not ts.strip()):
         return ""
     if hasattr(ts, "isoformat"):
-        return ts.isoformat()
+        return _naive_to_iso(ts)
     s = str(ts).strip()
     if not s:
         return ""
     if "T" in s:
         try:
-            datetime.fromisoformat(s.replace("Z", "+00:00"))
-            return s
+            parsed = datetime.fromisoformat(s.replace("Z", "+00:00"))
+            return _naive_to_iso(parsed)
         except ValueError:
             pass
     m = _LEGACY_TS.match(s)
@@ -56,11 +85,13 @@ def _to_iso_time(ts) -> str:
         else:
             micro = 0
         try:
-            return datetime(y, mo, d, h, mi, sec, micro).isoformat()
+            dt = datetime(y, mo, d, h, mi, sec, micro)
+            return _naive_to_iso(dt)
         except ValueError:
             return ""
     try:
-        return datetime.fromisoformat(s.replace("Z", "+00:00")).isoformat()
+        parsed = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        return _naive_to_iso(parsed)
     except ValueError:
         return ""
 
@@ -77,13 +108,13 @@ def _elapsed_ms(robot_item) -> int:
 
 
 def _start_time(robot_item) -> str:
-    """Get start time string from a Robot result item."""
+    """Get start time as ISO 8601 with timezone from a Robot result item."""
     st = getattr(robot_item, "starttime", None)
     if st:
-        return st
+        return _to_iso_time(st)
     start = getattr(robot_item, "start_time", None)
     if start is not None:
-        return str(start) if not hasattr(start, "isoformat") else start.isoformat()
+        return _to_iso_time(start)
     return ""
 
 
@@ -272,11 +303,9 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
                 msg = item
                 level = (getattr(msg, "level", "INFO") or "INFO").upper()
                 text = (getattr(msg, "message", None) or "").strip()
-                ts = getattr(msg, "timestamp", None) or ""
-                if ts is not None and hasattr(ts, "isoformat"):
-                    ts = ts.isoformat()
+                ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
                 messages_list.append(
-                    LogMessage(timestamp=str(ts), level=level, message=text, is_return=seen_return)
+                    LogMessage(timestamp=ts, level=level, message=text, is_return=seen_return)
                 )
             elif _is_executable_body_item(item):
                 child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{child_kw_index}"))
@@ -287,10 +316,8 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
         for msg in robot_kw.messages:
             level = (getattr(msg, "level", "INFO") or "INFO").upper()
             text = (getattr(msg, "message", None) or "").strip()
-            ts = getattr(msg, "timestamp", None) or ""
-            if ts is not None and hasattr(ts, "isoformat"):
-                ts = ts.isoformat()
-            messages_list.append(LogMessage(timestamp=str(ts), level=level, message=text, is_return=False))
+            ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
+            messages_list.append(LogMessage(timestamp=ts, level=level, message=text, is_return=False))
 
     return Keyword(
         id=kw_id,
@@ -444,11 +471,9 @@ def build_report_model(xml_path: str) -> ReportModel:
         messages = getattr(errs, "messages", errs) if hasattr(errs, "messages") else errs
         for msg in (messages or []):
             level = (getattr(msg, "level", "WARN") or "WARN").upper()
-            ts = getattr(msg, "timestamp", None) or ""
-            if ts is not None and hasattr(ts, "isoformat"):
-                ts = ts.isoformat()
+            ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
             text = getattr(msg, "message", None) or getattr(msg, "text", "") or ""
-            errors.append({"time": str(ts), "level": level, "text": str(text).strip()})
+            errors.append({"time": ts, "level": level, "text": str(text).strip()})
 
     # Statistics
     stats = result.statistics

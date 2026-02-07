@@ -1292,7 +1292,9 @@
       return `${min}m ${sec}s`;
     }
     function formatTime(iso) {
+      if (iso == null || String(iso).trim() === "") return "—";
       const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "—";
       return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
     }
     function formatTreeName(name) {
