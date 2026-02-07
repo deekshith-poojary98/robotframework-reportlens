@@ -795,13 +795,17 @@
     }
     /* ========== Keyword Tree ========== */
     .keyword-node {
+      display: block;
       border-bottom: 1px solid var(--border);
+    }
+    .keyword-node:last-child {
+      border-bottom: none;
     }
     .keyword-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 16px;
+      padding: 8px 12px;
       cursor: pointer;
       transition: background 0.15s;
       font-size: 12px;
@@ -859,6 +863,19 @@
       color: var(--log-error);
     }
     .keyword-error-indicator .icon { width: 16px; height: 16px; }
+    .keyword-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+      background: hsl(0deg 0.15% 26.11%);
+      color: var(--accent-foreground);
+    }
     .keyword-name {
       flex: 1;
       font-size: 12px;
@@ -873,9 +890,14 @@
       color: var(--muted-foreground);
     }
     .keyword-children {
-      padding-left: 8px;
-      border-left: 1px solid var(--border);
-      margin-left: 8px;
+      display: block;
+      padding-left: 12px;
+      border-left: 2px solid var(--border);
+      margin-left: 12px;
+      margin-bottom: 4px;
+    }
+    .keyword-children .keyword-node {
+      border-bottom: 1px solid var(--border);
     }
     /* ========== Log Viewer ========== */
     .log-entry {
@@ -1393,7 +1415,7 @@
     function getTestKeywordsInOrder(test) {
       const list = [];
       if (test.setup) list.push(test.setup);
-      list.push(...(test.keywords || []));
+      list.push(...(Array.isArray(test.keywords) ? test.keywords : []));
       if (test.teardown) list.push(test.teardown);
       return list;
     }
@@ -1643,7 +1665,7 @@
               </div>
               <div class="panel">
                 <div class="panel-header">
-                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${state.selectedKeyword.name}</span>` : ""}</span>
+                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${(state.selectedKeyword.badge ? state.selectedKeyword.badge + " " : "") + (state.selectedKeyword.name || "")}</span>` : ""}</span>
                   <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
                 </div>
                 ${state.logsCleared ? "" : (() => {
@@ -1770,7 +1792,7 @@
               </div>
               <div class="panel">
                 <div class="panel-header">
-                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${state.selectedKeyword.name}</span>` : ""}</span>
+                  <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${(state.selectedKeyword.badge ? state.selectedKeyword.badge + " " : "") + (state.selectedKeyword.name || "")}</span>` : ""}</span>
                   <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
                 </div>
                 ${state.logsCleared ? "" : (() => {
@@ -1862,24 +1884,27 @@
       return false;
     }
     function renderKeywordTree(keywords, depth = 0) {
-      return keywords.map(kw => {
+      const list = Array.isArray(keywords) ? keywords : [];
+      return list.map(kw => {
         const isExpanded = state.expandedKeywords.has(kw.id);
-        const hasChildren = kw.keywords && kw.keywords.length > 0;
+        const children = Array.isArray(kw.keywords) ? kw.keywords : [];
+        const hasChildren = children.length > 0;
         const hasErrorLog = keywordHasErrorLog(kw);
         return `
           <div class="keyword-node">
-            <div class="keyword-header ${state.selectedKeyword?.id === kw.id ? "selected" : ""}" data-keyword-id="${kw.id}" title="${(kw.name || "").replace(/"/g, "&quot;")}">
+            <div class="keyword-header ${state.selectedKeyword?.id === kw.id ? "selected" : ""}" data-keyword-id="${kw.id}" title="${((kw.badge ? kw.badge + " " : "") + (kw.name || "")).replace(/"/g, "&quot;")}">
               <span class="keyword-expand">${hasChildren ? (isExpanded ? icons.chevronDown : icons.chevronRight) : ""}</span>
               <span class="tree-icon ${getStatusClass(kw.status)}">${getStatusIcon(kw.status)}</span>
               ${hasErrorLog ? `<span class="keyword-error-indicator" title="Contains ERROR-level log">${icons.alert}</span>` : ""}
               ${kw.type !== "KEYWORD" ? `<span class="keyword-type ${kw.type.toLowerCase()}">${kw.type}</span>` : ""}
               ${kw.returned ? `<span class="keyword-returned" title="Returns: ${(kw.returnValues || []).map(v => (v || "").replace(/"/g, "&quot;")).join(", ") || "value(s)"}">RETURNS</span>` : ""}
-              <span class="keyword-name">${kw.name}</span>
+              ${kw.badge ? `<span class="keyword-badge">${(kw.badge || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>` : ""}
+              <span class="keyword-name">${(kw.name || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
               <span class="keyword-duration">${formatDuration(kw.duration)}</span>
             </div>
             ${hasChildren && isExpanded ? `
               <div class="keyword-children">
-                ${renderKeywordTree(kw.keywords, depth + 1)}
+                ${renderKeywordTree(children, depth + 1)}
               </div>
             ` : ""}
           </div>
@@ -1931,7 +1956,13 @@
           state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
           state.selectedKeyword = null;
           state.logsCleared = false;
-          if (state.selectedTest) location.hash = "test=" + state.selectedTest.id;
+          if (state.selectedTest) {
+            location.hash = "test=" + state.selectedTest.id;
+            const kws = Array.isArray(state.selectedTest.keywords) ? state.selectedTest.keywords : [];
+            if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
+              state.expandedKeywords.add(kws[0].id);
+            }
+          }
           render();
         });
       });
@@ -1956,7 +1987,13 @@
           state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
           state.selectedKeyword = null;
           state.logsCleared = false;
-          if (state.selectedTest) location.hash = "test=" + state.selectedTest.id;
+          if (state.selectedTest) {
+            location.hash = "test=" + state.selectedTest.id;
+            const kws = Array.isArray(state.selectedTest.keywords) ? state.selectedTest.keywords : [];
+            if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
+              state.expandedKeywords.add(kws[0].id);
+            }
+          }
           render();
         });
       });
@@ -2133,6 +2170,10 @@
         state.selectedTest = test;
         state.selectedKeyword = null;
         state.logsCleared = false;
+        const kws = Array.isArray(test.keywords) ? test.keywords : [];
+        if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
+          state.expandedKeywords.add(kws[0].id);
+        }
         appliedDeepLink = true;
       }
     }
