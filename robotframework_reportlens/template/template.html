@@ -282,10 +282,14 @@
       display: flex;
       flex-direction: column;
       width: 320px;
+      min-width: 0;
       background: var(--sidebar);
       border-right: 1px solid var(--border);
       transition: width 0.2s ease;
       overflow: hidden;
+    }
+    .sidebar.resizing {
+      transition: none;
     }
     .sidebar.collapsed {
       width: 0;
@@ -317,6 +321,24 @@
     }
     .sidebar.collapsed + .sidebar-toggle {
       left: 0;
+    }
+    .sidebar-toggle.resizing {
+      transition: none;
+    }
+    /* Resize handle between sidebar and main */
+    .resize-handle {
+      flex-shrink: 0;
+      width: 1px;
+      cursor: col-resize;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .resize-handle:hover,
+    .resize-handle.resizing {
+      background: var(--border);
+    }
+    .resize-handle:active {
+      background: var(--primary);
     }
     /* ========== Search & Filters ========== */
     .search-filter {
@@ -755,10 +777,20 @@
     .panel {
       display: flex;
       flex-direction: column;
-      width: 50%;
+      min-width: 0;
       min-height: 0;
     }
-    .panel:first-child {
+    .panel.panel-left {
+      flex: 0 0 auto;
+    }
+    .panel.panel-right {
+      flex: 1 1 0;
+    }
+    .detail-panels .panel-left {
+      border-right: none;
+    }
+    .detail-panels .resize-handle {
+      border-left: 1px solid var(--border);
       border-right: 1px solid var(--border);
     }
     .panel-header {
@@ -1202,9 +1234,30 @@
       filter: `<svg class="icon sm" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`
     };
     // ========== State ==========
+    const SIDEBAR_MIN = 200;
+    const SIDEBAR_MAX = 600;
+    const PANEL_MIN_RATIO = 0.2;
+    const PANEL_MAX_RATIO = 0.8;
+    function loadLayoutState() {
+      try {
+        const s = localStorage.getItem("reportlens-sidebar-width");
+        const p = localStorage.getItem("reportlens-panel-split");
+        const w = s != null ? parseInt(s, 10) : NaN;
+        const r = p != null ? parseFloat(p) : NaN;
+        return {
+          sidebarWidth: Number.isFinite(w) && w >= SIDEBAR_MIN && w <= SIDEBAR_MAX ? w : 320,
+          panelSplit: Number.isFinite(r) && r >= PANEL_MIN_RATIO && r <= PANEL_MAX_RATIO ? r : 0.5
+        };
+      } catch (_) {
+        return { sidebarWidth: 320, panelSplit: 0.5 };
+      }
+    }
+    const layoutState = loadLayoutState();
     let state = {
       isDark: true,
       sidebarCollapsed: false,
+      sidebarWidth: layoutState.sidebarWidth,
+      panelSplit: layoutState.panelSplit,
       selectedTest: null,
       selectedSuiteKeyword: null,
       selectedKeyword: null,
@@ -1436,6 +1489,7 @@
           ${renderHeader()}
           <div class="main-content">
             ${renderSidebar()}
+            ${state.sidebarCollapsed ? "" : '<div class="resize-handle" id="resize-sidebar" title="Drag to resize sidebar"></div>'}
             ${renderSidebarToggle()}
             ${renderMainPanel()}
           </div>
@@ -1490,7 +1544,7 @@
       const failedTests = getFailedTests(mockData.rootSuite);
       
       return `
-        <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}">
+        <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}" id="sidebar" style="${state.sidebarCollapsed ? "" : "width: " + state.sidebarWidth + "px"}">
           <div class="search-filter">
             <div class="search-input">
               ${icons.search}
@@ -1605,7 +1659,7 @@
     }
     function renderSidebarToggle() {
       return `
-        <button class="sidebar-toggle" id="sidebar-toggle" style="left: ${state.sidebarCollapsed ? "0" : "320px"}">
+        <button class="sidebar-toggle" id="sidebar-toggle" style="left: ${state.sidebarCollapsed ? "0" : state.sidebarWidth + "px"}">
           ${state.sidebarCollapsed ? icons.panelLeft : icons.panelLeftClose}
         </button>
       `;
@@ -1650,7 +1704,7 @@
               </div>
             </div>
             <div class="detail-panels">
-              <div class="panel">
+              <div class="panel panel-left" id="panel-keywords" style="width: calc(${state.panelSplit * 100}% - 3px)">
                 <div class="panel-header">
                   <span>Keyword Execution (${keywordsInOrder.length})</span>
                   <button id="keyword-expand-collapse-btn">${(function() {
@@ -1663,7 +1717,8 @@
                   ${renderKeywordTree(keywordsInOrder)}
                 </div>
               </div>
-              <div class="panel">
+              <div class="resize-handle" id="resize-panels" title="Drag to resize panels"></div>
+              <div class="panel panel-right" id="panel-logs">
                 <div class="panel-header">
                   <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${(state.selectedKeyword.badge ? state.selectedKeyword.badge + " " : "") + (state.selectedKeyword.name || "")}</span>` : ""}</span>
                   <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
@@ -1777,7 +1832,7 @@
               </div>
             ` : ""}
             <div class="detail-panels">
-              <div class="panel">
+              <div class="panel panel-left" id="panel-keywords" style="width: calc(${state.panelSplit * 100}% - 3px)">
                 <div class="panel-header">
                   <span>Keyword Execution (${keywordsInOrder.length})</span>
                   <button id="keyword-expand-collapse-btn">${(function() {
@@ -1790,7 +1845,8 @@
                   ${renderKeywordTree(keywordsInOrder)}
                 </div>
               </div>
-              <div class="panel">
+              <div class="resize-handle" id="resize-panels" title="Drag to resize panels"></div>
+              <div class="panel panel-right" id="panel-logs">
                 <div class="panel-header">
                   <span>Logs & Messages${state.selectedKeyword ? ` — <span class="panel-header-keyword-name">${(state.selectedKeyword.badge ? state.selectedKeyword.badge + " " : "") + (state.selectedKeyword.name || "")}</span>` : ""}</span>
                   <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
@@ -2157,6 +2213,81 @@
           }, 2000);
         }
       });
+      // Resize sidebar (drag separator between sidebar and main)
+      const resizeSidebarEl = document.getElementById("resize-sidebar");
+      if (resizeSidebarEl) {
+        resizeSidebarEl.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          const startX = e.clientX;
+          const startW = state.sidebarWidth;
+          resizeSidebarEl.classList.add("resizing");
+          const sidebar = document.getElementById("sidebar");
+          const toggleBtn = document.getElementById("sidebar-toggle");
+          if (sidebar) sidebar.classList.add("resizing");
+          if (toggleBtn) toggleBtn.classList.add("resizing");
+          const onMove = (e2) => {
+            const dx = e2.clientX - startX;
+            let w = Math.round(startW + dx);
+            w = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, w));
+            const sidebarEl = document.getElementById("sidebar");
+            const toggle = document.getElementById("sidebar-toggle");
+            if (sidebarEl) sidebarEl.style.width = w + "px";
+            if (toggle) toggle.style.left = w + "px";
+          };
+          const onUp = () => {
+            const sidebarEl = document.getElementById("sidebar");
+            const w = sidebarEl ? parseInt(sidebarEl.style.width, 10) : state.sidebarWidth;
+            state.sidebarWidth = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, w));
+            try { localStorage.setItem("reportlens-sidebar-width", String(state.sidebarWidth)); } catch (_) {}
+            if (sidebar) sidebar.classList.remove("resizing");
+            if (toggleBtn) toggleBtn.classList.remove("resizing");
+            resizeSidebarEl.classList.remove("resizing");
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+          };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+      }
+      // Resize detail panels (drag separator between Keyword Execution and Logs)
+      const resizePanelsEl = document.getElementById("resize-panels");
+      if (resizePanelsEl) {
+        resizePanelsEl.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          const container = resizePanelsEl.parentElement;
+          if (!container) return;
+          const startX = e.clientX;
+          const startSplit = state.panelSplit;
+          const handleW = 6;
+          resizePanelsEl.classList.add("resizing");
+          const onMove = (e2) => {
+            const rect = container.getBoundingClientRect();
+            const total = rect.width - handleW;
+            if (total <= 0) return;
+            const x = e2.clientX - rect.left;
+            let ratio = (x - handleW / 2) / total;
+            ratio = Math.max(PANEL_MIN_RATIO, Math.min(PANEL_MAX_RATIO, ratio));
+            const leftPanel = document.getElementById("panel-keywords");
+            if (leftPanel) leftPanel.style.width = "calc(" + (ratio * 100) + "% - 3px)";
+          };
+          const onUp = () => {
+            const leftPanel = document.getElementById("panel-keywords");
+            const rect = container.getBoundingClientRect();
+            const handleW2 = 6;
+            const total = rect.width - handleW2;
+            const leftW = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
+            let ratio = total > 0 ? (leftW + 3) / (rect.width - 3) : state.panelSplit;
+            ratio = Math.max(PANEL_MIN_RATIO, Math.min(PANEL_MAX_RATIO, ratio));
+            state.panelSplit = ratio;
+            try { localStorage.setItem("reportlens-panel-split", String(ratio)); } catch (_) {}
+            resizePanelsEl.classList.remove("resizing");
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+          };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+      }
     }
     // ========== Deep link: #test=<id> ==========
     let appliedDeepLink = false;
