@@ -3,11 +3,21 @@ Build ReportModel from Robot Framework ExecutionResult.
 No XML parsing, no HTML. Uses robot.api.ExecutionResult only.
 """
 
+import os
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
 from robot.api import ExecutionResult
+
+# Set BUILD_DEBUG=1 in env to print builder debug info (e.g. why test keywords may be empty).
+BUILD_DEBUG = os.environ.get("BUILD_DEBUG", "").strip() in ("1", "true", "yes")
+
+
+def _debug(*args, **kwargs):
+    if BUILD_DEBUG:
+        print("[builder]", *args, **kwargs, file=sys.stderr)
 
 from .model import (
     Keyword,
@@ -77,8 +87,162 @@ def _start_time(robot_item) -> str:
     return ""
 
 
+def _get_body(robot_item):
+    """Get iterable body from a Robot body item (test, keyword, For, If, etc.). Handles result model variants."""
+    body = getattr(robot_item, "body", None)
+    if body is not None:
+        return body
+    # Some result model variants use 'iterations' for For/While
+    out = getattr(robot_item, "iterations", None)
+    if BUILD_DEBUG and out is not None:
+        _debug("_get_body: got iterations for", type(robot_item).__name__)
+    return out
+
+
+def _control_display_name(robot_item) -> str:
+    """Human-readable name for a control structure (For, ForIteration, If, Try, etc.). Avoids repr()."""
+    name = getattr(robot_item, "_log_name", None)
+    if name is not None and isinstance(name, str) and name.strip():
+        return name.strip()
+    # Do not read .assign on If/IfBranch/Try/WhileIteration/ForIteration: deprecated in Robot Framework 8.0
+    type_name = type(robot_item).__name__
+    if type_name not in ("If", "IfBranch", "Try", "WhileIteration", "ForIteration"):
+        assign = getattr(robot_item, "assign", None)
+        if assign is not None:
+            try:
+                items = list(assign.items()) if hasattr(assign, "items") else []
+                if items:
+                    return ", ".join(f"{k} = {v}" for k, v in items)
+            except Exception:
+                pass
+    s = str(robot_item).strip()
+    if s.startswith("robot.") and "(" in s:
+        return ""  # Avoid dumping repr; caller will use a fallback
+    return s
+
+
+def _is_executable_body_item(robot_item) -> bool:
+    """True if item is a step that can have nested execution (Keyword or control structure)."""
+    if robot_item is None:
+        return False
+    if type(robot_item).__name__ == "Keyword":
+        return True
+    return _get_body(robot_item) is not None
+
+
 def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
-    """Build a Keyword from Robot's keyword result. kw_index can be int or str path like '0-1'."""
+    """Build a Keyword from Robot's keyword or control structure. Recurses into body for all nested steps."""
+    type_name = type(robot_kw).__name__
+    body = _get_body(robot_kw)
+    if body is None:
+        body = getattr(robot_kw, "body", None)
+
+    # Control structure (FOR / IF / WHILE / TRY or branch/iteration): one Keyword node, children from body
+    if type_name != "Keyword" and body is not None:
+        body_list = list(body) if body is not None else []
+        _debug(f"_build_keyword control type={type_name!r} test_id={test_id!r} body_list len={len(body_list)}")
+        kw_id = f"kw-{test_id}-{kw_index}"
+        name = _control_display_name(robot_kw)
+        if not name:
+            name = str(robot_kw).strip()
+        # Never show Python repr in the report (e.g. robot.result.If())
+        if name and ("robot." in name or (name.startswith("robot.") and "(" in name)):
+            name = ""
+        if not name:
+            # Friendly labels for root control structures that have no _log_name
+            _root_labels = {"For": "FOR", "While": "WHILE", "If": "IF / ELSE", "Try": "TRY / EXCEPT"}
+            name = _root_labels.get(type_name, type_name)
+        # ForIteration / WhileIteration: show "Iteration 1", "Iteration 2", ... instead of class name
+        if type_name in ("ForIteration", "WhileIteration"):
+            parts = kw_index.split("-")
+            if len(parts) >= 2 and parts[-1].isdigit():
+                name = f"Iteration {int(parts[-1]) + 1}"
+            else:
+                name = "Iteration"
+        # Prepend control type so the header shows "FOR ...", "WHILE ...", "IF ...", "TRY ..."
+        if type_name == "For" and not name.upper().startswith("FOR"):
+            name = "FOR " + name
+        elif type_name == "While" and not name.upper().startswith("WHILE"):
+            name = "WHILE " + name
+        elif type_name == "If" and name and not name.upper().startswith(("IF", "ELSE")):
+            name = "IF " + name
+        elif type_name == "Try" and name and not name.upper().startswith(("TRY", "EXCEPT", "ELSE", "FINALLY")):
+            name = "TRY " + name
+        elif type_name == "IfBranch":
+            branch_type = (getattr(robot_kw, "type", None) or "").upper()
+            if branch_type in ("IF", "ELSE IF", "ELSE"):
+                if branch_type == "IF" and name and not name.upper().startswith("IF"):
+                    name = "IF " + name
+                elif branch_type == "ELSE IF" and name and not name.upper().startswith("ELSE"):
+                    name = "ELSE IF " + name
+                elif branch_type == "ELSE" and (not name or name.upper().strip() != "ELSE"):
+                    name = "ELSE"
+        elif type_name == "TryBranch":
+            branch_type = (getattr(robot_kw, "type", None) or "").upper()
+            if branch_type and name and not name.upper().startswith(("TRY", "EXCEPT", "ELSE", "FINALLY")):
+                name = branch_type + " " + name
+        # Reserve a badge for control words and use the rest as display name
+        badge = None
+        name_rest = name
+        u = (name or "").upper()
+        if type_name == "For" and u.startswith("FOR"):
+            badge = "FOR"
+            name_rest = name[4:].lstrip()
+        elif type_name == "While" and u.startswith("WHILE"):
+            badge = "WHILE"
+            name_rest = name[6:].lstrip()
+        # No badge for root If / Try parents (e.g. "IF / ELSE", "TRY / EXCEPT")
+        elif type_name == "IfBranch":
+            branch_type = (getattr(robot_kw, "type", None) or "").upper()
+            if branch_type == "IF" and u.startswith("IF "):
+                badge = "IF"
+                name_rest = name[3:].lstrip()
+            elif branch_type == "ELSE IF" and u.startswith("ELSE IF "):
+                badge = "ELSE IF"
+                name_rest = name[8:].lstrip()
+            elif branch_type == "ELSE":
+                badge = "ELSE"
+                name_rest = ""
+        elif type_name == "TryBranch":
+            branch_type = (getattr(robot_kw, "type", None) or "").upper()
+            if branch_type:
+                badge = branch_type
+                prefix = branch_type + " "
+                if u.startswith(prefix):
+                    name_rest = name[len(prefix) :].lstrip()
+                elif u == branch_type:
+                    name_rest = ""
+        raw_type = getattr(robot_kw, "type", None)
+        kw_type = (raw_type.upper() if isinstance(raw_type, str) else "KEYWORD") or "KEYWORD"
+        if kw_type not in ("SETUP", "TEARDOWN", "KEYWORD"):
+            kw_type = "KEYWORD"
+        status = getattr(robot_kw, "status", "PASS") or "PASS"
+        duration_ms = _elapsed_ms(robot_kw)
+        start_time = _start_time(robot_kw)
+        fail_message = (getattr(robot_kw, "message", None) or "").strip()
+        child_keywords = []
+        for i, item in enumerate(body_list):
+            if _is_executable_body_item(item):
+                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{i}"))
+        _debug(f"  control badge={badge!r} name={name_rest!r} child_keywords len={len(child_keywords)}")
+        return Keyword(
+            id=kw_id,
+            name=name_rest,
+            type=kw_type,
+            status=status,
+            duration=duration_ms,
+            start_time=start_time,
+            arguments=[],
+            documentation="",
+            messages=[],
+            keywords=child_keywords,
+            fail_message=fail_message,
+            returned=False,
+            return_values=[],
+            badge=badge,
+        )
+
+    # Keyword: full extraction and recurse into body for keywords and control structures
     kw_id = f"kw-{test_id}-{kw_index}"
     name = getattr(robot_kw, "name", "") or ""
     kw_type = (getattr(robot_kw, "type", "KEYWORD") or "KEYWORD").upper()
@@ -91,13 +255,11 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
     args = list(getattr(robot_kw, "args", []) or [])
     doc = (getattr(robot_kw, "doc", None) or "").strip()
 
-    # Return: check body for Return and collect return values
     returned = False
     return_values = []
     messages_list = []
     seen_return = False
     child_keywords = []
-    body = getattr(robot_kw, "body", None)
     if body is not None:
         child_kw_index = 0
         for item in body:
@@ -116,7 +278,7 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
                 messages_list.append(
                     LogMessage(timestamp=str(ts), level=level, message=text, is_return=seen_return)
                 )
-            elif type_name == "Keyword":
+            elif _is_executable_body_item(item):
                 child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{child_kw_index}"))
                 child_kw_index += 1
 
@@ -144,6 +306,7 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
         fail_message=fail_message,
         returned=returned,
         return_values=return_values,
+        badge=None,
     )
 
 
@@ -161,13 +324,24 @@ def _build_test(robot_test, suite_full_name: str) -> Test:
     doc = (getattr(robot_test, "doc", None) or "").strip()
 
     keywords = []
-    body = getattr(robot_test, "body", None)
+    body = _get_body(robot_test) or getattr(robot_test, "body", None)
+    _debug(f"_build_test id={test_id!r} name={name!r} body={type(body).__name__ if body is not None else None!r}")
     if body is not None:
+        body_items = list(body)
+        _debug(f"  body_items len={len(body_items)}")
+        # Some result/model variants expose steps only via flatten() (e.g. IF/TRY roots replaced by branches)
+        if not body_items and hasattr(body, "flatten"):
+            body_items = list(body.flatten())
+            _debug(f"  after flatten body_items len={len(body_items)}")
         kw_index = 0
-        for item in body:
-            if type(item).__name__ == "Keyword":
+        for i, item in enumerate(body_items):
+            item_type = type(item).__name__
+            is_exec = _is_executable_body_item(item)
+            _debug(f"  body[{i}] type={item_type} executable={is_exec}")
+            if is_exec:
                 keywords.append(_build_keyword(item, test_id, kw_index))
                 kw_index += 1
+        _debug(f"  -> keywords len={len(keywords)}")
 
     robot_setup = getattr(robot_test, "setup", None)
     robot_teardown = getattr(robot_test, "teardown", None)
@@ -301,6 +475,12 @@ def build_report_model(xml_path: str) -> ReportModel:
         start_time = gen_str
     end_time = start_time
     duration_ms = root_suite.duration
+
+    if BUILD_DEBUG:
+        for t in _all_tests(root_suite):
+            nk = len(t.keywords)
+            if nk == 0:
+                _debug(f"SUMMARY: test id={t.id!r} name={t.name!r} has 0 keywords")
 
     return ReportModel(
         generated=gen_str,

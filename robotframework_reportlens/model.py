@@ -32,6 +32,7 @@ class Keyword:
     fail_message: str
     returned: bool
     return_values: list[str]
+    badge: str | None = None  # Reserved control word shown as badge: FOR, IF, ELSE IF, ELSE, TRY, EXCEPT, FINALLY, WHILE
 
 
 @dataclass

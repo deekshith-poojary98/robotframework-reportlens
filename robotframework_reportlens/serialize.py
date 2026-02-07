@@ -61,7 +61,7 @@ def _keyword_to_dict(kw: Keyword) -> dict:
         _log_message_to_dict(m, f"{kw.id}-msg-{i}") for i, m in enumerate(kw.messages)
     ]
     children = [_keyword_to_dict(c) for c in kw.keywords]
-    return {
+    out = {
         "id": kw.id,
         "name": kw.name,
         "type": kw.type,
@@ -77,6 +77,9 @@ def _keyword_to_dict(kw: Keyword) -> dict:
         "returned": kw.returned,
         "returnValues": kw.return_values,
     }
+    if getattr(kw, "badge", None):
+        out["badge"] = kw.badge
+    return out
 
 
 def _test_to_dict(t: Test) -> dict:
