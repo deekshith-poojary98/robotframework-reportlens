@@ -521,6 +521,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .tree-node-header .tree-duration {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--muted-foreground);
+    }
     .tree-name.suite {
       font-weight: 500;
     }
@@ -1613,13 +1619,14 @@
         <div class="tree-node">
           <div class="tree-node-header" data-suite-id="${suite.id}" title="${suiteTitle}">
             <span class="tree-expand">${hasChildren ? (isExpanded ? icons.chevronDown : icons.chevronRight) : ""}</span>
-            <span class="tree-icon ${getStatusClass(suite.status)}">${icons.folder}</span>
+            <span class="tree-icon ${suite.statistics.skipped > 0 ? "skip" : getStatusClass(suite.status)}">${icons.folder}</span>
             <span class="tree-name suite">${formatTreeName(suite.name)}</span>
             <span class="tree-stats">
               ${suite.statistics.passed > 0 ? `<span class="pass">${suite.statistics.passed}</span>` : ""}
               ${suite.statistics.failed > 0 ? `<span class="fail">${suite.statistics.failed}</span>` : ""}
               ${suite.statistics.skipped > 0 ? `<span class="skip">${suite.statistics.skipped}</span>` : ""}
             </span>
+            <span class="tree-duration">${formatDuration(suite.duration || 0)}</span>
           </div>
           ${isExpanded ? `
             ${(suite.setup && setupMatchesFilter ? `
@@ -1640,6 +1647,7 @@
                     <span class="tree-expand"></span>
                     <span class="tree-icon ${getStatusClass(t.status)}">${getStatusIcon(t.status)}</span>
                     <span class="tree-name">${formatTreeName(t.name)}</span>
+                    <span class="tree-duration">${formatDuration(t.duration || 0)}</span>
                   </div>
                 </div>
               `;
