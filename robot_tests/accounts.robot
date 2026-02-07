@@ -58,14 +58,6 @@ Accounts: List Accounts For User
     @{accounts}=    Create List    account_1    account_2
     RETURN    ${accounts}
 
-Accounts: List Accounts For User
-    [Documentation]    Stub: would return list of accounts for user.
-    [Arguments]    ${user_id}
-    Log    List accounts for user_id=${user_id} (stub)
-    Log    Error: Sample error from Accounts suite (for report banner)    level=ERROR
-    @{accounts}=    Create List    account_1    account_2
-    RETURN    ${accounts}
-
 Accounts: Create Account
     [Documentation]    Stub: would create new account.
     [Arguments]    ${user_id}    ${account_name}=Default
@@ -130,3 +122,94 @@ Accounts: Account Exists Returns True
     Should Be True    ${exists}
     Log    Exists: ${exists}
     [Teardown]    Log Test End
+
+Accounts: FOR Loop List Accounts Per User
+    [Documentation]    Tests FOR loop: list accounts for each user id.
+    [Tags]    accounts    list    loops
+    FOR    ${user_id}    IN    1    2    3
+        @{accounts}=    Accounts: List Accounts For User    ${user_id}
+        Log    User ${user_id}: ${accounts}
+        Length Should Be    ${accounts}    2
+    END
+
+Accounts: FOR Loop In Range Create Accounts
+    [Documentation]    Tests FOR loop with IN RANGE: create accounts for indices 0..2.
+    [Tags]    accounts    create    loops
+    Log    Creating accounts for indices 0..2
+    FOR    ${i}    IN RANGE    3
+        ${account_id}=    Accounts: Create Account    ${i}    Account_${i}
+        Should Not Be Empty    ${account_id}
+        Log    Created in loop: ${account_id}
+    END
+
+Accounts: WHILE Loop Retry Until Success
+    [Documentation]    Tests WHILE loop: retry until counter reaches limit.
+    [Tags]    accounts    loops    control
+    ${count}=    Set Variable    0
+    WHILE    ${count} < 3    limit=4
+        Log    WHILE iteration: ${count}
+        ${count}=    Evaluate    ${count} + 1
+    END
+    Should Be Equal As Numbers    ${count}    3
+    Log    WHILE completed after 3 iterations
+
+Accounts: IF ELSE Balance Tier
+    [Documentation]    Tests IF/ELSE control structure: log tier based on balance.
+    [Tags]    accounts    balance    control
+    ${balance}=    Accounts: Get Account Balance    acc_1_001
+    IF    ${balance} > 500
+        Log    Balance ${balance} is HIGH tier
+    ELSE
+        Log    Balance ${balance} is LOW tier
+    END
+    Should Be Equal As Numbers    ${balance}    1000.00
+
+Accounts: IF ELSE IF ELSE Account Count
+    [Documentation]    Tests IF / ELSE IF / ELSE: branch on list length.
+    [Tags]    accounts    list    control
+    @{accounts}=    Accounts: List Accounts For User    1
+    ${count}=    Get Length    ${accounts}
+    IF    ${count} == 0
+        Log    No accounts
+    ELSE IF    ${count} == 1
+        Log    Single account
+    ELSE
+        Log    Multiple accounts: ${count}
+    END
+    Length Should Be    ${accounts}    2
+
+Accounts: TRY EXCEPT Delete Handles Error
+    [Documentation]    Tests TRY/EXCEPT: attempt delete and handle exception.
+    [Tags]    accounts    delete    error_handling
+    TRY
+        Accounts: Delete Account    acc_nonexistent
+        Log    Delete succeeded
+    EXCEPT    AS    ${err}
+        Log    Caught expected: ${err}
+        Log    Error handled in EXCEPT block
+    END
+
+Accounts: TRY EXCEPT ELSE FINALLY
+    [Documentation]    Tests TRY/EXCEPT/ELSE/FINALLY: full error-handling structure.
+    [Tags]    accounts    balance    error_handling
+    TRY
+        ${balance}=    Accounts: Get Account Balance    acc_1_001
+        Log    Balance fetched: ${balance}
+    EXCEPT    AS    ${err}
+        Log    EXCEPT: ${err}
+    ELSE
+        Log    ELSE: no exception, balance ok
+    FINALLY
+        Log    FINALLY: cleanup ran
+    END
+
+Accounts: TRY EXCEPT Catches Failure
+    [Documentation]    Tests TRY/EXCEPT when exception is raised: EXCEPT branch runs.
+    [Tags]    accounts    error_handling
+    TRY
+        Fail    Intentional failure for TRY/EXCEPT test
+    EXCEPT    Intentional failure for TRY/EXCEPT test
+        Log    EXCEPT ran: failure was caught
+    END
+
+

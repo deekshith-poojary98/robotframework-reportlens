@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.0" generated="2026-01-31T12:00:00" rpa="false" schemaversion="5">
+<suite id="s1" name="Nested Suite" source="/path/to/suite.robot">
+<test id="s1-t1" name="Test With Nested Keyword">
+<kw name="Outer Keyword">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-01-31T12:00:01" level="INFO">inner</msg>
+<status status="PASS" start="2026-01-31T12:00:01" elapsed="0.001"/>
+</kw>
+<doc>Outer keyword that calls another.</doc>
+<status status="PASS" start="2026-01-31T12:00:00" elapsed="0.002"/>
+</kw>
+<status status="PASS" start="2026-01-31T12:00:00" elapsed="0.003"/>
+</test>
+<status status="PASS" start="2026-01-31T12:00:00" elapsed="0.004"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+</statistics>
+</robot>
