@@ -319,6 +319,13 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
             ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
             messages_list.append(LogMessage(timestamp=ts, level=level, message=text, is_return=False))
 
+    # Failed keyword with no log messages: treat failure message as a log entry so it appears in Logs pane
+    if fail_message and not messages_list:
+        ts = _to_iso_time(getattr(robot_kw, "endtime", None) or getattr(robot_kw, "end_time", None)) or start_time
+        messages_list.append(
+            LogMessage(timestamp=ts, level="FAIL", message=fail_message, is_return=False)
+        )
+
     return Keyword(
         id=kw_id,
         name=name,
