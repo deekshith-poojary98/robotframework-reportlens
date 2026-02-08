@@ -3,6 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/robotframework-reportlens.svg)](https://badge.fury.io/py/robotframework-reportlens)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](https://www.python.org/downloads/)
 [![CI Tests](https://github.com/deekshith-poojary98/robotframework-reportlens/actions/workflows/code-checks.yml/badge.svg)](https://github.com/deekshith-poojary98/robotframework-reportlens/actions/workflows/code-checks.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/deekshith-poojary98/robotframework-reportlens)
 
 **ReportLens** turns Robot Framework XML output (`output.xml`) into a single, self-contained HTML report with a modern, interactive UI.
 
