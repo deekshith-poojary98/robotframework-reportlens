@@ -212,4 +212,8 @@ Accounts: TRY EXCEPT Catches Failure
         Log    EXCEPT ran: failure was caught
     END
 
+Accounts: Failing Keyword For Report Log Pane
+    [Documentation]    Fails on a single keyword so the report shows the failure message in Logs & Messages when that keyword is selected.
+    [Tags]    accounts    error_handling
+    Fail    Expected failure: use this test to verify failed keyword message appears in the Logs pane
 

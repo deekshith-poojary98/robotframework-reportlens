@@ -1,5 +1,30 @@
 # Release Notes
 
+## [0.1.4] - 2026-02-08
+
+### Improvements
+
+- **Report UI**
+  - **Header and suite names** – Project name in the header and suite/test names in the tree use the same display formatting: hyphens and underscores are shown as spaces (e.g. “ROBOTFRAMEWORK REPORTLENS”).
+  - **Durations** – Suite rows in the sidebar show total suite duration. Test rows show execution time (same style as setup/teardown). Suite setup and teardown rows continue to show their keyword duration.
+  - **Suite icon when skipped** – The suite row’s folder icon uses the skip (yellow) style when the suite has any skipped tests; otherwise it follows the suite’s pass/fail status.
+  - **Resizable layout** – Sidebar width and main-panel keyword/logs split are resizable by dragging separators. Sidebar toggle button position is kept in sync when the sidebar is resized.
+- **Timestamps**
+  - **ISO-8601 normalization** – All timestamps (report generated/start, suite/test/keyword start, log message and error timestamps) are normalized in Python to ISO-8601 with timezone before being serialized. This prevents “Invalid Date” in the UI across systems and browsers; the header time is shown in the user’s local timezone.
+- **Report model and CLI**
+  - **Report model and debugging** – Report model and builder improvements; optional debug output when `BUILD_DEBUG=1` is set.
+  - **Failed keyword logs** – When a keyword fails and Robot provides only a failure message (no log messages), the failure text is now added as a synthetic log entry (level FAIL) so the Logs & Messages pane shows it when that keyword is selected.
+  - **CLI** – Refined CLI debugging and import logic.
+- **Tests and assets**
+  - **Robot tests** – Refactored account tests; added coverage for loops (FOR, IN RANGE), control structures (IF/ELSE, TRY/EXCEPT/FINALLY), and WHILE. Output XML and template styling updated accordingly.
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
+---
+
 ## [0.1.3] - 2026-02-01
 
 ### Improvements

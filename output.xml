@@ -1,1003 +1,1024 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot generator="Robot 7.4.1 (Python 3.13.9 on darwin)" generated="2026-02-08T01:50:30.832936" rpa="false" schemaversion="5">
+<robot generator="Robot 7.4.1 (Python 3.13.9 on darwin)" generated="2026-02-08T14:32:40.915340" rpa="false" schemaversion="5">
 <suite id="s1" name="Accounts" source="/Users/deekshithpoojary/Desktop/Projects/robotframework-reportlens/robot_tests/accounts.robot">
 <kw name="Run Suite Setup" type="SETUP">
 <kw name="Log Suite Start">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.845998" level="INFO">Starting suite: Accounts</msg>
+<msg time="2026-02-08T14:32:40.928582" level="INFO">Starting suite: Accounts</msg>
 <arg>Starting suite: Accounts</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.845909" elapsed="0.000112"/>
+<status status="PASS" start="2026-02-08T14:32:40.928469" elapsed="0.000142"/>
 </kw>
 <doc>Logs suite start.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.845794" elapsed="0.000256"/>
+<status status="PASS" start="2026-02-08T14:32:40.928337" elapsed="0.000307"/>
 </kw>
 <kw name="Initialize Suite State">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.846198" level="INFO">Initializing suite state</msg>
+<msg time="2026-02-08T14:32:40.928814" level="INFO">Initializing suite state</msg>
 <arg>Initializing suite state</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846135" elapsed="0.000076"/>
+<status status="PASS" start="2026-02-08T14:32:40.928742" elapsed="0.000086"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.846289" level="INFO">Suite state initialized</msg>
+<msg time="2026-02-08T14:32:40.928907" level="INFO">Suite state initialized</msg>
 <arg>Suite state initialized</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846238" elapsed="0.000062"/>
+<status status="PASS" start="2026-02-08T14:32:40.928855" elapsed="0.000064"/>
 </kw>
 <doc>Initialize shared state for the suite.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846090" elapsed="0.000226"/>
+<status status="PASS" start="2026-02-08T14:32:40.928688" elapsed="0.000247"/>
 </kw>
 <kw name="Log Suite Ready">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.846434" level="INFO">Suite setup complete: Accounts ready</msg>
+<msg time="2026-02-08T14:32:40.929057" level="INFO">Suite setup complete: Accounts ready</msg>
 <arg>Suite setup complete: Accounts ready</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846382" elapsed="0.000063"/>
+<status status="PASS" start="2026-02-08T14:32:40.929004" elapsed="0.000064"/>
 </kw>
 <doc>Logs that suite setup is complete.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846345" elapsed="0.000115"/>
+<status status="PASS" start="2026-02-08T14:32:40.928966" elapsed="0.000119"/>
 </kw>
 <doc>Suite-level setup: multiple keywords run once before all tests.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.845684" elapsed="0.000789"/>
+<status status="PASS" start="2026-02-08T14:32:40.928217" elapsed="0.000879"/>
 </kw>
 <test id="s1-t1" name="Accounts: List Accounts Returns Non Empty" line="90">
 <kw name="Accounts: List Accounts For User">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.846802" level="INFO">List accounts for user_id=1 (stub)</msg>
+<msg time="2026-02-08T14:32:40.929444" level="INFO">List accounts for user_id=1 (stub)</msg>
 <arg>List accounts for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846717" elapsed="0.000098"/>
+<status status="PASS" start="2026-02-08T14:32:40.929355" elapsed="0.000102"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.846924" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.929568" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
 <arg>Error: Sample error from Accounts suite (for report banner)</arg>
 <arg>level=ERROR</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846842" elapsed="0.000125"/>
+<status status="PASS" start="2026-02-08T14:32:40.929485" elapsed="0.000124"/>
 </kw>
 <kw name="Create List" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.847085" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.929730" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>account_1</arg>
 <arg>account_2</arg>
 <doc>Returns a list containing given items.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846997" elapsed="0.000097"/>
+<status status="PASS" start="2026-02-08T14:32:40.929640" elapsed="0.000099"/>
 </kw>
 <return>
 <value>${accounts}</value>
-<status status="PASS" start="2026-02-08T01:50:30.847112" elapsed="0.000019"/>
+<status status="PASS" start="2026-02-08T14:32:40.929757" elapsed="0.000019"/>
 </return>
-<msg time="2026-02-08T01:50:30.847179" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.929827" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>1</arg>
 <doc>Stub: would return list of accounts for user.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.846646" elapsed="0.000542"/>
+<status status="PASS" start="2026-02-08T14:32:40.929279" elapsed="0.000555"/>
 </kw>
 <kw name="Length Should Be" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.847350" level="INFO">Length is 2.</msg>
+<msg time="2026-02-08T14:32:40.930008" level="INFO">Length is 2.</msg>
 <arg>${accounts}</arg>
 <arg>2</arg>
 <doc>Verifies that the length of the given item is correct.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.847227" elapsed="0.000137"/>
+<status status="PASS" start="2026-02-08T14:32:40.929872" elapsed="0.000151"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.847477" level="INFO">Accounts: ['account_1', 'account_2']</msg>
+<msg time="2026-02-08T14:32:40.930138" level="INFO">Accounts: ['account_1', 'account_2']</msg>
 <arg>Accounts: ${accounts}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.847404" elapsed="0.000086"/>
+<status status="PASS" start="2026-02-08T14:32:40.930063" elapsed="0.000088"/>
+</kw>
+<kw name="Should Be Equal" owner="BuiltIn">
+<msg time="2026-02-08T14:32:40.930309" level="FAIL">Not Equal: 1 != 2</msg>
+<arg>first=1</arg>
+<arg>second=2</arg>
+<arg>msg=Not Equal</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="FAIL" start="2026-02-08T14:32:40.930187" elapsed="0.000169">Not Equal: 1 != 2</status>
 </kw>
 <doc>Stub test: list accounts for user.</doc>
 <tag>accounts</tag>
 <tag>list</tag>
 <tag>smoke</tag>
-<status status="PASS" start="2026-02-08T01:50:30.846491" elapsed="0.001039"/>
+<status status="FAIL" start="2026-02-08T14:32:40.929116" elapsed="0.001305">Not Equal: 1 != 2</status>
 </test>
-<test id="s1-t2" name="Accounts: Create Account Returns Id" line="97">
+<test id="s1-t2" name="Accounts: Create Account Returns Id" line="98">
 <kw name="Accounts: Create Account">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.847891" level="INFO">Create account My Account for user_id=5 (stub)</msg>
+<msg time="2026-02-08T14:32:40.930799" level="INFO">Create account My Account for user_id=5 (stub)</msg>
 <arg>Create account ${account_name} for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.847798" elapsed="0.000106"/>
+<status status="PASS" start="2026-02-08T14:32:40.930703" elapsed="0.000110"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.848006" level="INFO">${account_id} = acc_5_001</msg>
+<msg time="2026-02-08T14:32:40.930919" level="INFO">${account_id} = acc_5_001</msg>
 <var>${account_id}</var>
 <arg>acc_${user_id}_001</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.847931" elapsed="0.000081"/>
+<status status="PASS" start="2026-02-08T14:32:40.930841" elapsed="0.000085"/>
 </kw>
 <return>
 <value>${account_id}</value>
-<status status="PASS" start="2026-02-08T01:50:30.848026" elapsed="0.000010"/>
+<status status="PASS" start="2026-02-08T14:32:40.930939" elapsed="0.000011"/>
 </return>
-<msg time="2026-02-08T01:50:30.848073" level="INFO">${account_id} = acc_5_001</msg>
+<msg time="2026-02-08T14:32:40.930983" level="INFO">${account_id} = acc_5_001</msg>
 <var>${account_id}</var>
 <arg>5</arg>
 <arg>My Account</arg>
 <doc>Stub: would create new account.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.847716" elapsed="0.000362"/>
+<status status="PASS" start="2026-02-08T14:32:40.930615" elapsed="0.000374"/>
 </kw>
 <kw name="Should Not Be Empty" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.848192" level="INFO">Length is 9.</msg>
+<msg time="2026-02-08T14:32:40.931102" level="INFO">Length is 9.</msg>
 <arg>${account_id}</arg>
 <doc>Verifies that the given item is not empty.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.848116" elapsed="0.000088"/>
+<status status="PASS" start="2026-02-08T14:32:40.931027" elapsed="0.000088"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.848305" level="INFO">Created: acc_5_001</msg>
+<msg time="2026-02-08T14:32:40.931218" level="INFO">Created: acc_5_001</msg>
 <arg>Created: ${account_id}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.848237" elapsed="0.000080"/>
+<status status="PASS" start="2026-02-08T14:32:40.931150" elapsed="0.000081"/>
 </kw>
 <doc>Stub test: create account.</doc>
 <tag>accounts</tag>
 <tag>create</tag>
-<status status="PASS" start="2026-02-08T01:50:30.847593" elapsed="0.000759"/>
+<status status="PASS" start="2026-02-08T14:32:40.930490" elapsed="0.000777"/>
 </test>
-<test id="s1-t3" name="Accounts: Delete Account Succeeds" line="104">
+<test id="s1-t3" name="Accounts: Delete Account Succeeds" line="105">
 <kw name="Accounts: Delete Account">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.848643" level="INFO">Delete account acc_99_001 (stub)</msg>
+<msg time="2026-02-08T14:32:40.931565" level="INFO">Delete account acc_99_001 (stub)</msg>
 <arg>Delete account ${account_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.848576" elapsed="0.000080"/>
+<status status="PASS" start="2026-02-08T14:32:40.931495" elapsed="0.000083"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.848736" level="INFO">Account deleted (stub)</msg>
+<msg time="2026-02-08T14:32:40.931660" level="INFO">Account deleted (stub)</msg>
 <arg>Account deleted (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.848681" elapsed="0.000067"/>
+<status status="PASS" start="2026-02-08T14:32:40.931605" elapsed="0.000067"/>
 </kw>
 <arg>acc_99_001</arg>
 <doc>Stub: would delete account.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.848510" elapsed="0.000254"/>
+<status status="PASS" start="2026-02-08T14:32:40.931430" elapsed="0.000258"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.848860" level="INFO">Delete completed (stub)</msg>
+<msg time="2026-02-08T14:32:40.931783" level="INFO">Delete completed (stub)</msg>
 <arg>Delete completed (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.848805" elapsed="0.000068"/>
+<status status="PASS" start="2026-02-08T14:32:40.931726" elapsed="0.000069"/>
 </kw>
 <doc>Stub test: delete account.</doc>
 <tag>accounts</tag>
 <tag>delete</tag>
-<status status="PASS" start="2026-02-08T01:50:30.848407" elapsed="0.000500"/>
+<status status="PASS" start="2026-02-08T14:32:40.931325" elapsed="0.000505"/>
 </test>
-<test id="s1-t4" name="Accounts: Get Balance Returns Number" line="110">
+<test id="s1-t4" name="Accounts: Get Balance Returns Number" line="111">
 <kw name="Accounts: Get Account Balance">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.849194" level="INFO">Get balance for acc_1_001 (stub)</msg>
+<msg time="2026-02-08T14:32:40.932315" level="INFO">Get balance for acc_1_001 (stub)</msg>
 <arg>Get balance for ${account_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.849126" elapsed="0.000081"/>
+<status status="PASS" start="2026-02-08T14:32:40.932096" elapsed="0.000232"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.849331" level="INFO">${balance} = 1000.00</msg>
+<msg time="2026-02-08T14:32:40.932417" level="INFO">${balance} = 1000.00</msg>
 <var>${balance}</var>
 <arg>1000.00</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.849233" elapsed="0.000105"/>
+<status status="PASS" start="2026-02-08T14:32:40.932354" elapsed="0.000070"/>
 </kw>
 <return>
 <value>${balance}</value>
-<status status="PASS" start="2026-02-08T01:50:30.849350" elapsed="0.000008"/>
+<status status="PASS" start="2026-02-08T14:32:40.932436" elapsed="0.000008"/>
 </return>
-<msg time="2026-02-08T01:50:30.849389" level="INFO">${balance} = 1000.00</msg>
+<msg time="2026-02-08T14:32:40.932475" level="INFO">${balance} = 1000.00</msg>
 <var>${balance}</var>
 <arg>acc_1_001</arg>
 <doc>Stub: would return balance.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.849064" elapsed="0.000330"/>
+<status status="PASS" start="2026-02-08T14:32:40.931989" elapsed="0.000492"/>
 </kw>
 <kw name="Should Be Equal As Numbers" owner="BuiltIn">
 <arg>${balance}</arg>
 <arg>1000.00</arg>
 <doc>Fails if objects are unequal after converting them to real numbers.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.849429" elapsed="0.000085"/>
+<status status="PASS" start="2026-02-08T14:32:40.932519" elapsed="0.000086"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.849616" level="INFO">Balance: 1000.00</msg>
+<msg time="2026-02-08T14:32:40.932716" level="INFO">Balance: 1000.00</msg>
 <arg>Balance: ${balance}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.849549" elapsed="0.000079"/>
+<status status="PASS" start="2026-02-08T14:32:40.932642" elapsed="0.000099"/>
 </kw>
 <doc>Stub test: get balance.</doc>
 <tag>accounts</tag>
 <tag>balance</tag>
-<status status="PASS" start="2026-02-08T01:50:30.848957" elapsed="0.000704"/>
+<status status="PASS" start="2026-02-08T14:32:40.931881" elapsed="0.000909"/>
 </test>
-<test id="s1-t5" name="Accounts: Account Exists Returns True" line="117">
+<test id="s1-t5" name="Accounts: Account Exists Returns True" line="118">
 <kw name="Log Test Start" type="SETUP">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.850090" level="INFO">Starting test: Accounts: Account Exists Returns True</msg>
+<msg time="2026-02-08T14:32:40.933124" level="INFO">Starting test: Accounts: Account Exists Returns True</msg>
 <arg>Starting test: ${TEST NAME}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850021" elapsed="0.000080"/>
+<status status="PASS" start="2026-02-08T14:32:40.933041" elapsed="0.000097"/>
 </kw>
 <doc>Logs test start.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.849816" elapsed="0.000300"/>
+<status status="PASS" start="2026-02-08T14:32:40.932971" elapsed="0.000184"/>
 </kw>
 <kw name="Accounts: Account Exists">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.850297" level="INFO">Check exists acc_1_001 (stub)</msg>
+<msg time="2026-02-08T14:32:40.933345" level="INFO">Check exists acc_1_001 (stub)</msg>
 <arg>Check exists ${account_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850231" elapsed="0.000078"/>
+<status status="PASS" start="2026-02-08T14:32:40.933275" elapsed="0.000083"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.850402" level="INFO">${exists} = True</msg>
+<msg time="2026-02-08T14:32:40.933454" level="INFO">${exists} = True</msg>
 <var>${exists}</var>
 <arg>True</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850335" elapsed="0.000074"/>
+<status status="PASS" start="2026-02-08T14:32:40.933385" elapsed="0.000076"/>
 </kw>
 <return>
 <value>${exists}</value>
 <value>${exists}</value>
-<status status="PASS" start="2026-02-08T01:50:30.850423" elapsed="0.000007"/>
+<status status="PASS" start="2026-02-08T14:32:40.933474" elapsed="0.000009"/>
 </return>
-<msg time="2026-02-08T01:50:30.850468" level="INFO">${exists} = ['True', 'True']</msg>
+<msg time="2026-02-08T14:32:40.933522" level="INFO">${exists} = ['True', 'True']</msg>
 <var>${exists}</var>
 <arg>acc_1_001</arg>
 <doc>Stub: would check if account exists.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850168" elapsed="0.000306"/>
+<status status="PASS" start="2026-02-08T14:32:40.933209" elapsed="0.000320"/>
 </kw>
 <kw name="Should Be True" owner="BuiltIn">
 <arg>${exists}</arg>
 <doc>Fails if the given condition is not true.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850509" elapsed="0.000127"/>
+<status status="PASS" start="2026-02-08T14:32:40.933565" elapsed="0.000091"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.850781" level="INFO">Exists: ['True', 'True']</msg>
+<msg time="2026-02-08T14:32:40.933756" level="INFO">Exists: ['True', 'True']</msg>
 <arg>Exists: ${exists}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850691" elapsed="0.000106"/>
+<status status="PASS" start="2026-02-08T14:32:40.933691" elapsed="0.000078"/>
 </kw>
 <kw name="Log Test End" type="TEARDOWN">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.851014" level="INFO">Ending test: Accounts: Account Exists Returns True</msg>
+<msg time="2026-02-08T14:32:40.933959" level="INFO">Ending test: Accounts: Account Exists Returns True</msg>
 <arg>Ending test: ${TEST NAME}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850942" elapsed="0.000086"/>
+<status status="PASS" start="2026-02-08T14:32:40.933893" elapsed="0.000079"/>
 </kw>
 <doc>Logs test end.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.850870" elapsed="0.000176"/>
+<status status="PASS" start="2026-02-08T14:32:40.933828" elapsed="0.000160"/>
 </kw>
 <doc>Stub test: account exists check.</doc>
 <tag>accounts</tag>
 <tag>exists</tag>
-<status status="PASS" start="2026-02-08T01:50:30.849711" elapsed="0.001354"/>
+<status status="PASS" start="2026-02-08T14:32:40.932848" elapsed="0.001157"/>
 </test>
-<test id="s1-t6" name="Accounts: FOR Loop List Accounts Per User" line="126">
+<test id="s1-t6" name="Accounts: FOR Loop List Accounts Per User" line="127">
 <for flavor="IN">
 <iter>
 <kw name="Accounts: List Accounts For User">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.851477" level="INFO">List accounts for user_id=1 (stub)</msg>
+<msg time="2026-02-08T14:32:40.934409" level="INFO">List accounts for user_id=1 (stub)</msg>
 <arg>List accounts for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.851400" elapsed="0.000090"/>
+<status status="PASS" start="2026-02-08T14:32:40.934333" elapsed="0.000088"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.851583" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.934512" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
 <arg>Error: Sample error from Accounts suite (for report banner)</arg>
 <arg>level=ERROR</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.851515" elapsed="0.000102"/>
+<status status="PASS" start="2026-02-08T14:32:40.934445" elapsed="0.000101"/>
 </kw>
 <kw name="Create List" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.851724" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.934651" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>account_1</arg>
 <arg>account_2</arg>
 <doc>Returns a list containing given items.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.851647" elapsed="0.000084"/>
+<status status="PASS" start="2026-02-08T14:32:40.934576" elapsed="0.000083"/>
 </kw>
 <return>
 <value>${accounts}</value>
-<status status="PASS" start="2026-02-08T01:50:30.851746" elapsed="0.000010"/>
+<status status="PASS" start="2026-02-08T14:32:40.934673" elapsed="0.000009"/>
 </return>
-<msg time="2026-02-08T01:50:30.851798" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.934721" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>${user_id}</arg>
 <doc>Stub: would return list of accounts for user.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.851325" elapsed="0.000480"/>
+<status status="PASS" start="2026-02-08T14:32:40.934255" elapsed="0.000473"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.851906" level="INFO">User 1: ['account_1', 'account_2']</msg>
+<msg time="2026-02-08T14:32:40.934827" level="INFO">User 1: ['account_1', 'account_2']</msg>
 <arg>User ${user_id}: ${accounts}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.851831" elapsed="0.000087"/>
+<status status="PASS" start="2026-02-08T14:32:40.934754" elapsed="0.000086"/>
 </kw>
 <kw name="Length Should Be" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852015" level="INFO">Length is 2.</msg>
+<msg time="2026-02-08T14:32:40.934931" level="INFO">Length is 2.</msg>
 <arg>${accounts}</arg>
 <arg>2</arg>
 <doc>Verifies that the length of the given item is correct.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.851942" elapsed="0.000084"/>
+<status status="PASS" start="2026-02-08T14:32:40.934861" elapsed="0.000082"/>
 </kw>
 <var name="${user_id}">1</var>
-<status status="PASS" start="2026-02-08T01:50:30.851284" elapsed="0.000752"/>
+<status status="PASS" start="2026-02-08T14:32:40.934217" elapsed="0.000736"/>
 </iter>
 <iter>
 <kw name="Accounts: List Accounts For User">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852222" level="INFO">List accounts for user_id=2 (stub)</msg>
+<msg time="2026-02-08T14:32:40.935142" level="INFO">List accounts for user_id=2 (stub)</msg>
 <arg>List accounts for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852158" elapsed="0.000080"/>
+<status status="PASS" start="2026-02-08T14:32:40.935076" elapsed="0.000077"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852326" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.935237" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
 <arg>Error: Sample error from Accounts suite (for report banner)</arg>
 <arg>level=ERROR</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852260" elapsed="0.000096"/>
+<status status="PASS" start="2026-02-08T14:32:40.935176" elapsed="0.000094"/>
 </kw>
 <kw name="Create List" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852460" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.935373" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>account_1</arg>
 <arg>account_2</arg>
 <doc>Returns a list containing given items.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852386" elapsed="0.000082"/>
+<status status="PASS" start="2026-02-08T14:32:40.935299" elapsed="0.000082"/>
 </kw>
 <return>
 <value>${accounts}</value>
-<status status="PASS" start="2026-02-08T01:50:30.852482" elapsed="0.000008"/>
+<status status="PASS" start="2026-02-08T14:32:40.935394" elapsed="0.000008"/>
 </return>
-<msg time="2026-02-08T01:50:30.852529" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.935440" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>${user_id}</arg>
 <doc>Stub: would return list of accounts for user.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852096" elapsed="0.000440"/>
+<status status="PASS" start="2026-02-08T14:32:40.935015" elapsed="0.000431"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852633" level="INFO">User 2: ['account_1', 'account_2']</msg>
+<msg time="2026-02-08T14:32:40.935571" level="INFO">User 2: ['account_1', 'account_2']</msg>
 <arg>User ${user_id}: ${accounts}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852561" elapsed="0.000085"/>
+<status status="PASS" start="2026-02-08T14:32:40.935497" elapsed="0.000085"/>
 </kw>
 <kw name="Length Should Be" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852756" level="INFO">Length is 2.</msg>
+<msg time="2026-02-08T14:32:40.935669" level="INFO">Length is 2.</msg>
 <arg>${accounts}</arg>
 <arg>2</arg>
 <doc>Verifies that the length of the given item is correct.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852686" elapsed="0.000081"/>
+<status status="PASS" start="2026-02-08T14:32:40.935603" elapsed="0.000077"/>
 </kw>
 <var name="${user_id}">2</var>
-<status status="PASS" start="2026-02-08T01:50:30.852064" elapsed="0.000714"/>
+<status status="PASS" start="2026-02-08T14:32:40.934983" elapsed="0.000707"/>
 </iter>
 <iter>
 <kw name="Accounts: List Accounts For User">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.852968" level="INFO">List accounts for user_id=3 (stub)</msg>
+<msg time="2026-02-08T14:32:40.935871" level="INFO">List accounts for user_id=3 (stub)</msg>
 <arg>List accounts for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852900" elapsed="0.000079"/>
+<status status="PASS" start="2026-02-08T14:32:40.935808" elapsed="0.000074"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.853065" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.935968" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
 <arg>Error: Sample error from Accounts suite (for report banner)</arg>
 <arg>level=ERROR</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853001" elapsed="0.000098"/>
+<status status="PASS" start="2026-02-08T14:32:40.935906" elapsed="0.000092"/>
 </kw>
 <kw name="Create List" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.853201" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.936103" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>account_1</arg>
 <arg>account_2</arg>
 <doc>Returns a list containing given items.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853128" elapsed="0.000081"/>
+<status status="PASS" start="2026-02-08T14:32:40.936027" elapsed="0.000084"/>
 </kw>
 <return>
 <value>${accounts}</value>
-<status status="PASS" start="2026-02-08T01:50:30.853223" elapsed="0.000008"/>
+<status status="PASS" start="2026-02-08T14:32:40.936124" elapsed="0.000008"/>
 </return>
-<msg time="2026-02-08T01:50:30.853269" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.936170" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>${user_id}</arg>
 <doc>Stub: would return list of accounts for user.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.852838" elapsed="0.000438"/>
+<status status="PASS" start="2026-02-08T14:32:40.935746" elapsed="0.000430"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.853373" level="INFO">User 3: ['account_1', 'account_2']</msg>
+<msg time="2026-02-08T14:32:40.936274" level="INFO">User 3: ['account_1', 'account_2']</msg>
 <arg>User ${user_id}: ${accounts}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853301" elapsed="0.000085"/>
+<status status="PASS" start="2026-02-08T14:32:40.936201" elapsed="0.000085"/>
 </kw>
 <kw name="Length Should Be" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.853474" level="INFO">Length is 2.</msg>
+<msg time="2026-02-08T14:32:40.936380" level="INFO">Length is 2.</msg>
 <arg>${accounts}</arg>
 <arg>2</arg>
 <doc>Verifies that the length of the given item is correct.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853409" elapsed="0.000076"/>
+<status status="PASS" start="2026-02-08T14:32:40.936309" elapsed="0.000082"/>
 </kw>
 <var name="${user_id}">3</var>
-<status status="PASS" start="2026-02-08T01:50:30.852804" elapsed="0.000691"/>
+<status status="PASS" start="2026-02-08T14:32:40.935716" elapsed="0.000685"/>
 </iter>
 <var>${user_id}</var>
 <value>1</value>
 <value>2</value>
 <value>3</value>
-<status status="PASS" start="2026-02-08T01:50:30.851234" elapsed="0.002269"/>
+<status status="PASS" start="2026-02-08T14:32:40.934165" elapsed="0.002244"/>
 </for>
 <doc>Tests FOR loop: list accounts for each user id.</doc>
 <tag>accounts</tag>
 <tag>list</tag>
 <tag>loops</tag>
-<status status="PASS" start="2026-02-08T01:50:30.851126" elapsed="0.002419"/>
+<status status="PASS" start="2026-02-08T14:32:40.934062" elapsed="0.002390"/>
 </test>
-<test id="s1-t7" name="Accounts: FOR Loop In Range Create Accounts" line="135">
+<test id="s1-t7" name="Accounts: FOR Loop In Range Create Accounts" line="136">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.853775" level="INFO">Creating accounts for indices 0..2</msg>
+<msg time="2026-02-08T14:32:40.936673" level="INFO">Creating accounts for indices 0..2</msg>
 <arg>Creating accounts for indices 0..2</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853720" elapsed="0.000067"/>
+<status status="PASS" start="2026-02-08T14:32:40.936618" elapsed="0.000067"/>
 </kw>
 <for flavor="IN RANGE">
 <iter>
 <kw name="Accounts: Create Account">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854081" level="INFO">Create account Account_0 for user_id=0 (stub)</msg>
+<msg time="2026-02-08T14:32:40.936974" level="INFO">Create account Account_0 for user_id=0 (stub)</msg>
 <arg>Create account ${account_name} for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853991" elapsed="0.000102"/>
+<status status="PASS" start="2026-02-08T14:32:40.936886" elapsed="0.000100"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854185" level="INFO">${account_id} = acc_0_001</msg>
+<msg time="2026-02-08T14:32:40.937078" level="INFO">${account_id} = acc_0_001</msg>
 <var>${account_id}</var>
 <arg>acc_${user_id}_001</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854116" elapsed="0.000076"/>
+<status status="PASS" start="2026-02-08T14:32:40.937009" elapsed="0.000076"/>
 </kw>
 <return>
 <value>${account_id}</value>
-<status status="PASS" start="2026-02-08T01:50:30.854204" elapsed="0.000007"/>
+<status status="PASS" start="2026-02-08T14:32:40.937097" elapsed="0.000006"/>
 </return>
-<msg time="2026-02-08T01:50:30.854242" level="INFO">${account_id} = acc_0_001</msg>
+<msg time="2026-02-08T14:32:40.937133" level="INFO">${account_id} = acc_0_001</msg>
 <var>${account_id}</var>
 <arg>${i}</arg>
 <arg>Account_${i}</arg>
 <doc>Stub: would create new account.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.853895" elapsed="0.000352"/>
+<status status="PASS" start="2026-02-08T14:32:40.936794" elapsed="0.000344"/>
 </kw>
 <kw name="Should Not Be Empty" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854331" level="INFO">Length is 9.</msg>
+<msg time="2026-02-08T14:32:40.937227" level="INFO">Length is 9.</msg>
 <arg>${account_id}</arg>
 <doc>Verifies that the given item is not empty.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854269" elapsed="0.000073"/>
+<status status="PASS" start="2026-02-08T14:32:40.937159" elapsed="0.000079"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854422" level="INFO">Created in loop: acc_0_001</msg>
+<msg time="2026-02-08T14:32:40.937319" level="INFO">Created in loop: acc_0_001</msg>
 <arg>Created in loop: ${account_id}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854365" elapsed="0.000067"/>
+<status status="PASS" start="2026-02-08T14:32:40.937262" elapsed="0.000067"/>
 </kw>
 <var name="${i}">0</var>
-<status status="PASS" start="2026-02-08T01:50:30.853862" elapsed="0.000579"/>
+<status status="PASS" start="2026-02-08T14:32:40.936761" elapsed="0.000577"/>
 </iter>
 <iter>
 <kw name="Accounts: Create Account">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854655" level="INFO">Create account Account_1 for user_id=1 (stub)</msg>
+<msg time="2026-02-08T14:32:40.937552" level="INFO">Create account Account_1 for user_id=1 (stub)</msg>
 <arg>Create account ${account_name} for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854577" elapsed="0.000090"/>
+<status status="PASS" start="2026-02-08T14:32:40.937466" elapsed="0.000097"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854760" level="INFO">${account_id} = acc_1_001</msg>
+<msg time="2026-02-08T14:32:40.937654" level="INFO">${account_id} = acc_1_001</msg>
 <var>${account_id}</var>
 <arg>acc_${user_id}_001</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854690" elapsed="0.000077"/>
+<status status="PASS" start="2026-02-08T14:32:40.937585" elapsed="0.000076"/>
 </kw>
 <return>
 <value>${account_id}</value>
-<status status="PASS" start="2026-02-08T01:50:30.854779" elapsed="0.000006"/>
+<status status="PASS" start="2026-02-08T14:32:40.937672" elapsed="0.000007"/>
 </return>
-<msg time="2026-02-08T01:50:30.854815" level="INFO">${account_id} = acc_1_001</msg>
+<msg time="2026-02-08T14:32:40.937708" level="INFO">${account_id} = acc_1_001</msg>
 <var>${account_id}</var>
 <arg>${i}</arg>
 <arg>Account_${i}</arg>
 <doc>Stub: would create new account.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854498" elapsed="0.000323"/>
+<status status="PASS" start="2026-02-08T14:32:40.937390" elapsed="0.000323"/>
 </kw>
 <kw name="Should Not Be Empty" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854902" level="INFO">Length is 9.</msg>
+<msg time="2026-02-08T14:32:40.937796" level="INFO">Length is 9.</msg>
 <arg>${account_id}</arg>
 <doc>Verifies that the given item is not empty.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854842" elapsed="0.000071"/>
+<status status="PASS" start="2026-02-08T14:32:40.937735" elapsed="0.000072"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.854992" level="INFO">Created in loop: acc_1_001</msg>
+<msg time="2026-02-08T14:32:40.937897" level="INFO">Created in loop: acc_1_001</msg>
 <arg>Created in loop: ${account_id}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.854936" elapsed="0.000066"/>
+<status status="PASS" start="2026-02-08T14:32:40.937830" elapsed="0.000080"/>
 </kw>
 <var name="${i}">1</var>
-<status status="PASS" start="2026-02-08T01:50:30.854465" elapsed="0.000546"/>
+<status status="PASS" start="2026-02-08T14:32:40.937362" elapsed="0.000557"/>
 </iter>
 <iter>
 <kw name="Accounts: Create Account">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.855219" level="INFO">Create account Account_2 for user_id=2 (stub)</msg>
+<msg time="2026-02-08T14:32:40.938241" level="INFO">Create account Account_2 for user_id=2 (stub)</msg>
 <arg>Create account ${account_name} for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.855142" elapsed="0.000088"/>
+<status status="PASS" start="2026-02-08T14:32:40.938132" elapsed="0.000126"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.855320" level="INFO">${account_id} = acc_2_001</msg>
+<msg time="2026-02-08T14:32:40.938374" level="INFO">${account_id} = acc_2_001</msg>
 <var>${account_id}</var>
 <arg>acc_${user_id}_001</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.855252" elapsed="0.000074"/>
+<status status="PASS" start="2026-02-08T14:32:40.938291" elapsed="0.000091"/>
 </kw>
 <return>
 <value>${account_id}</value>
-<status status="PASS" start="2026-02-08T01:50:30.855338" elapsed="0.000006"/>
+<status status="PASS" start="2026-02-08T14:32:40.938395" elapsed="0.000009"/>
 </return>
-<msg time="2026-02-08T01:50:30.855373" level="INFO">${account_id} = acc_2_001</msg>
+<msg time="2026-02-08T14:32:40.938455" level="INFO">${account_id} = acc_2_001</msg>
 <var>${account_id}</var>
 <arg>${i}</arg>
 <arg>Account_${i}</arg>
 <doc>Stub: would create new account.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.855062" elapsed="0.000316"/>
+<status status="PASS" start="2026-02-08T14:32:40.938016" elapsed="0.000446"/>
 </kw>
 <kw name="Should Not Be Empty" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.855477" level="INFO">Length is 9.</msg>
+<msg time="2026-02-08T14:32:40.938556" level="INFO">Length is 9.</msg>
 <arg>${account_id}</arg>
 <doc>Verifies that the given item is not empty.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.855415" elapsed="0.000072"/>
+<status status="PASS" start="2026-02-08T14:32:40.938487" elapsed="0.000081"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.855576" level="INFO">Created in loop: acc_2_001</msg>
+<msg time="2026-02-08T14:32:40.938656" level="INFO">Created in loop: acc_2_001</msg>
 <arg>Created in loop: ${account_id}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.855510" elapsed="0.000078"/>
+<status status="PASS" start="2026-02-08T14:32:40.938594" elapsed="0.000074"/>
 </kw>
 <var name="${i}">2</var>
-<status status="PASS" start="2026-02-08T01:50:30.855034" elapsed="0.000564"/>
+<status status="PASS" start="2026-02-08T14:32:40.937967" elapsed="0.000710"/>
 </iter>
 <var>${i}</var>
 <value>3</value>
-<status status="PASS" start="2026-02-08T01:50:30.853813" elapsed="0.001794"/>
+<status status="PASS" start="2026-02-08T14:32:40.936709" elapsed="0.001977"/>
 </for>
 <doc>Tests FOR loop with IN RANGE: create accounts for indices 0..2.</doc>
 <tag>accounts</tag>
 <tag>create</tag>
 <tag>loops</tag>
-<status status="PASS" start="2026-02-08T01:50:30.853597" elapsed="0.002058"/>
+<status status="PASS" start="2026-02-08T14:32:40.936503" elapsed="0.002231"/>
 </test>
-<test id="s1-t8" name="Accounts: WHILE Loop Retry Until Success" line="145">
+<test id="s1-t8" name="Accounts: WHILE Loop Retry Until Success" line="146">
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.855986" level="INFO">${count} = 0</msg>
+<msg time="2026-02-08T14:32:40.938983" level="INFO">${count} = 0</msg>
 <var>${count}</var>
 <arg>0</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.855891" elapsed="0.000104"/>
+<status status="PASS" start="2026-02-08T14:32:40.938911" elapsed="0.000079"/>
 </kw>
 <while condition="${count} &lt; 3" limit="4">
 <iter>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.856195" level="INFO">WHILE iteration: 0</msg>
+<msg time="2026-02-08T14:32:40.939167" level="INFO">WHILE iteration: 0</msg>
 <arg>WHILE iteration: ${count}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856119" elapsed="0.000090"/>
+<status status="PASS" start="2026-02-08T14:32:40.939106" elapsed="0.000073"/>
 </kw>
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.856333" level="INFO">${count} = 1</msg>
+<msg time="2026-02-08T14:32:40.939290" level="INFO">${count} = 1</msg>
 <var>${count}</var>
 <arg>${count} + 1</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856238" elapsed="0.000102"/>
+<status status="PASS" start="2026-02-08T14:32:40.939204" elapsed="0.000094"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.856029" elapsed="0.000321"/>
+<status status="PASS" start="2026-02-08T14:32:40.939020" elapsed="0.000287"/>
 </iter>
 <iter>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.856484" level="INFO">WHILE iteration: 1</msg>
+<msg time="2026-02-08T14:32:40.939420" level="INFO">WHILE iteration: 1</msg>
 <arg>WHILE iteration: ${count}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856418" elapsed="0.000079"/>
+<status status="PASS" start="2026-02-08T14:32:40.939361" elapsed="0.000070"/>
 </kw>
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.856605" level="INFO">${count} = 2</msg>
+<msg time="2026-02-08T14:32:40.939531" level="INFO">${count} = 2</msg>
 <var>${count}</var>
 <arg>${count} + 1</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856523" elapsed="0.000090"/>
+<status status="PASS" start="2026-02-08T14:32:40.939454" elapsed="0.000084"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.856360" elapsed="0.000266"/>
+<status status="PASS" start="2026-02-08T14:32:40.939315" elapsed="0.000232"/>
 </iter>
 <iter>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.856744" level="INFO">WHILE iteration: 2</msg>
+<msg time="2026-02-08T14:32:40.939654" level="INFO">WHILE iteration: 2</msg>
 <arg>WHILE iteration: ${count}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856685" elapsed="0.000070"/>
+<status status="PASS" start="2026-02-08T14:32:40.939595" elapsed="0.000070"/>
 </kw>
 <kw name="Evaluate" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.856850" level="INFO">${count} = 3</msg>
+<msg time="2026-02-08T14:32:40.939763" level="INFO">${count} = 3</msg>
 <var>${count}</var>
 <arg>${count} + 1</arg>
 <doc>Evaluates the given expression in Python and returns the result.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856777" elapsed="0.000080"/>
+<status status="PASS" start="2026-02-08T14:32:40.939688" elapsed="0.000081"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.856635" elapsed="0.000231"/>
+<status status="PASS" start="2026-02-08T14:32:40.939554" elapsed="0.000225"/>
 </iter>
-<status status="PASS" start="2026-02-08T01:50:30.856028" elapsed="0.000865"/>
+<status status="PASS" start="2026-02-08T14:32:40.939020" elapsed="0.000786"/>
 </while>
 <kw name="Should Be Equal As Numbers" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.857002" level="INFO">Argument types are:
+<msg time="2026-02-08T14:32:40.939919" level="INFO">Argument types are:
 &lt;class 'int'&gt;
 &lt;class 'str'&gt;</msg>
 <arg>${count}</arg>
 <arg>3</arg>
 <doc>Fails if objects are unequal after converting them to real numbers.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.856933" elapsed="0.000087"/>
+<status status="PASS" start="2026-02-08T14:32:40.939847" elapsed="0.000088"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.857113" level="INFO">WHILE completed after 3 iterations</msg>
+<msg time="2026-02-08T14:32:40.940032" level="INFO">WHILE completed after 3 iterations</msg>
 <arg>WHILE completed after 3 iterations</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.857062" elapsed="0.000062"/>
+<status status="PASS" start="2026-02-08T14:32:40.939977" elapsed="0.000066"/>
 </kw>
 <doc>Tests WHILE loop: retry until counter reaches limit.</doc>
 <tag>accounts</tag>
 <tag>control</tag>
 <tag>loops</tag>
-<status status="PASS" start="2026-02-08T01:50:30.855761" elapsed="0.001404"/>
+<status status="PASS" start="2026-02-08T14:32:40.938791" elapsed="0.001293"/>
 </test>
-<test id="s1-t9" name="Accounts: IF ELSE Balance Tier" line="156">
+<test id="s1-t9" name="Accounts: IF ELSE Balance Tier" line="157">
 <kw name="Accounts: Get Account Balance">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.857485" level="INFO">Get balance for acc_1_001 (stub)</msg>
+<msg time="2026-02-08T14:32:40.940430" level="INFO">Get balance for acc_1_001 (stub)</msg>
 <arg>Get balance for ${account_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.857425" elapsed="0.000071"/>
+<status status="PASS" start="2026-02-08T14:32:40.940368" elapsed="0.000074"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.857580" level="INFO">${balance} = 1000.00</msg>
+<msg time="2026-02-08T14:32:40.940526" level="INFO">${balance} = 1000.00</msg>
 <var>${balance}</var>
 <arg>1000.00</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.857519" elapsed="0.000068"/>
+<status status="PASS" start="2026-02-08T14:32:40.940466" elapsed="0.000067"/>
 </kw>
 <return>
 <value>${balance}</value>
-<status status="PASS" start="2026-02-08T01:50:30.857599" elapsed="0.000011"/>
+<status status="PASS" start="2026-02-08T14:32:40.940544" elapsed="0.000007"/>
 </return>
-<msg time="2026-02-08T01:50:30.857642" level="INFO">${balance} = 1000.00</msg>
+<msg time="2026-02-08T14:32:40.940580" level="INFO">${balance} = 1000.00</msg>
 <var>${balance}</var>
 <arg>acc_1_001</arg>
 <doc>Stub: would return balance.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.857362" elapsed="0.000287"/>
+<status status="PASS" start="2026-02-08T14:32:40.940308" elapsed="0.000277"/>
 </kw>
 <if>
 <branch type="IF" condition="${balance} &gt; 500">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.857800" level="INFO">Balance 1000.00 is HIGH tier</msg>
+<msg time="2026-02-08T14:32:40.940737" level="INFO">Balance 1000.00 is HIGH tier</msg>
 <arg>Balance ${balance} is HIGH tier</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.857740" elapsed="0.000071"/>
+<status status="PASS" start="2026-02-08T14:32:40.940678" elapsed="0.000070"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.857693" elapsed="0.000127"/>
+<status status="PASS" start="2026-02-08T14:32:40.940628" elapsed="0.000129"/>
 </branch>
 <branch type="ELSE">
 <kw name="Log" owner="BuiltIn">
 <arg>Balance ${balance} is LOW tier</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="NOT RUN" start="2026-02-08T01:50:30.857852" elapsed="0.000005"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.940791" elapsed="0.000004"/>
 </kw>
-<status status="NOT RUN" start="2026-02-08T01:50:30.857829" elapsed="0.000036"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.940766" elapsed="0.000037"/>
 </branch>
-<status status="PASS" start="2026-02-08T01:50:30.857681" elapsed="0.000190"/>
+<status status="PASS" start="2026-02-08T14:32:40.940616" elapsed="0.000192"/>
 </if>
 <kw name="Should Be Equal As Numbers" owner="BuiltIn">
 <arg>${balance}</arg>
 <arg>1000.00</arg>
 <doc>Fails if objects are unequal after converting them to real numbers.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.857904" elapsed="0.000071"/>
+<status status="PASS" start="2026-02-08T14:32:40.940858" elapsed="0.000099"/>
 </kw>
 <doc>Tests IF/ELSE control structure: log tier based on balance.</doc>
 <tag>accounts</tag>
 <tag>balance</tag>
 <tag>control</tag>
-<status status="PASS" start="2026-02-08T01:50:30.857229" elapsed="0.000786"/>
+<status status="PASS" start="2026-02-08T14:32:40.940151" elapsed="0.000861"/>
 </test>
-<test id="s1-t10" name="Accounts: IF ELSE IF ELSE Account Count" line="167">
+<test id="s1-t10" name="Accounts: IF ELSE IF ELSE Account Count" line="168">
 <kw name="Accounts: List Accounts For User">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.858329" level="INFO">List accounts for user_id=1 (stub)</msg>
+<msg time="2026-02-08T14:32:40.941365" level="INFO">List accounts for user_id=1 (stub)</msg>
 <arg>List accounts for user_id=${user_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.858264" elapsed="0.000076"/>
+<status status="PASS" start="2026-02-08T14:32:40.941294" elapsed="0.000083"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.858432" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.942908" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
 <arg>Error: Sample error from Accounts suite (for report banner)</arg>
 <arg>level=ERROR</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.858364" elapsed="0.000103"/>
+<status status="PASS" start="2026-02-08T14:32:40.941402" elapsed="0.001553"/>
 </kw>
 <kw name="Create List" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.858566" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.943070" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>account_1</arg>
 <arg>account_2</arg>
 <doc>Returns a list containing given items.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.858496" elapsed="0.000077"/>
+<status status="PASS" start="2026-02-08T14:32:40.942993" elapsed="0.000115"/>
 </kw>
 <return>
 <value>${accounts}</value>
-<status status="PASS" start="2026-02-08T01:50:30.858586" elapsed="0.000008"/>
+<status status="PASS" start="2026-02-08T14:32:40.943124" elapsed="0.000010"/>
 </return>
-<msg time="2026-02-08T01:50:30.858656" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
+<msg time="2026-02-08T14:32:40.943171" level="INFO">@{accounts} = [ account_1 | account_2 ]</msg>
 <var>@{accounts}</var>
 <arg>1</arg>
 <doc>Stub: would return list of accounts for user.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.858202" elapsed="0.000460"/>
+<status status="PASS" start="2026-02-08T14:32:40.941212" elapsed="0.001965"/>
 </kw>
 <kw name="Get Length" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.860563" level="INFO">Length is 2.</msg>
-<msg time="2026-02-08T01:50:30.860599" level="INFO">${count} = 2</msg>
+<msg time="2026-02-08T14:32:40.943324" level="INFO">Length is 2.</msg>
+<msg time="2026-02-08T14:32:40.943344" level="INFO">${count} = 2</msg>
 <var>${count}</var>
 <arg>${accounts}</arg>
 <doc>Returns and logs the length of the given item as an integer.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.858702" elapsed="0.001904"/>
+<status status="PASS" start="2026-02-08T14:32:40.943219" elapsed="0.000131"/>
 </kw>
 <if>
 <branch type="IF" condition="${count} == 0">
 <kw name="Log" owner="BuiltIn">
 <arg>No accounts</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="NOT RUN" start="2026-02-08T01:50:30.860760" elapsed="0.000012"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.943446" elapsed="0.000005"/>
 </kw>
-<status status="NOT RUN" start="2026-02-08T01:50:30.860663" elapsed="0.000122"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.943388" elapsed="0.000073"/>
 </branch>
 <branch type="ELSE IF" condition="${count} == 1">
 <kw name="Log" owner="BuiltIn">
 <arg>Single account</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="NOT RUN" start="2026-02-08T01:50:30.860846" elapsed="0.000005"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.943507" elapsed="0.000004"/>
 </kw>
-<status status="NOT RUN" start="2026-02-08T01:50:30.860794" elapsed="0.000066"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.943468" elapsed="0.000051"/>
 </branch>
 <branch type="ELSE">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.860989" level="INFO">Multiple accounts: 2</msg>
+<msg time="2026-02-08T14:32:40.943604" level="INFO">Multiple accounts: 2</msg>
 <arg>Multiple accounts: ${count}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.860887" elapsed="0.000115"/>
+<status status="PASS" start="2026-02-08T14:32:40.943543" elapsed="0.000073"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.860866" elapsed="0.000147"/>
+<status status="PASS" start="2026-02-08T14:32:40.943525" elapsed="0.000102"/>
 </branch>
-<status status="PASS" start="2026-02-08T01:50:30.860648" elapsed="0.000371"/>
+<status status="PASS" start="2026-02-08T14:32:40.943379" elapsed="0.000256"/>
 </if>
 <kw name="Length Should Be" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.861137" level="INFO">Length is 2.</msg>
+<msg time="2026-02-08T14:32:40.943959" level="INFO">Length is 2.</msg>
 <arg>${accounts}</arg>
 <arg>2</arg>
 <doc>Verifies that the length of the given item is correct.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.861058" elapsed="0.000090"/>
+<status status="PASS" start="2026-02-08T14:32:40.943707" elapsed="0.000335"/>
 </kw>
 <doc>Tests IF / ELSE IF / ELSE: branch on list length.</doc>
 <tag>accounts</tag>
 <tag>control</tag>
 <tag>list</tag>
-<status status="PASS" start="2026-02-08T01:50:30.858076" elapsed="0.003115"/>
+<status status="PASS" start="2026-02-08T14:32:40.941078" elapsed="0.003054"/>
 </test>
-<test id="s1-t11" name="Accounts: TRY EXCEPT Delete Handles Error" line="181">
+<test id="s1-t11" name="Accounts: TRY EXCEPT Delete Handles Error" line="182">
 <try>
 <branch type="TRY">
 <kw name="Accounts: Delete Account">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.861558" level="INFO">Delete account acc_nonexistent (stub)</msg>
+<msg time="2026-02-08T14:32:40.944639" level="INFO">Delete account acc_nonexistent (stub)</msg>
 <arg>Delete account ${account_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.861497" elapsed="0.000073"/>
+<status status="PASS" start="2026-02-08T14:32:40.944557" elapsed="0.000094"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.861640" level="INFO">Account deleted (stub)</msg>
+<msg time="2026-02-08T14:32:40.944737" level="INFO">Account deleted (stub)</msg>
 <arg>Account deleted (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.861593" elapsed="0.000057"/>
+<status status="PASS" start="2026-02-08T14:32:40.944678" elapsed="0.000070"/>
 </kw>
 <arg>acc_nonexistent</arg>
 <doc>Stub: would delete account.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.861434" elapsed="0.000231"/>
+<status status="PASS" start="2026-02-08T14:32:40.944477" elapsed="0.000285"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.861732" level="INFO">Delete succeeded</msg>
+<msg time="2026-02-08T14:32:40.944830" level="INFO">Delete succeeded</msg>
 <arg>Delete succeeded</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.861685" elapsed="0.000057"/>
+<status status="PASS" start="2026-02-08T14:32:40.944783" elapsed="0.000057"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.861382" elapsed="0.000369"/>
+<status status="PASS" start="2026-02-08T14:32:40.944424" elapsed="0.000425"/>
 </branch>
 <branch type="EXCEPT" assign="${err}">
 <kw name="Log" owner="BuiltIn">
 <arg>Caught expected: ${err}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="NOT RUN" start="2026-02-08T01:50:30.861785" elapsed="0.000004"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.944883" elapsed="0.000005"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
 <arg>Error handled in EXCEPT block</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="NOT RUN" start="2026-02-08T01:50:30.861809" elapsed="0.000004"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.944909" elapsed="0.000004"/>
 </kw>
-<status status="NOT RUN" start="2026-02-08T01:50:30.861764" elapsed="0.000056"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.944863" elapsed="0.000057"/>
 </branch>
-<status status="PASS" start="2026-02-08T01:50:30.861362" elapsed="0.000466"/>
+<status status="PASS" start="2026-02-08T14:32:40.944405" elapsed="0.000524"/>
 </try>
 <doc>Tests TRY/EXCEPT: attempt delete and handle exception.</doc>
 <tag>accounts</tag>
 <tag>delete</tag>
 <tag>error_handling</tag>
-<status status="PASS" start="2026-02-08T01:50:30.861255" elapsed="0.000611"/>
+<status status="PASS" start="2026-02-08T14:32:40.944273" elapsed="0.000693"/>
 </test>
-<test id="s1-t12" name="Accounts: TRY EXCEPT ELSE FINALLY" line="192">
+<test id="s1-t12" name="Accounts: TRY EXCEPT ELSE FINALLY" line="193">
 <try>
 <branch type="TRY">
 <kw name="Accounts: Get Account Balance">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.862218" level="INFO">Get balance for acc_1_001 (stub)</msg>
+<msg time="2026-02-08T14:32:40.945297" level="INFO">Get balance for acc_1_001 (stub)</msg>
 <arg>Get balance for ${account_id} (stub)</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.862152" elapsed="0.000077"/>
+<status status="PASS" start="2026-02-08T14:32:40.945231" elapsed="0.000077"/>
 </kw>
 <kw name="Set Variable" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.862313" level="INFO">${balance} = 1000.00</msg>
+<msg time="2026-02-08T14:32:40.945391" level="INFO">${balance} = 1000.00</msg>
 <var>${balance}</var>
 <arg>1000.00</arg>
 <doc>Returns the given values which can then be assigned to a variables.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.862252" elapsed="0.000067"/>
+<status status="PASS" start="2026-02-08T14:32:40.945331" elapsed="0.000067"/>
 </kw>
 <return>
 <value>${balance}</value>
-<status status="PASS" start="2026-02-08T01:50:30.862331" elapsed="0.000010"/>
+<status status="PASS" start="2026-02-08T14:32:40.945410" elapsed="0.000008"/>
 </return>
-<msg time="2026-02-08T01:50:30.862372" level="INFO">${balance} = 1000.00</msg>
+<msg time="2026-02-08T14:32:40.945448" level="INFO">${balance} = 1000.00</msg>
 <var>${balance}</var>
 <arg>acc_1_001</arg>
 <doc>Stub: would return balance.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.862081" elapsed="0.000297"/>
+<status status="PASS" start="2026-02-08T14:32:40.945175" elapsed="0.000279"/>
 </kw>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.862459" level="INFO">Balance fetched: 1000.00</msg>
+<msg time="2026-02-08T14:32:40.945534" level="INFO">Balance fetched: 1000.00</msg>
 <arg>Balance fetched: ${balance}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.862400" elapsed="0.000069"/>
+<status status="PASS" start="2026-02-08T14:32:40.945477" elapsed="0.000068"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.862035" elapsed="0.000443"/>
+<status status="PASS" start="2026-02-08T14:32:40.945135" elapsed="0.000418"/>
 </branch>
 <branch type="EXCEPT" assign="${err}">
 <kw name="Log" owner="BuiltIn">
 <arg>EXCEPT: ${err}</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="NOT RUN" start="2026-02-08T01:50:30.862509" elapsed="0.000006"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.945584" elapsed="0.000005"/>
 </kw>
-<status status="NOT RUN" start="2026-02-08T01:50:30.862489" elapsed="0.000033"/>
+<status status="NOT RUN" start="2026-02-08T14:32:40.945565" elapsed="0.000032"/>
 </branch>
 <branch type="ELSE">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.862596" level="INFO">ELSE: no exception, balance ok</msg>
+<msg time="2026-02-08T14:32:40.945671" level="INFO">ELSE: no exception, balance ok</msg>
 <arg>ELSE: no exception, balance ok</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.862548" elapsed="0.000058"/>
+<status status="PASS" start="2026-02-08T14:32:40.945623" elapsed="0.000059"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.862532" elapsed="0.000082"/>
+<status status="PASS" start="2026-02-08T14:32:40.945606" elapsed="0.000086"/>
 </branch>
 <branch type="FINALLY">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.862690" level="INFO">FINALLY: cleanup ran</msg>
+<msg time="2026-02-08T14:32:40.945767" level="INFO">FINALLY: cleanup ran</msg>
 <arg>FINALLY: cleanup ran</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.862644" elapsed="0.000056"/>
+<status status="PASS" start="2026-02-08T14:32:40.945721" elapsed="0.000057"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.862625" elapsed="0.000084"/>
+<status status="PASS" start="2026-02-08T14:32:40.945702" elapsed="0.000084"/>
 </branch>
-<status status="PASS" start="2026-02-08T01:50:30.862023" elapsed="0.000692"/>
+<status status="PASS" start="2026-02-08T14:32:40.945123" elapsed="0.000669"/>
 </try>
 <doc>Tests TRY/EXCEPT/ELSE/FINALLY: full error-handling structure.</doc>
 <tag>accounts</tag>
 <tag>balance</tag>
 <tag>error_handling</tag>
-<status status="PASS" start="2026-02-08T01:50:30.861927" elapsed="0.000825"/>
+<status status="PASS" start="2026-02-08T14:32:40.945027" elapsed="0.000801"/>
 </test>
-<test id="s1-t13" name="Accounts: TRY EXCEPT Catches Failure" line="206">
+<test id="s1-t13" name="Accounts: TRY EXCEPT Catches Failure" line="207">
 <try>
 <branch type="TRY">
 <kw name="Fail" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.863025" level="FAIL">Intentional failure for TRY/EXCEPT test</msg>
+<msg time="2026-02-08T14:32:40.946099" level="FAIL">Intentional failure for TRY/EXCEPT test</msg>
 <arg>Intentional failure for TRY/EXCEPT test</arg>
 <doc>Fails the test with the given message and optionally alters its tags.</doc>
-<status status="FAIL" start="2026-02-08T01:50:30.862941" elapsed="0.000130">Intentional failure for TRY/EXCEPT test</status>
+<status status="FAIL" start="2026-02-08T14:32:40.946019" elapsed="0.000109">Intentional failure for TRY/EXCEPT test</status>
 </kw>
-<status status="FAIL" start="2026-02-08T01:50:30.862916" elapsed="0.000177">Intentional failure for TRY/EXCEPT test</status>
+<status status="FAIL" start="2026-02-08T14:32:40.945992" elapsed="0.000180">Intentional failure for TRY/EXCEPT test</status>
 </branch>
 <branch type="EXCEPT">
 <pattern>Intentional failure for TRY/EXCEPT test</pattern>
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.863180" level="INFO">EXCEPT ran: failure was caught</msg>
+<msg time="2026-02-08T14:32:40.946261" level="INFO">EXCEPT ran: failure was caught</msg>
 <arg>EXCEPT ran: failure was caught</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863130" elapsed="0.000091"/>
+<status status="PASS" start="2026-02-08T14:32:40.946212" elapsed="0.000059"/>
 </kw>
-<status status="PASS" start="2026-02-08T01:50:30.863109" elapsed="0.000122"/>
+<status status="PASS" start="2026-02-08T14:32:40.946189" elapsed="0.000091"/>
 </branch>
-<status status="PASS" start="2026-02-08T01:50:30.862906" elapsed="0.000333"/>
+<status status="PASS" start="2026-02-08T14:32:40.945982" elapsed="0.000306"/>
 </try>
 <doc>Tests TRY/EXCEPT when exception is raised: EXCEPT branch runs.</doc>
 <tag>accounts</tag>
 <tag>error_handling</tag>
-<status status="PASS" start="2026-02-08T01:50:30.862812" elapsed="0.000465"/>
+<status status="PASS" start="2026-02-08T14:32:40.945888" elapsed="0.000435"/>
+</test>
+<test id="s1-t14" name="Accounts: Failing Keyword For Report Log Pane" line="216">
+<kw name="Fail" owner="BuiltIn">
+<msg time="2026-02-08T14:32:40.946587" level="FAIL">Expected failure: use this test to verify failed keyword message appears in the Logs pane</msg>
+<arg>Expected failure: use this test to verify failed keyword message appears in the Logs pane</arg>
+<doc>Fails the test with the given message and optionally alters its tags.</doc>
+<status status="FAIL" start="2026-02-08T14:32:40.946516" elapsed="0.000089">Expected failure: use this test to verify failed keyword message appears in the Logs pane</status>
+</kw>
+<doc>Fails on a single keyword so the report shows the failure message in Logs &amp; Messages when that keyword is selected.</doc>
+<tag>accounts</tag>
+<tag>error_handling</tag>
+<status status="FAIL" start="2026-02-08T14:32:40.946385" elapsed="0.000280">Expected failure: use this test to verify failed keyword message appears in the Logs pane</status>
 </test>
 <kw name="Run Suite Teardown" type="TEARDOWN">
 <kw name="Log Cleaning Up Suite">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.863583" level="INFO">Cleaning up suite: Accounts</msg>
+<msg time="2026-02-08T14:32:40.946971" level="INFO">Cleaning up suite: Accounts</msg>
 <arg>Cleaning up suite: Accounts</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863532" elapsed="0.000062"/>
+<status status="PASS" start="2026-02-08T14:32:40.946922" elapsed="0.000060"/>
 </kw>
 <doc>Begin suite teardown cleanup.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863498" elapsed="0.000110"/>
+<status status="PASS" start="2026-02-08T14:32:40.946888" elapsed="0.000108"/>
 </kw>
 <kw name="Log Suite End">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.863729" level="INFO">Ending suite: Accounts</msg>
+<msg time="2026-02-08T14:32:40.947109" level="INFO">Ending suite: Accounts</msg>
 <arg>Ending suite: Accounts</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863682" elapsed="0.000058"/>
+<status status="PASS" start="2026-02-08T14:32:40.947060" elapsed="0.000060"/>
 </kw>
 <doc>Logs suite end.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863635" elapsed="0.000118"/>
+<status status="PASS" start="2026-02-08T14:32:40.947026" elapsed="0.000107"/>
 </kw>
 <kw name="Log Suite Teardown Complete">
 <kw name="Log" owner="BuiltIn">
-<msg time="2026-02-08T01:50:30.863858" level="INFO">Suite teardown complete</msg>
+<msg time="2026-02-08T14:32:40.947241" level="INFO">Suite teardown complete</msg>
 <arg>Suite teardown complete</arg>
 <doc>Logs the given message with the given level.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863812" elapsed="0.000057"/>
+<status status="PASS" start="2026-02-08T14:32:40.947194" elapsed="0.000057"/>
 </kw>
 <doc>Logs that suite teardown is complete.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863780" elapsed="0.000103"/>
+<status status="PASS" start="2026-02-08T14:32:40.947161" elapsed="0.000103"/>
 </kw>
 <doc>Suite-level teardown: multiple keywords run once after all tests.</doc>
-<status status="PASS" start="2026-02-08T01:50:30.863452" elapsed="0.000441"/>
+<status status="PASS" start="2026-02-08T14:32:40.946843" elapsed="0.000431"/>
 </kw>
 <doc>Accounts: list, create, delete, balance (stub keywords, no real logic).</doc>
-<status status="PASS" start="2026-02-08T01:50:30.833944" elapsed="0.029956"/>
+<status status="FAIL" start="2026-02-08T14:32:40.916140" elapsed="0.031143"/>
 </suite>
 <statistics>
 <total>
-<stat pass="13" fail="0" skip="0">All Tests</stat>
+<stat pass="12" fail="2" skip="0">All Tests</stat>
 </total>
 <tag>
-<stat pass="13" fail="0" skip="0">accounts</stat>
+<stat pass="12" fail="2" skip="0">accounts</stat>
 <stat pass="3" fail="0" skip="0">balance</stat>
 <stat pass="3" fail="0" skip="0">control</stat>
 <stat pass="2" fail="0" skip="0">create</stat>
 <stat pass="2" fail="0" skip="0">delete</stat>
-<stat pass="3" fail="0" skip="0">error_handling</stat>
+<stat pass="3" fail="1" skip="0">error_handling</stat>
 <stat pass="1" fail="0" skip="0">exists</stat>
-<stat pass="3" fail="0" skip="0">list</stat>
+<stat pass="2" fail="1" skip="0">list</stat>
 <stat pass="3" fail="0" skip="0">loops</stat>
-<stat pass="1" fail="0" skip="0">smoke</stat>
+<stat pass="0" fail="1" skip="0">smoke</stat>
 </tag>
 <suite>
-<stat name="Accounts" id="s1" pass="13" fail="0" skip="0">Accounts</stat>
+<stat name="Accounts" id="s1" pass="12" fail="2" skip="0">Accounts</stat>
 </suite>
 </statistics>
 <errors>
-<msg time="2026-02-08T01:50:30.846924" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
-<msg time="2026-02-08T01:50:30.851583" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
-<msg time="2026-02-08T01:50:30.852326" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
-<msg time="2026-02-08T01:50:30.853065" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
-<msg time="2026-02-08T01:50:30.858432" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.911973" level="WARN">Error in file '/Users/deekshithpoojary/Desktop/Projects/robotframework-reportlens/robot_tests/accounts.robot' on line 86: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead.</msg>
+<msg time="2026-02-08T14:32:40.929568" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.934512" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.935237" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.935968" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
+<msg time="2026-02-08T14:32:40.942908" level="ERROR">Error: Sample error from Accounts suite (for report banner)</msg>
 </errors>
 </robot>
