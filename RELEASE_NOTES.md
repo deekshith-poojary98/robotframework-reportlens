@@ -1,6 +1,6 @@
 # Release Notes
 
-## [0.1.4] - 2026-02-08
+## [0.1.4] - 2026-02-20
 
 ### Improvements
 
@@ -9,6 +9,7 @@
   - **Durations** – Suite rows in the sidebar show total suite duration. Test rows show execution time (same style as setup/teardown). Suite setup and teardown rows continue to show their keyword duration.
   - **Suite icon when skipped** – The suite row’s folder icon uses the skip (yellow) style when the suite has any skipped tests; otherwise it follows the suite’s pass/fail status.
   - **Resizable layout** – Sidebar width and main-panel keyword/logs split are resizable by dragging separators. Sidebar toggle button position is kept in sync when the sidebar is resized.
+  - **Sidebar scroll preservation** – Sidebar scroll position is preserved when selecting tests or expanding/collapsing suites, preventing the sidebar from jumping back to the top.
 - **Timestamps**
   - **ISO-8601 normalization** – All timestamps (report generated/start, suite/test/keyword start, log message and error timestamps) are normalized in Python to ISO-8601 with timezone before being serialized. This prevents “Invalid Date” in the UI across systems and browsers; the header time is shown in the user’s local timezone.
 - **Report model and CLI**
