@@ -51,6 +51,10 @@
       --radius: 6px;
       --font-mono: 'JetBrains Mono', ui-monospace, monospace;
       --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+      /* Reserved Keyword Badge*/
+      --badge-bg: hsl(33.67deg 100% 50.3% / 30%);
+      --text-color: #ea7e00;
     }
     /* Light Theme */
     .light {
@@ -70,6 +74,11 @@
       --status-fail-muted: hsl(0, 55%, 95%);
       --status-skip: hsl(45, 80%, 42%);
       --status-skip-muted: hsl(45, 60%, 92%);
+
+
+       /* Reserved Keyword Badge*/
+      --badge-bg: hsl(33.67deg 100% 50.3% / 30%);
+      --text-color: #ea7e00;
     }
     /* ========== Base Styles ========== */
     html, body {
@@ -889,7 +898,7 @@
       border-radius: 4px;
       font-size: 10px;
       font-weight: 500;
-      color: var(--status-pass-fg);
+      color: var(--status-pass);
       text-transform: uppercase;
       text-align: center;
     }
@@ -911,8 +920,8 @@
       text-transform: uppercase;
       letter-spacing: 0.02em;
       flex-shrink: 0;
-      background: hsl(0deg 0.15% 26.11%);
-      color: var(--accent-foreground);
+      background: var(--badge-bg);
+      color: var(--text-color);
     }
     .keyword-name {
       flex: 1;
@@ -991,7 +1000,7 @@
       text-transform: uppercase;
       flex-shrink: 0;
       background: hsla(142, 40%, 25%, 0.35);
-      color: var(--status-pass-fg);
+      color: var(--status-pass);
     }
     .light .log-entry-returned { background: hsla(142, 45%, 35%, 0.25); color: var(--status-pass); }
     .log-message {
@@ -1491,6 +1500,14 @@
     }
     // ========== Render Functions ==========
     function render() {
+      // Save scroll positions before re-rendering
+      const testTreeEl = document.querySelector(".test-tree");
+      const failedSummaryListEl = document.querySelector(".failed-summary-list");
+      const savedScrollPositions = {
+        testTree: testTreeEl ? testTreeEl.scrollTop : 0,
+        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0
+      };
+      
       document.body.className = state.isDark ? "" : "light";
       document.getElementById("app").innerHTML = `
         <div class="app">
@@ -1504,6 +1521,18 @@
         </div>
       `;
       attachEventListeners();
+      
+      // Restore scroll positions after re-rendering
+      requestAnimationFrame(() => {
+        const newTestTreeEl = document.querySelector(".test-tree");
+        const newFailedSummaryListEl = document.querySelector(".failed-summary-list");
+        if (newTestTreeEl && savedScrollPositions.testTree > 0) {
+          newTestTreeEl.scrollTop = savedScrollPositions.testTree;
+        }
+        if (newFailedSummaryListEl && savedScrollPositions.failedSummaryList > 0) {
+          newFailedSummaryListEl.scrollTop = savedScrollPositions.failedSummaryList;
+        }
+      });
     }
     function renderHeader() {
       const { statistics, rootSuite, startTime, duration } = mockData;
