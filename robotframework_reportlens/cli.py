@@ -20,6 +20,8 @@ def main():
         default="report.html",
         help="Output HTML file path (default: report.html)",
     )
+    # TODO: needs to improvise this feature for better debugging which users can use to debug the report 
+    # as well as raise issues if needed with debug logs attached
     parser.add_argument(
         "--debug",
         action="store_true",
