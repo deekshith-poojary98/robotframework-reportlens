@@ -19,6 +19,15 @@ def minimal_xml_path(fixtures_dir):
 
 
 @pytest.fixture
+def control_structures_xml_path(fixtures_dir):
+    """Path to output.xml with FOR/IF/TRY (project root). Skip if not found (run robot_tests to generate)."""
+    path = fixtures_dir.parent.parent / "output.xml"
+    if not path.exists():
+        pytest.skip("output.xml not found at project root (run: robot robot_tests/accounts.robot)")
+    return str(path)
+
+
+@pytest.fixture
 def sample_output_xml(tmp_path):
     """Create a minimal output.xml in a temp directory (for CLI tests)."""
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>
