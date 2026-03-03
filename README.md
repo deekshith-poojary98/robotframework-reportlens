@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/robotframework-reportlens.svg)](https://badge.fury.io/py/robotframework-reportlens)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](https://www.python.org/downloads/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/robotframework-reportlens?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/robotframework-reportlens)
 [![CI Tests](https://github.com/deekshith-poojary98/robotframework-reportlens/actions/workflows/code-checks.yml/badge.svg)](https://github.com/deekshith-poojary98/robotframework-reportlens/actions/workflows/code-checks.yml)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/deekshith-poojary98/robotframework-reportlens)
 
@@ -13,6 +14,9 @@ View generated reports here
 
 - [Pass Report](https://deekshith-poojary98.github.io/robotframework-reportlens/pass/pass_report.html "Link to sample report")
 - [Fail Report](https://deekshith-poojary98.github.io/robotframework-reportlens/fail/fail_report.html "Link to sample report")
+
+![Sample Report](https://raw.githubusercontent.com/deekshith-poojary98/robotframework-reportlens/main/assets/sample_report1.png)
+![Sample Report](https://raw.githubusercontent.com/deekshith-poojary98/robotframework-reportlens/main/assets/sample_report2.png)
 
 ## Installation
 
