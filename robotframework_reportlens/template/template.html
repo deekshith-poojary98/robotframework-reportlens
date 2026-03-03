@@ -461,6 +461,94 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* ========== Unique Failures Summary ========== */
+    .unique-failures {
+      border-bottom: 1px solid var(--border);
+    }
+    .unique-failures-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--status-fail-muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--status-fail);
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .unique-failures-header:hover {
+      background: hsla(0, 50%, 18%, 0.8);
+    }
+    .light .unique-failures-header:hover {
+      background: hsl(0, 45%, 92%);
+    }
+    .unique-failures-list {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .unique-failure-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .unique-failure-item:hover {
+      background: var(--accent);
+    }
+    .unique-failure-item.selected {
+      background: var(--accent);
+    }
+    .unique-failure-message {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--status-fail);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .unique-failure-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .unique-failure-count {
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
+    .unique-failure-nav {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
+    .unique-failure-nav-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--foreground);
+      cursor: pointer;
+      padding: 0 5px;
+      font-size: 12px;
+      line-height: 18px;
+    }
+    .unique-failure-nav-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+    .unique-failure-nav-btn:not(:disabled):hover {
+      background: var(--accent);
+    }
     /* ========== Test Tree ========== */
     .test-tree-bar {
       display: flex;
@@ -1295,7 +1383,9 @@
       tagFilter: "",
       expandedSuites: new Set(),
       expandedKeywords: new Set(),
-      failedSummaryOpen: true
+      failedSummaryOpen: true,
+      uniqueFailuresOpen: true,
+      selectedUniqueFailure: null  // { message, tests: [], idx: 0 }
     };
     // Auto-expand suites with failures
     function expandFailedSuites(suite) {
@@ -1379,6 +1469,15 @@
     }
     function getFailedTests(suite) {
       return getAllTests(suite).filter(t => t.status === "FAIL");
+    }
+    function getUniqueFailures(failedTests) {
+      const map = new Map();
+      failedTests.forEach(t => {
+        const msg = (t.message || "").trim() || "No error message";
+        if (!map.has(msg)) map.set(msg, []);
+        map.get(msg).push(t);
+      });
+      return Array.from(map.entries()).map(([message, tests]) => ({ message, tests }));
     }
     function filterTest(test) {
       if (state.statusFilter !== "ALL" && test.status !== state.statusFilter) return false;
@@ -1546,9 +1645,11 @@
       // Save scroll positions before re-rendering
       const testTreeEl = document.querySelector(".test-tree");
       const failedSummaryListEl = document.querySelector(".failed-summary-list");
+      const uniqueFailuresListEl = document.querySelector(".unique-failures-list");
       const savedScrollPositions = {
         testTree: testTreeEl ? testTreeEl.scrollTop : 0,
-        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0
+        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0,
+        uniqueFailuresList: uniqueFailuresListEl ? uniqueFailuresListEl.scrollTop : 0
       };
       
       document.body.className = state.isDark ? "" : "light";
@@ -1569,11 +1670,15 @@
       requestAnimationFrame(() => {
         const newTestTreeEl = document.querySelector(".test-tree");
         const newFailedSummaryListEl = document.querySelector(".failed-summary-list");
+        const newUniqueFailuresListEl = document.querySelector(".unique-failures-list");
         if (newTestTreeEl && savedScrollPositions.testTree > 0) {
           newTestTreeEl.scrollTop = savedScrollPositions.testTree;
         }
         if (newFailedSummaryListEl && savedScrollPositions.failedSummaryList > 0) {
           newFailedSummaryListEl.scrollTop = savedScrollPositions.failedSummaryList;
+        }
+        if (newUniqueFailuresListEl && savedScrollPositions.uniqueFailuresList > 0) {
+          newUniqueFailuresListEl.scrollTop = savedScrollPositions.uniqueFailuresList;
         }
       });
     }
@@ -1622,6 +1727,7 @@
     function renderSidebar() {
       const allTags = getAllTags(mockData.rootSuite);
       const failedTests = getFailedTests(mockData.rootSuite);
+      const uniqueFailures = getUniqueFailures(failedTests);
       
       return `
         <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}" id="sidebar" style="${state.sidebarCollapsed ? "" : "width: " + state.sidebarWidth + "px"}">
@@ -1658,6 +1764,38 @@
                       <div class="failed-item-error">${t.message || "No error message"}</div>
                     </button>
                   `).join("")}
+                </div>
+              ` : ""}
+            </div>
+          ` : ""}
+          ${uniqueFailures.length > 0 ? `
+            <div class="unique-failures">
+              <button class="unique-failures-header" id="toggle-unique-failures">
+                ${state.uniqueFailuresOpen ? icons.chevronDown : icons.chevronRight}
+                ${icons.alert}
+                <span>${uniqueFailures.length} Unique Failure${uniqueFailures.length > 1 ? "s" : ""}</span>
+              </button>
+              ${state.uniqueFailuresOpen ? `
+                <div class="unique-failures-list">
+                  ${uniqueFailures.map((uf, i) => {
+                    const isSelected = state.selectedUniqueFailure?.message === uf.message;
+                    const idx = isSelected ? state.selectedUniqueFailure.idx : 0;
+                    return `
+                      <div class="unique-failure-item ${isSelected ? "selected" : ""}" data-unique-failure-idx="${i}">
+                        <div class="unique-failure-message">${escapeHtml(uf.message)}</div>
+                        <div class="unique-failure-meta">
+                          <span class="unique-failure-count">${uf.tests.length} occurrence${uf.tests.length > 1 ? "s" : ""}</span>
+                          ${isSelected && uf.tests.length > 1 ? `
+                            <span class="unique-failure-nav">
+                              <button class="unique-failure-nav-btn" id="unique-failure-prev" ${idx === 0 ? "disabled" : ""}>&#8249;</button>
+                              <span>${idx + 1}/${uf.tests.length}</span>
+                              <button class="unique-failure-nav-btn" id="unique-failure-next" ${idx === uf.tests.length - 1 ? "disabled" : ""}>&#8250;</button>
+                            </span>
+                          ` : ""}
+                        </div>
+                      </div>
+                    `;
+                  }).join("")}
                 </div>
               ` : ""}
             </div>
@@ -2048,6 +2186,20 @@
       }).join("");
     }
     // ========== Event Listeners ==========
+    function _selectTest(test) {
+      /** Set selected test, update hash and auto-expand its first keyword if it has nested keywords. */
+      state.selectedSuiteKeyword = null;
+      state.selectedTest = test;
+      state.selectedKeyword = null;
+      state.logsCleared = false;
+      if (test) {
+        location.hash = "test=" + test.id;
+        const kws = Array.isArray(test.keywords) ? test.keywords : [];
+        if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
+          state.expandedKeywords.add(kws[0].id);
+        }
+      }
+    }
     function attachEventListeners() {
       // Theme toggle
       document.getElementById("theme-toggle")?.addEventListener("click", () => {
@@ -2082,6 +2234,44 @@
       // Failed summary toggle
       document.getElementById("toggle-failed")?.addEventListener("click", () => {
         state.failedSummaryOpen = !state.failedSummaryOpen;
+        render();
+      });
+      // Unique failures toggle
+      document.getElementById("toggle-unique-failures")?.addEventListener("click", () => {
+        state.uniqueFailuresOpen = !state.uniqueFailuresOpen;
+        render();
+      });
+      // Unique failure item clicks
+      document.querySelectorAll(".unique-failure-item").forEach(el => {
+        el.addEventListener("click", (e) => {
+          if (e.target.closest(".unique-failure-nav-btn")) return;
+          const idx = parseInt(el.dataset.uniqueFailureIdx, 10);
+          const failedTests = getFailedTests(mockData.rootSuite);
+          const uniqueFailures = getUniqueFailures(failedTests);
+          const uf = uniqueFailures[idx];
+          if (!uf) return;
+          const occurrenceIdx = (state.selectedUniqueFailure?.message === uf.message) ? state.selectedUniqueFailure.idx : 0;
+          state.selectedUniqueFailure = { message: uf.message, tests: uf.tests, idx: occurrenceIdx };
+          const test = uf.tests[occurrenceIdx];
+          _selectTest(test);
+          render();
+        });
+      });
+      // Unique failure navigation (prev/next occurrence)
+      document.getElementById("unique-failure-prev")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!state.selectedUniqueFailure || state.selectedUniqueFailure.idx <= 0) return;
+        state.selectedUniqueFailure.idx--;
+        const test = state.selectedUniqueFailure.tests[state.selectedUniqueFailure.idx];
+        _selectTest(test);
+        render();
+      });
+      document.getElementById("unique-failure-next")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!state.selectedUniqueFailure || state.selectedUniqueFailure.idx >= state.selectedUniqueFailure.tests.length - 1) return;
+        state.selectedUniqueFailure.idx++;
+        const test = state.selectedUniqueFailure.tests[state.selectedUniqueFailure.idx];
+        _selectTest(test);
         render();
       });
       // Failed item clicks

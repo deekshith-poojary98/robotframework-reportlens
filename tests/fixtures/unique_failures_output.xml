@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.0" generated="2026-01-31T12:00:00" rpa="false" schemaversion="5">
+<suite id="s1" name="Unique Failures Suite" source="/path/to/suite.robot">
+<test id="s1-t1" name="Login Test A">
+<kw name="Fail" owner="BuiltIn">
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.001">Connection refused</status>
+</kw>
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.002">Connection refused</status>
+</test>
+<test id="s1-t2" name="Login Test B">
+<kw name="Fail" owner="BuiltIn">
+<status status="FAIL" start="2026-01-31T12:00:02" elapsed="0.001">Connection refused</status>
+</kw>
+<status status="FAIL" start="2026-01-31T12:00:02" elapsed="0.002">Connection refused</status>
+</test>
+<test id="s1-t3" name="Payment Test">
+<kw name="Fail" owner="BuiltIn">
+<status status="FAIL" start="2026-01-31T12:00:03" elapsed="0.001">Invalid card number</status>
+</kw>
+<status status="FAIL" start="2026-01-31T12:00:03" elapsed="0.002">Invalid card number</status>
+</test>
+<test id="s1-t4" name="Profile Test">
+<kw name="Fail" owner="BuiltIn">
+<status status="FAIL" start="2026-01-31T12:00:04" elapsed="0.001">Connection refused</status>
+</kw>
+<status status="FAIL" start="2026-01-31T12:00:04" elapsed="0.002">Connection refused</status>
+</test>
+<test id="s1-t5" name="Dashboard Test">
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-01-31T12:00:05" level="INFO">All good</msg>
+<status status="PASS" start="2026-01-31T12:00:05" elapsed="0.001"/>
+</kw>
+<status status="PASS" start="2026-01-31T12:00:05" elapsed="0.002"/>
+</test>
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.010"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="4" skip="0">All Tests</stat>
+</total>
+</statistics>
+<errors/>
+</robot>
