@@ -1,6 +1,6 @@
 # Release Notes
 
-## [0.1.5] - Draft
+## [0.1.5] - 2026-03-04
 
 ### Bug Fixes
 
