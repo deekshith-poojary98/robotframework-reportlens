@@ -14,6 +14,7 @@ class LogMessage:
     level: str
     message: str
     is_return: bool = False
+    html: bool = False
 
 
 @dataclass

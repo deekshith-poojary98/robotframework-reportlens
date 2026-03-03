@@ -303,9 +303,10 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
                 msg = item
                 level = (getattr(msg, "level", "INFO") or "INFO").upper()
                 text = (getattr(msg, "message", None) or "").strip()
+                is_html = bool(getattr(msg, "html", False))
                 ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
                 messages_list.append(
-                    LogMessage(timestamp=ts, level=level, message=text, is_return=seen_return)
+                    LogMessage(timestamp=ts, level=level, message=text, is_return=seen_return, html=is_html)
                 )
             elif _is_executable_body_item(item):
                 child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{child_kw_index}"))
@@ -316,8 +317,9 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
         for msg in robot_kw.messages:
             level = (getattr(msg, "level", "INFO") or "INFO").upper()
             text = (getattr(msg, "message", None) or "").strip()
+            is_html = bool(getattr(msg, "html", False))
             ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
-            messages_list.append(LogMessage(timestamp=ts, level=level, message=text, is_return=False))
+            messages_list.append(LogMessage(timestamp=ts, level=level, message=text, is_return=False, html=is_html))
 
     # Failed keyword with no log messages: treat failure message as a log entry so it appears in Logs pane
     if fail_message and not messages_list:

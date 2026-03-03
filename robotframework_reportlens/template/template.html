@@ -1022,6 +1022,18 @@
     .light .log-message a:hover {
       color: hsl(195, 70%, 32%);
     }
+    .log-message img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin-top: 4px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .log-message img:hover {
+      opacity: 0.9;
+    }
     .log-entry-copy {
       flex-shrink: 0;
       display: flex;
@@ -1299,6 +1311,12 @@
       }
     }
     // ========== Utilities ==========
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function renderMessageBody(m) {
+      return m.isHtml ? m.message : escapeHtml(m.message);
+    }
     function formatDuration(ms) {
       if (ms < 1000) return `${ms}ms`;
       if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
@@ -1790,7 +1808,7 @@
                       <span class="log-time">${formatTime(m.timestamp)}</span>
                       <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
                       ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
-                      <span class="log-message">${m.message}</span>
+                      <span class="log-message">${renderMessageBody(m)}</span>
                       <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
                     </div>
                   `).join("")
@@ -1799,7 +1817,7 @@
                       <span class="log-time">${formatTime(m.timestamp)}</span>
                       <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
                       ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
-                      <span class="log-message">${m.message}</span>
+                      <span class="log-message">${renderMessageBody(m)}</span>
                       <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
                     </div>
                   `).join("")) : `<div class="log-empty">No log messages</div>`;
@@ -1895,7 +1913,6 @@
                   const hasKwMeta = kw && ((kw.documentation || kw.doc) || (kw.arguments && kw.arguments.length > 0));
                   const docText = kw ? (kw.documentation || kw.doc || "").trim() : "";
                   const argsList = kw && kw.arguments && kw.arguments.length > 0 ? kw.arguments : [];
-                  const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
                   const kwMetaBlock = hasKwMeta ? `
                     <div class="keyword-log-meta">
                       ${docText ? `<div class="keyword-log-doc"><span class="keyword-log-label">Documentation</span><pre class="keyword-log-doc-text">${escapeHtml(docText)}</pre></div>` : ""}
@@ -1923,8 +1940,7 @@
                     const hasKwMeta = kw && ((kw.documentation || kw.doc) || (kw.arguments && kw.arguments.length > 0));
                     const docText = kw ? (kw.documentation || kw.doc || "").trim() : "";
                     const argsList = kw && kw.arguments && kw.arguments.length > 0 ? kw.arguments : [];
-                    const escapeHtml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-                    const kwMetaBlock = hasKwMeta ? `
+                      const kwMetaBlock = hasKwMeta ? `
                     <div class="keyword-log-meta">
                       ${docText ? `<div class="keyword-log-doc"><span class="keyword-log-label">Documentation</span><pre class="keyword-log-doc-text">${escapeHtml(docText)}</pre></div>` : ""}
                       ${argsList.length ? `<div class="keyword-log-args"><span class="keyword-log-label">Arguments</span><span class="keyword-log-args-list">${argsList.map(a => escapeHtml(String(a))).join(", ")}</span></div>` : ""}
@@ -1951,7 +1967,7 @@
                       <span class="log-time">${formatTime(m.timestamp)}</span>
                       <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
                       ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
-                      <span class="log-message">${m.message}</span>
+                      <span class="log-message">${renderMessageBody(m)}</span>
                       <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
                     </div>
                   `).join("")
@@ -1960,7 +1976,7 @@
                       <span class="log-time">${formatTime(m.timestamp)}</span>
                       <span class="log-level ${m.level.toLowerCase()}">${m.level}</span>
                       ${m.isReturn ? '<span class="log-entry-returned">RETURNED</span>' : ''}
-                      <span class="log-message">${m.message}</span>
+                      <span class="log-message">${renderMessageBody(m)}</span>
                       <button type="button" class="log-entry-copy" title="Copy message">${icons.copy}</button>
                     </div>
                   `).join("")) : `<div class="log-empty">No log messages</div>`;
@@ -2181,6 +2197,14 @@
               }, 1500);
             });
           }
+        });
+      });
+      // Images in log messages: stop propagation (so clicking an image in a clickable log entry
+      // doesn't trigger keyword expansion) and open the image in a new tab on click.
+      document.querySelectorAll(".log-message img").forEach(img => {
+        img.addEventListener("click", (e) => {
+          e.stopPropagation();
+          window.open(img.src, "_blank");
         });
       });
       // Test tree: Expand all / Collapse all

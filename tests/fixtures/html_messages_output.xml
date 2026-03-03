@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.0" generated="2026-01-31T12:00:00" rpa="false" schemaversion="5">
+<suite id="s1" name="Screenshot Suite" source="/path/to/suite.robot">
+<test id="s1-t1" name="Screenshot Test">
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2026-01-31T12:00:01" level="INFO" html="true">&lt;img src="selenium-screenshot-1.png" width="800px"&gt;&lt;/img&gt;</msg>
+<status status="PASS" start="2026-01-31T12:00:01" elapsed="0.001"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2026-01-31T12:00:02" level="INFO">Plain text: a &lt; b &amp;&amp; c &gt; d</msg>
+<status status="PASS" start="2026-01-31T12:00:02" elapsed="0.001"/>
+</kw>
+<status status="PASS" start="2026-01-31T12:00:01" elapsed="0.002"/>
+</test>
+<status status="PASS" start="2026-01-31T12:00:01" elapsed="0.005"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+</statistics>
+</robot>

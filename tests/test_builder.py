@@ -190,3 +190,18 @@ class TestBuildReportModel:
         assert len(try_kw.keywords) >= 2, "TRY/EXCEPT should have at least TRY and EXCEPT branches"
         branch_badges = [c.badge for c in try_kw.keywords if getattr(c, "badge", None)]
         assert "TRY" in branch_badges or "EXCEPT" in branch_badges
+
+    def test_html_message_html_flag_preserved(self, html_messages_xml_path):
+        """LogMessage.html is True for html='true' messages, False for plain-text messages."""
+        model = build_report_model(html_messages_xml_path)
+        test = model.root_suite.tests[0]
+        screenshot_kw = test.keywords[0]
+        plain_kw = test.keywords[1]
+        assert len(screenshot_kw.messages) == 1
+        html_msg = screenshot_kw.messages[0]
+        assert html_msg.html is True, "html='true' message should have html=True"
+        assert "<img" in html_msg.message, "HTML message should contain <img> tag"
+        assert len(plain_kw.messages) == 1
+        plain_msg = plain_kw.messages[0]
+        assert plain_msg.html is False, "plain-text message should have html=False"
+        assert "<" in plain_msg.message, "Plain text message should contain unescaped < character"

@@ -56,3 +56,16 @@ class TestModelToPayload:
         assert "returnValues" in kw
         assert "keywords" in kw
         assert "messages" in kw
+
+    def test_html_message_isHtml_in_payload(self, html_messages_xml_path):
+        """Serialized message dict includes isHtml flag matching the html attribute."""
+        model = build_report_model(html_messages_xml_path)
+        payload = model_to_payload(model)
+        test = payload["rootSuite"]["tests"][0]
+        screenshot_kw = test["keywords"][0]
+        plain_kw = test["keywords"][1]
+        html_msg = screenshot_kw["messages"][0]
+        plain_msg = plain_kw["messages"][0]
+        assert "isHtml" in html_msg, "Serialized message must have isHtml key"
+        assert html_msg["isHtml"] is True, "HTML message must serialize with isHtml=True"
+        assert plain_msg["isHtml"] is False, "Plain-text message must serialize with isHtml=False"
