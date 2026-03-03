@@ -1315,7 +1315,32 @@
       return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
     function renderMessageBody(m) {
-      return m.isHtml ? m.message : escapeHtml(m.message);
+      if (!m.isHtml) return escapeHtml(m.message);
+      // Parse the HTML fragment so we can safely mutate img/a elements
+      const tpl = document.createElement("template");
+      tpl.innerHTML = m.message;
+      const frag = tpl.content;
+      // Ensure all <a> tags open in a new tab and don't navigate current page
+      frag.querySelectorAll("a").forEach(a => {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+      });
+      // Wrap bare <img> tags (not already inside <a>) in a new-tab link
+      frag.querySelectorAll("img").forEach(img => {
+        if (img.parentElement && img.parentElement.tagName === "A") return;
+        const src = img.getAttribute("src") || "";
+        const a = document.createElement("a");
+        a.href = src;
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+        a.setAttribute("title", "Open screenshot in new tab");
+        img.replaceWith(a);
+        a.appendChild(img);
+      });
+      // Serialize back to an HTML string
+      const div = document.createElement("div");
+      div.appendChild(frag);
+      return div.innerHTML;
     }
     function formatDuration(ms) {
       if (ms < 1000) return `${ms}ms`;
@@ -2126,7 +2151,9 @@
       });
       // Keyword clicks
       document.querySelectorAll("[data-keyword-id]").forEach(el => {
-        el.addEventListener("click", () => {
+        el.addEventListener("click", (e) => {
+          // Don't intercept clicks on images/links inside HTML log messages
+          if (e.target.closest(".log-message") && (e.target.tagName === "IMG" || e.target.tagName === "A" || e.target.closest("a"))) return;
           const keywordId = el.dataset.keywordId;
           const findKeyword = (keywords) => {
             for (const kw of keywords) {
@@ -2199,12 +2226,13 @@
           }
         });
       });
-      // Images in log messages: stop propagation (so clicking an image in a clickable log entry
-      // doesn't trigger keyword expansion) and open the image in a new tab on click.
+      // Images in log messages: stop propagation so clicking an image in a
+      // clickable log entry doesn't also trigger keyword expansion.
+      // Opening in a new tab is handled by the <a target="_blank"> wrapper
+      // that renderMessageBody injects around every <img> at render time.
       document.querySelectorAll(".log-message img").forEach(img => {
         img.addEventListener("click", (e) => {
           e.stopPropagation();
-          window.open(img.src, "_blank");
         });
       });
       // Test tree: Expand all / Collapse all

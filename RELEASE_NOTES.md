@@ -1,5 +1,33 @@
 # Release Notes
 
+## [0.1.5] - Draft
+
+### Bug Fixes
+
+- **Inline screenshot rendering**
+  - **Screenshots now render inline** – Log messages with `html="true"` (e.g. screenshots captured by SeleniumLibrary / Browser library via `Capture Page Screenshot`, or any keyword using `Log HTML`) are now rendered as inline images in the Logs & Messages pane, matching the behaviour of Robot Framework's built-in `log.html`.
+  - **Images open in a new tab** – Clicking a screenshot opens it in a new browser tab without navigating away from the report. Each `<img>` tag is wrapped in an `<a target="_blank" rel="noopener noreferrer">` link at render time by `renderMessageBody`.
+  - **Keyword expansion unaffected** – Clicking an image or any link inside a log message no longer accidentally triggers keyword selection/expansion. The `[data-keyword-id]` click handler now guards against clicks originating from within `.log-message` on `<img>` or `<a>` elements.
+  - **Plain-text messages unchanged** – Messages without `html="true"` continue to be HTML-escaped; only messages explicitly flagged as HTML are rendered as raw markup.
+
+### Tests
+
+- **6 new screenshot rendering tests** (`TestScreenshotRendering` in `test_generator.py`) covering:
+  - `renderMessageBody` wraps `<img>` in `<a target="_blank">` with `rel="noopener noreferrer"`
+  - Generated report contains no `window.open` calls
+  - Embedded report JSON carries `isHtml: true` / `isHtml: false` flags correctly
+  - Raw `<img>` tag is preserved through serialisation into the report
+  - Keyword click guard skips clicks inside `.log-message`
+  - Image click handler only stops propagation, never calls `window.open`
+- **Fixture stability** – Control-structure tests (`FOR`, `WHILE`, `IF/ELSE`, `TRY/EXCEPT`) now use a dedicated `tests/fixtures/accounts_output.xml` fixture instead of the volatile project-root `output.xml`, making them independent of which robot files were last run.
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
+---
+
 ## [0.1.4] - 2026-02-20
 
 ### Improvements
