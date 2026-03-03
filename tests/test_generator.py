@@ -162,3 +162,73 @@ class TestGenerateHtml:
         assert "<style>" in content
         assert "</style>" in content
         assert "<script>" in content or "reportData" in content
+
+
+class TestScreenshotRendering:
+    """Tests for inline screenshot / HTML log message rendering in the generated report."""
+
+    def test_render_message_body_wraps_img_in_new_tab_link(self, tmp_path, minimal_xml_path):
+        """renderMessageBody must wrap <img> tags in <a target='_blank'> so images open in a new tab."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        gen.generate_html(str(tmp_path / "report.html"))
+        js = gen._get_template_javascript()
+        assert "renderMessageBody" in js, "renderMessageBody function must be present"
+        assert 'target="_blank"' in js, "renderMessageBody must set target=_blank on image links"
+        assert "noopener" in js, "renderMessageBody must set rel=noopener on image links"
+        assert 'setAttribute("href"' in js or "a.href" in js, "renderMessageBody must set href from img src"
+
+    def test_generated_report_does_not_use_window_open_for_images(self, tmp_path, minimal_xml_path):
+        """window.open must not be used to open images — that causes double-tab navigation."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        out = tmp_path / "report.html"
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        assert "window.open" not in content, (
+            "report.html must not use window.open — images must open via <a target='_blank'> only"
+        )
+
+    def test_generated_report_embeds_isHtml_flag(self, tmp_path, html_messages_xml_path):
+        """The embedded JSON in the generated report must include isHtml=true for HTML log messages."""
+        gen = RobotFrameworkReportGenerator(html_messages_xml_path)
+        out = tmp_path / "report.html"
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        assert '"isHtml": true' in content or '"isHtml":true' in content, (
+            "Embedded report data must contain isHtml:true for HTML log messages"
+        )
+        assert '"isHtml": false' in content or '"isHtml":false' in content, (
+            "Embedded report data must contain isHtml:false for plain-text log messages"
+        )
+
+    def test_generated_report_preserves_img_tag_in_message(self, tmp_path, html_messages_xml_path):
+        """The raw <img> tag from html='true' messages must survive into the embedded JSON."""
+        gen = RobotFrameworkReportGenerator(html_messages_xml_path)
+        out = tmp_path / "report.html"
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        # The <img> is JSON-encoded inside the script tag, so < becomes \u003c or is kept as-is
+        assert "img" in content, "Embedded report data must contain the img tag from the HTML message"
+
+    def test_keyword_click_guard_skips_log_message_links(self, tmp_path, minimal_xml_path):
+        """The [data-keyword-id] click handler must bail out when the click target is an img or anchor
+        inside .log-message, so clicking a screenshot doesn't also trigger keyword expansion."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        out = tmp_path / "report.html"
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        assert "log-message" in content, "report must contain .log-message elements"
+        # Guard: the keyword click handler must check for img/a inside .log-message
+        assert 'closest(".log-message")' in content, (
+            "Keyword click handler must guard against clicks inside .log-message"
+        )
+
+    def test_img_click_handler_only_stops_propagation(self, tmp_path, minimal_xml_path):
+        """The .log-message img click handler must only stopPropagation, not call window.open."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        out = tmp_path / "report.html"
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        # window.open must be absent entirely
+        assert "window.open" not in content, (
+            ".log-message img handler must not call window.open"
+        )

@@ -53,6 +53,7 @@ def _log_message_to_dict(msg: LogMessage, msg_id: str) -> dict:
         "level": msg.level,
         "message": msg.message,
         "isReturn": msg.is_return,
+        "isHtml": msg.html,
     }
 
 

@@ -28,6 +28,14 @@ def control_structures_xml_path(fixtures_dir):
 
 
 @pytest.fixture
+def html_messages_xml_path(fixtures_dir):
+    """Path to output.xml with HTML (screenshot) and plain-text log messages."""
+    path = fixtures_dir / "html_messages_output.xml"
+    assert path.exists(), f"Fixture not found: {path}"
+    return str(path)
+
+
+@pytest.fixture
 def sample_output_xml(tmp_path):
     """Create a minimal output.xml in a temp directory (for CLI tests)."""
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>
