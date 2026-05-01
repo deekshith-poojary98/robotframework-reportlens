@@ -20,6 +20,11 @@ def main():
         default="report.html",
         help="Output HTML file path (default: report.html)",
     )
+    parser.add_argument(
+        "--external-data",
+        action="store_true",
+        help="Write report.html plus split JSON files under report.data/ for lazy loading.",
+    )
     # TODO: needs to improvise this feature for better debugging which users can use to debug the report 
     # as well as raise issues if needed with debug logs attached
     parser.add_argument(
@@ -41,7 +46,7 @@ def main():
 
     try:
         generator = RobotFrameworkReportGenerator(args.xml_file)
-        generator.generate_html(args.output)
+        generator.generate_html(args.output, external_data=args.external_data)
         return 0
     except Exception as e:
         print(f"Error generating report: {e}", file=sys.stderr)

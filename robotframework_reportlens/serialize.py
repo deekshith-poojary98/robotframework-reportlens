@@ -83,6 +83,36 @@ def _keyword_to_dict(kw: Keyword) -> dict:
     return out
 
 
+def _keyword_to_dict_without_messages(kw: Keyword) -> dict:
+    children = [_keyword_to_dict_without_messages(c) for c in kw.keywords]
+    out = {
+        "id": kw.id,
+        "name": kw.name,
+        "type": kw.type,
+        "status": kw.status,
+        "duration": kw.duration,
+        "startTime": kw.start_time or "",
+        "endTime": kw.start_time or "",
+        "arguments": kw.arguments,
+        "documentation": kw.documentation,
+        "messages": [],
+        "keywords": children,
+        "failMessage": kw.fail_message,
+        "returned": kw.returned,
+        "returnValues": kw.return_values,
+    }
+    if getattr(kw, "badge", None):
+        out["badge"] = kw.badge
+    return out
+
+
+def _collect_keyword_messages(kw: Keyword, out: dict[str, list[dict]]) -> None:
+    if kw.messages:
+        out[kw.id] = [_log_message_to_dict(m, f"{kw.id}-msg-{i}") for i, m in enumerate(kw.messages)]
+    for child in kw.keywords:
+        _collect_keyword_messages(child, out)
+
+
 def _test_to_dict(t: Test) -> dict:
     return {
         "id": t.id,
@@ -98,6 +128,24 @@ def _test_to_dict(t: Test) -> dict:
         "documentation": t.documentation,
         "setup": _keyword_to_dict(t.setup) if t.setup else None,
         "teardown": _keyword_to_dict(t.teardown) if t.teardown else None,
+    }
+
+
+def _test_to_dict_without_messages(t: Test) -> dict:
+    return {
+        "id": t.id,
+        "name": t.name,
+        "fullName": t.full_name,
+        "status": t.status,
+        "tags": t.tags,
+        "duration": t.duration,
+        "message": t.message,
+        "startTime": t.start_time or "",
+        "endTime": t.start_time or "",
+        "keywords": [_keyword_to_dict_without_messages(k) for k in t.keywords],
+        "documentation": t.documentation,
+        "setup": _keyword_to_dict_without_messages(t.setup) if t.setup else None,
+        "teardown": _keyword_to_dict_without_messages(t.teardown) if t.teardown else None,
     }
 
 

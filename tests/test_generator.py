@@ -164,6 +164,36 @@ class TestGenerateHtml:
         assert "<script>" in content or "reportData" in content
 
 
+class TestExternalDataMode:
+    """Tests for external-data output mode."""
+
+    def test_external_data_writes_split_files(self, minimal_xml_path, tmp_path):
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        gen.generate_html(str(out), external_data=True)
+        data_dir = tmp_path / "report.data"
+        assert data_dir.exists()
+        assert (data_dir / "summary.json").exists()
+        assert (data_dir / "suites.json").exists()
+        summary = json.loads((data_dir / "summary.json").read_text(encoding="utf-8"))
+        suites = json.loads((data_dir / "suites.json").read_text(encoding="utf-8"))
+        root_id = suites.get("rootSuiteId")
+        assert summary.get("rootSuiteId") == root_id
+        # Minimal suite and test files should be created for root suite and its tests
+        assert (data_dir / f"suite_{root_id}.json").exists()
+        # minimal_output.xml contains s1-t1 and s1-t2
+        assert (data_dir / "test_s1-t1.json").exists()
+        assert (data_dir / "test_s1-t2.json").exists()
+
+    def test_external_html_uses_config_only(self, minimal_xml_path, tmp_path):
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        gen.generate_html(str(out), external_data=True)
+        content = out.read_text(encoding="utf-8")
+        assert "report-config" in content
+        assert 'id="report-data"' not in content
+
+
 class TestScreenshotRendering:
     """Tests for inline screenshot / HTML log message rendering in the generated report."""
 
