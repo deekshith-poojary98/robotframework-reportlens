@@ -83,7 +83,7 @@ class RobotFrameworkReportGenerator:
         )
         return js.strip()
 
-    def _build_html(self, external_data: bool = False, data_root: str = "report.data"):
+    def _build_html(self, external_data: bool = False, data_root: str = "reportlens-data"):
         """Build the complete HTML document (template-style, data-driven)."""
         report_data = None if external_data else self._build_report_data()
         json_str = json.dumps(report_data, ensure_ascii=False) if report_data is not None else ""
@@ -124,7 +124,7 @@ class RobotFrameworkReportGenerator:
         payload = model_to_payload(self._model)
 
         path = Path(output_file)
-        data_dir = path.parent / "report.data"
+        data_dir = path.parent / "reportlens-data"
         data_dir.mkdir(parents=True, exist_ok=True)
 
         suite_errors_map = {}
@@ -242,7 +242,7 @@ class RobotFrameworkReportGenerator:
                 }
                 write_json(data_dir / f"test_{test.id}_logs.json", logs_file)
 
-        html_content = self._build_html(external_data=True, data_root="report.data")
+        html_content = self._build_html(external_data=True, data_root="reportlens-data")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(html_content, encoding="utf-8")
         print(f"Report generated: {output_file}")

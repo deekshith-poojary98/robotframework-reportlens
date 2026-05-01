@@ -23,7 +23,7 @@ def main():
     parser.add_argument(
         "--external-data",
         action="store_true",
-        help="Write report.html plus split JSON files under report.data/ for lazy loading.",
+        help="Write report.html plus split JSON files under reportlens-data/ for lazy loading.",
     )
     # TODO: needs to improvise this feature for better debugging which users can use to debug the report 
     # as well as raise issues if needed with debug logs attached

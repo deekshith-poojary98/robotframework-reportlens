@@ -69,14 +69,14 @@ def test_cli_custom_output_filename(tmp_path, sample_output_xml):
 
 
 def test_cli_external_data_mode(tmp_path, sample_output_xml):
-    """--external-data writes report.html plus report.data/*.json files."""
+    """--external-data writes report.html plus reportlens-data/*.json files."""
     out_html = tmp_path / "report.html"
     with patch("sys.argv", ["reportlens", str(sample_output_xml), "-o", str(out_html), "--external-data"]):
         exit_code = main()
     assert exit_code == 0
     assert out_html.exists()
     assert "report-config" in out_html.read_text(encoding="utf-8")
-    data_dir = tmp_path / "report.data"
+    data_dir = tmp_path / "reportlens-data"
     assert data_dir.exists()
     assert (data_dir / "summary.json").exists()
     assert (data_dir / "suites.json").exists()

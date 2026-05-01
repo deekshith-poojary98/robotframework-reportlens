@@ -115,6 +115,79 @@
     .light .test-tree-bar {
       background: hsl(220, 14%, 86%);
     }
+    /* ========== File Protocol Warning ========== */
+    .warning-banner {
+      padding: 16px 20px;
+      background: var(--status-skip-muted);
+      border-bottom: 1px solid var(--border);
+      color: var(--foreground);
+    }
+    .warning-banner-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--status-skip);
+    }
+    .warning-banner-text {
+      font-size: 12px;
+      color: var(--foreground);
+      line-height: 1.5;
+    }
+    .warning-list {
+      margin: 8px 0 10px 20px;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .warning-code {
+      display: inline-flex;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-left: 6px;
+    }
+    .warning-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .warning-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--foreground);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .warning-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    .warning-links a {
+      color: hsl(45, 100%, 65%);
+      text-decoration: underline;
+    }
+    .warning-links a:hover {
+      color: hsl(45, 100%, 72%);
+    }
+    .warning-banner a {
+      color: hsl(45, 100%, 65%);
+      text-decoration: underline;
+    }
+    .warning-banner a:hover {
+      color: hsl(45, 100%, 72%);
+    }
     /* ========== Layout ========== */
     .app {
       display: flex;
@@ -485,6 +558,11 @@
       background: var(--accent);
       color: var(--foreground);
     }
+    .test-tree-hint {
+      padding: 6px 12px 0;
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
     .test-tree {
       flex: 1;
       overflow-y: auto;
@@ -543,6 +621,9 @@
       padding: 6px 12px 6px 34px;
       color: var(--muted-foreground);
       font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .tree-loading .btn {
       margin-left: 8px;
@@ -553,6 +634,18 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       cursor: pointer;
+    }
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
     .tree-stats {
       display: flex;
@@ -961,6 +1054,9 @@
     .keyword-children .keyword-node {
       border-bottom: 1px solid var(--border);
     }
+    .keyword-children .keyword-node:last-child {
+      border-bottom: none;
+    }
     /* ========== Log Viewer ========== */
     .log-entry {
       display: flex;
@@ -1277,10 +1373,15 @@
     };
     // ========== External data config ==========
     const reportConfigEl = document.getElementById("report-config");
-  const reportConfig = reportConfigEl ? JSON.parse(reportConfigEl.textContent || "{}") : { externalData: false, dataRoot: "report.data", schemaVersion: 1 };
+  const reportConfig = reportConfigEl ? JSON.parse(reportConfigEl.textContent || "{}") : { externalData: false, dataRoot: "reportlens-data", schemaVersion: 1 };
     const externalData = reportConfig.externalData === true;
-    const dataRoot = (reportConfig.dataRoot || "report.data").replace(/\/$/, "");
-  const cacheVersion = reportConfig.version || reportConfig.generated || "v1";
+    const dataRoot = (reportConfig.dataRoot || "reportlens-data").replace(/\/$/, "");
+  const cacheVersion = reportConfig.version || reportConfig.generated || (externalData ? String(Date.now()) : "v1");
+    const fileProtocolWarning = {
+      active: false,
+      command: "python -m http.server",
+      portUrl: "http://localhost:8000"
+    };
     const reportDataEl = document.getElementById("report-data");
     let reportData = reportDataEl ? JSON.parse(reportDataEl.textContent) : null;
     if (!reportData && typeof mockData !== "undefined") {
@@ -1292,6 +1393,8 @@
       testToSuite: new Map(),
       loadingSuites: new Set(),
       loadingTests: new Set(),
+      renderedTestCounts: new Map(),
+      renderingSuites: new Set(),
       rootSuiteId: null,
       loadError: null,
       suiteErrors: new Map(),
@@ -1382,6 +1485,44 @@
     function getTestLogs(id) {
       return testLogsCache.load(id, `${dataRoot}/test_${id}_logs.json`);
     }
+    function handleFileProtocolWarning() {
+      if (!externalData) return false;
+      if (window.location.protocol !== "file:") return false;
+      fileProtocolWarning.active = true;
+      return true;
+    }
+    function renderFileProtocolWarning() {
+      const reportFile = (window.location.pathname || "").split("/").pop() || "report.html";
+      const reportUrl = `${fileProtocolWarning.portUrl}/${reportFile}`;
+      return `
+        <div class="warning-banner">
+          <div class="warning-banner-title">
+            ${icons.alert}
+            <span>External data mode requires a local server</span>
+          </div>
+          <div class="warning-banner-text">
+            This report cannot load data when opened directly from your file system.
+          </div>
+          <ol class="warning-list">
+            <li>
+              Run a local server${""}
+              <span class="warning-code">${fileProtocolWarning.command}</span>
+              <button class="warning-btn" data-action="copy-server-command">Copy command</button>
+            </li>
+            <li>
+              Open the report via
+              <a href="${reportUrl}" target="_blank" rel="noopener noreferrer">${reportUrl}</a>
+            </li>
+          </ol>
+          <div class="warning-banner-text">
+            Or regenerate the report without <span class="warning-code">--external-data</span> for a self-contained file.
+          </div>
+          <div class="warning-links">
+            <a href="https://github.com/deekshith-poojary98/robotframework-reportlens#robotframework-reportlens" target="_blank" rel="noopener noreferrer">Documentation</a>
+          </div>
+        </div>
+      `;
+    }
     function buildSuiteTree(rootId) {
       const base = dataStore.suiteMap.get(rootId);
       if (!base) return null;
@@ -1445,6 +1586,8 @@
           suite.duration = payload.suite.duration || suite.duration;
           suite.errors = payload.suite.errors || suite.errors;
         }
+        dataStore.renderedTestCounts.delete(suiteId);
+        dataStore.renderingSuites.delete(suiteId);
       } catch (err) {
         console.warn("ReportLens suite load failed:", err);
         suite.loadingTests = false;
@@ -1509,6 +1652,8 @@
     }
     const PREFETCH_LIMIT = 10;
     const prefetchedTests = new Set();
+  const filterPrefetch = { token: 0 };
+  const TEST_RENDER_BATCH = 100;
     function pickPrefetchTestId(suite) {
       const tests = Array.isArray(suite.tests) ? suite.tests : [];
       if (tests.length === 0) return null;
@@ -1524,6 +1669,48 @@
       ensureTestLoaded(testId).catch(() => {
         prefetchedTests.delete(testId);
       });
+    }
+    async function prefetchSuitesForFilters() {
+      if (!externalData) return;
+      if (!state.tagFilter && !state.searchQuery) return;
+      if (!dataStore.suiteMap.size) return;
+      const token = ++filterPrefetch.token;
+      const suiteIds = Array.from(dataStore.suiteMap.keys());
+      for (const suiteId of suiteIds) {
+        if (token !== filterPrefetch.token) return;
+        const suite = dataStore.suiteMap.get(suiteId);
+        if (!suite || suite.testsLoaded || dataStore.loadingSuites.has(suiteId)) continue;
+        await ensureSuiteLoaded(suiteId);
+      }
+    }
+    function resetSuiteRenderCounts() {
+      dataStore.renderedTestCounts.clear();
+      dataStore.renderingSuites.clear();
+    }
+    function getSuiteRenderCount(suiteId, totalTests) {
+      if (totalTests <= 0) return 0;
+      const current = dataStore.renderedTestCounts.get(suiteId);
+      if (current == null) {
+        const initial = Math.min(TEST_RENDER_BATCH, totalTests);
+        dataStore.renderedTestCounts.set(suiteId, initial);
+        return initial;
+      }
+      if (current > totalTests) {
+        dataStore.renderedTestCounts.set(suiteId, totalTests);
+        return totalTests;
+      }
+      return current;
+    }
+    function scheduleSuiteBatchRender(suiteId, currentCount, totalTests) {
+      if (currentCount >= totalTests) return;
+      if (dataStore.renderingSuites.has(suiteId)) return;
+      dataStore.renderingSuites.add(suiteId);
+      const nextCount = Math.min(totalTests, currentCount + TEST_RENDER_BATCH);
+      setTimeout(() => {
+        dataStore.renderedTestCounts.set(suiteId, nextCount);
+        dataStore.renderingSuites.delete(suiteId);
+        render();
+      }, 16);
     }
     // ========== State ==========
     const SIDEBAR_MIN = 200;
@@ -1643,6 +1830,21 @@
       suite.suites.forEach(s => tests = tests.concat(getAllTests(s)));
       return tests;
     }
+    function getSuiteTestCount(suite) {
+      if (!suite) return 0;
+      if (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
+        if (!suite.tests || suite.tests.length === 0) {
+          return suite.statistics?.total ?? suite.testIds.length;
+        }
+      }
+      if (externalData && Array.isArray(suite.suites) && suite.suites.length > 0) {
+        return suite.suites.reduce((sum, child) => {
+          const childCount = getSuiteTestCount(child);
+          return sum + childCount;
+        }, 0);
+      }
+      return getAllTests(suite).length;
+    }
     function getFailedTests(suite) {
       return getAllTests(suite).filter(t => t.status === "FAIL");
     }
@@ -1658,7 +1860,22 @@
       if (state.statusFilter === "ALL") return true;
       return (kw.status || "PASS") === state.statusFilter;
     }
+    function suiteMatchesStatusFilter(suite) {
+      if (state.statusFilter === "ALL") return true;
+      const stats = suite?.statistics || {};
+      if (state.statusFilter === "PASS") return (stats.passed || 0) > 0;
+      if (state.statusFilter === "FAIL") return (stats.failed || 0) > 0;
+      if (state.statusFilter === "SKIP") return (stats.skipped || 0) > 0;
+      return true;
+    }
     function suiteHasVisibleTests(suite) {
+      if (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
+        if (!suiteMatchesStatusFilter(suite)) return false;
+        if (state.searchQuery || state.tagFilter) {
+          return suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests);
+        }
+        return true;
+      }
       if (suite.tests.some(filterTest)) return true;
       if (state.statusFilter === "ALL") {
         if (suite.setup || suite.teardown) return true;
@@ -1677,6 +1894,33 @@
       if (hasChildren) ids.push(suite.id);
       (suite.suites || []).forEach(s => ids.push(...getExpandableSuiteIds(s)));
       return ids;
+    }
+    function findFailedSuiteId(suite) {
+      if (!suite) return null;
+      if (suite.statistics && suite.statistics.failed > 0) return suite.id;
+      for (const child of suite.suites || []) {
+        const found = findFailedSuiteId(child);
+        if (found) return found;
+      }
+      return null;
+    }
+    function getFailedSuiteIds(suite, result = []) {
+      if (!suite) return result;
+      const failedCount = suite.statistics?.failed ?? 0;
+      if (failedCount > 0 || (suite.status || "").toUpperCase() === "FAIL") {
+        result.push(suite.id);
+      }
+      (suite.suites || []).forEach(child => getFailedSuiteIds(child, result));
+      return result;
+    }
+    function getSuitePathToId(suite, suiteId) {
+      if (!suite || !suiteId) return null;
+      if (suite.id === suiteId) return [suite.id];
+      for (const child of suite.suites || []) {
+        const path = getSuitePathToId(child, suiteId);
+        if (path) return [suite.id, ...path];
+      }
+      return null;
     }
     /** Suite IDs from root down to the suite that contains the test (for deep link expand). */
     function getSuitePathToTest(suite, testId) {
@@ -1812,10 +2056,32 @@
       // Save scroll positions before re-rendering
       const testTreeEl = document.querySelector(".test-tree");
       const failedSummaryListEl = document.querySelector(".failed-summary-list");
+      const keywordPanelEl = document.querySelector("#panel-keywords .panel-content");
+      const logPanelEl = document.querySelector("#panel-logs .panel-content");
       const savedScrollPositions = {
         testTree: testTreeEl ? testTreeEl.scrollTop : 0,
-        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0
+        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0,
+        keywordPanel: keywordPanelEl ? keywordPanelEl.scrollTop : 0,
+        logPanel: logPanelEl ? logPanelEl.scrollTop : 0
       };
+
+      if (fileProtocolWarning.active) {
+        document.body.className = state.isDark ? "" : "light";
+        document.getElementById("app").innerHTML = `
+          <div class="app">
+            ${renderFileProtocolWarning()}
+            <main class="main-panel">
+              <div class="empty-state">
+                ${icons.clipboard}
+                <h3>Report data is blocked by file://</h3>
+                <p>Use the instructions above to open the report via http.</p>
+              </div>
+            </main>
+          </div>
+        `;
+        attachEventListeners();
+        return;
+      }
 
       if (!reportData || !reportData.rootSuite) {
         document.getElementById("app").innerHTML = `
@@ -1852,11 +2118,19 @@
       requestAnimationFrame(() => {
         const newTestTreeEl = document.querySelector(".test-tree");
         const newFailedSummaryListEl = document.querySelector(".failed-summary-list");
+        const newKeywordPanelEl = document.querySelector("#panel-keywords .panel-content");
+        const newLogPanelEl = document.querySelector("#panel-logs .panel-content");
         if (newTestTreeEl && savedScrollPositions.testTree > 0) {
           newTestTreeEl.scrollTop = savedScrollPositions.testTree;
         }
         if (newFailedSummaryListEl && savedScrollPositions.failedSummaryList > 0) {
           newFailedSummaryListEl.scrollTop = savedScrollPositions.failedSummaryList;
+        }
+        if (newKeywordPanelEl && savedScrollPositions.keywordPanel > 0) {
+          newKeywordPanelEl.scrollTop = savedScrollPositions.keywordPanel;
+        }
+        if (newLogPanelEl && savedScrollPositions.logPanel > 0) {
+          newLogPanelEl.scrollTop = savedScrollPositions.logPanel;
         }
       });
     }
@@ -1905,7 +2179,9 @@
     function renderSidebar() {
       const allTags = getAllTags(reportData.rootSuite);
       const failedTests = getFailedTests(reportData.rootSuite);
-      
+      const totalTests = reportData.rootSuite
+        ? (externalData ? getSuiteTestCount(reportData.rootSuite) : getAllTests(reportData.rootSuite).filter(filterTest).length)
+        : 0;
       return `
         <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}" id="sidebar" style="${state.sidebarCollapsed ? "" : "width: " + state.sidebarWidth + "px"}">
           <div class="search-filter">
@@ -1946,7 +2222,7 @@
             </div>
           ` : ""}
           <div class="test-tree-bar">
-            <span>${reportData.rootSuite ? getAllTests(reportData.rootSuite).filter(filterTest).length : 0} tests</span>
+            <span>${totalTests} tests</span>
             <button id="test-tree-expand-collapse-btn">${(function() {
               if (!reportData.rootSuite) return "Expand all";
               const expandableIds = getExpandableSuiteIds(reportData.rootSuite);
@@ -1954,6 +2230,7 @@
               return allExpanded ? "Collapse all" : "Expand all";
             })()}</button>
           </div>
+          ${externalData ? `<div class="test-tree-hint">Tests load when you expand a suite.</div>` : ""}
           <div class="test-tree">
             ${renderTestTree(reportData.rootSuite)}
           </div>
@@ -1967,9 +2244,17 @@
       const visibleTests = suite.tests.filter(filterTest);
   const isLoadingTests = suite.loadingTests === true;
   const suiteError = dataStore.suiteErrors.get(suite.id);
+      const totalVisibleTests = visibleTests.length;
+      const renderedTestCount = getSuiteRenderCount(suite.id, totalVisibleTests);
+      const testsToRender = visibleTests.slice(0, renderedTestCount);
+      const hasMoreTests = renderedTestCount < totalVisibleTests;
       const setupMatchesFilter = !suite.setup || state.statusFilter === "ALL" || suite.setup.status === state.statusFilter;
       const teardownMatchesFilter = !suite.teardown || state.statusFilter === "ALL" || suite.teardown.status === state.statusFilter;
-      const hasChildren = visibleTests.length > 0 || suite.suites.some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
+  const externalHasTests = externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0 && suiteMatchesStatusFilter(suite);
+  const hasChildren = visibleTests.length > 0 || externalHasTests || suite.suites.some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
+      if (isExpanded && hasMoreTests) {
+        scheduleSuiteBatchRender(suite.id, renderedTestCount, totalVisibleTests);
+      }
       
       const suiteTitle = (suite.fullName || suite.name || "").replace(/"/g, "&quot;");
       return `
@@ -2003,7 +2288,7 @@
                   <button class="btn" data-action="retry-suite" data-suite-id="${suite.id}">Retry</button>
                 </div>
               ` : ""}
-              ${visibleTests.map(t => {
+              ${testsToRender.map(t => {
                 const testTitle = (t.fullName || t.name || "").replace(/"/g, "&quot;");
                 return `
                 <div class="tree-node">
@@ -2016,6 +2301,12 @@
                 </div>
               `;
               }).join("")}
+              ${hasMoreTests ? `
+                <div class="tree-loading">
+                  <span class="spinner"></span>
+                  <span>Rendering ${Math.min(renderedTestCount + TEST_RENDER_BATCH, totalVisibleTests)} of ${totalVisibleTests} tests...</span>
+                </div>
+              ` : ""}
               ${suite.suites.map(s => renderTestTree(s, depth + 1)).join("")}
             </div>
             ${(suite.teardown && teardownMatchesFilter ? `
@@ -2365,6 +2656,23 @@
     }
     // ========== Event Listeners ==========
     function attachEventListeners() {
+      document.querySelectorAll("[data-action='copy-server-command']").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(fileProtocolWarning.command);
+            const original = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(() => {
+              btn.textContent = original || "Copy command";
+            }, 1500);
+          } catch (_) {
+            btn.textContent = "Copy failed";
+            setTimeout(() => {
+              btn.textContent = "Copy command";
+            }, 1500);
+          }
+        });
+      });
       // Theme toggle
       document.getElementById("theme-toggle")?.addEventListener("click", () => {
         state.isDark = !state.isDark;
@@ -2378,7 +2686,11 @@
       // Search
       document.getElementById("search-input")?.addEventListener("input", (e) => {
         state.searchQuery = e.target.value;
+        resetSuiteRenderCounts();
         render();
+        if (externalData) {
+          prefetchSuitesForFilters().catch(() => {});
+        }
         const input = document.getElementById("search-input");
         if (input) {
           input.focus();
@@ -2388,12 +2700,20 @@
       // Status filter
       document.getElementById("status-filter")?.addEventListener("change", (e) => {
         state.statusFilter = e.target.value;
+        resetSuiteRenderCounts();
         render();
+        if (externalData) {
+          prefetchSuitesForFilters().catch(() => {});
+        }
       });
       // Tag filter
       document.getElementById("tag-filter")?.addEventListener("change", (e) => {
         state.tagFilter = e.target.value;
+        resetSuiteRenderCounts();
         render();
+        if (externalData) {
+          prefetchSuitesForFilters().catch(() => {});
+        }
       });
       // Failed summary toggle
       document.getElementById("toggle-failed")?.addEventListener("click", () => {
@@ -2778,6 +3098,10 @@
       return appliedDeepLink;
     }
     async function boot() {
+      if (handleFileProtocolWarning()) {
+        render();
+        return;
+      }
       if (externalData) {
         await loadExternalData();
       }
@@ -2786,9 +3110,44 @@
       }
       const appliedDeepLink = await applyDeepLink();
       if (!appliedDeepLink) {
-        const failedTests = reportData?.rootSuite ? getFailedTests(reportData.rootSuite) : [];
+        if (externalData && reportData?.rootSuite) {
+          const failedSuiteIds = getFailedSuiteIds(reportData.rootSuite);
+          failedSuiteIds.forEach(id => {
+            const path = getSuitePathToId(reportData.rootSuite, id);
+            if (path) path.forEach(pathId => state.expandedSuites.add(pathId));
+          });
+          for (const suiteId of failedSuiteIds) {
+            await ensureSuiteLoaded(suiteId);
+          }
+          const primaryFailedSuiteId = failedSuiteIds[0];
+          if (primaryFailedSuiteId) {
+            const suite = dataStore.suiteMap.get(primaryFailedSuiteId);
+            const failedTest = suite?.tests?.find(t => (t.status || "").toUpperCase() === "FAIL");
+            const fallbackTestId = failedTest?.id || suite?.tests?.[0]?.id || suite?.testIds?.[0];
+            if (fallbackTestId) {
+              const loaded = await ensureTestLoaded(fallbackTestId);
+              if (loaded) state.selectedTest = loaded;
+            }
+          }
+        } else {
+          const failedTests = reportData?.rootSuite ? getFailedTests(reportData.rootSuite) : [];
+          if (failedTests.length > 0) {
+            state.selectedTest = failedTests[0];
+          }
+        }
+      }
+      if (!appliedDeepLink && !state.selectedTest && reportData?.rootSuite) {
+        const failedTests = getFailedTests(reportData.rootSuite);
         if (failedTests.length > 0) {
-          state.selectedTest = failedTests[0];
+          const firstFailed = failedTests[0];
+          if (externalData) {
+            const suiteId = dataStore.testToSuite.get(firstFailed.id);
+            if (suiteId) await ensureSuiteLoaded(suiteId);
+            const loaded = await ensureTestLoaded(firstFailed.id);
+            if (loaded) state.selectedTest = loaded;
+          } else {
+            state.selectedTest = firstFailed;
+          }
         }
       }
       render();

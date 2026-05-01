@@ -39,6 +39,7 @@ reportlens output.xml -o report.html
 
 - `xml_file` – Path to Robot Framework XML output (e.g. `output.xml`)
 - `-o`, `--output` – Output HTML path (default: `report.html`)
+- `--external-data` – Store report data in `reportlens-data/` and fetch it lazily (recommended for huge suites)
 
 **Examples:**
 
@@ -48,9 +49,15 @@ reportlens output.xml
 
 # Custom output path
 reportlens output.xml -o docs/report.html
+
+# External-data mode (lazy loading + smaller HTML)
+reportlens output.xml -o report.html --external-data
 ```
 
 Open the generated `.html` file in a browser.
+
+> **External-data mode note**
+> When using `--external-data`, open the report via a local web server (e.g. `python -m http.server`). Opening the file directly with `file://` will show a banner with a helpful link to the hosted report.
 
 You can also run the module directly:
 
@@ -62,10 +69,12 @@ python -m robotframework_reportlens output.xml -o report.html
 
 - **Suite/test tree** – Navigate suites and tests with pass/fail/skip counts
 - **Search & filters** – Filter by status and tags; search test names
+- **External-data mode** – Optional `--external-data` output for lazy loading and smaller HTML files
 - **Keyword tree** – Expand SETUP, keywords, and TEARDOWN; select a keyword to see its logs
 - **Logs panel** – Log level filter (All, ERROR, WARN, INFO, etc.); copy button on each log message (shown on hover)
 - **Failed-tests summary** – Quick access to failed tests from the sidebar
 - **Dark/light theme** – Toggle in the report header
+- **Batch rendering** – Large suites render tests in batches for smoother UI performance
 - **Fixed layout** – Same layout on all screens; zoom and scroll as needed
 
 ## How it works

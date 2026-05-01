@@ -171,7 +171,7 @@ class TestExternalDataMode:
         out = tmp_path / "report.html"
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
         gen.generate_html(str(out), external_data=True)
-        data_dir = tmp_path / "report.data"
+        data_dir = tmp_path / "reportlens-data"
         assert data_dir.exists()
         assert (data_dir / "summary.json").exists()
         assert (data_dir / "suites.json").exists()
