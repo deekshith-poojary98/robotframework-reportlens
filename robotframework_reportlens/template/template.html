@@ -115,6 +115,79 @@
     .light .test-tree-bar {
       background: hsl(220, 14%, 86%);
     }
+    /* ========== File Protocol Warning ========== */
+    .warning-banner {
+      padding: 16px 20px;
+      background: var(--status-skip-muted);
+      border-bottom: 1px solid var(--border);
+      color: var(--foreground);
+    }
+    .warning-banner-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--status-skip);
+    }
+    .warning-banner-text {
+      font-size: 12px;
+      color: var(--foreground);
+      line-height: 1.5;
+    }
+    .warning-list {
+      margin: 8px 0 10px 20px;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .warning-code {
+      display: inline-flex;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--muted);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-left: 6px;
+    }
+    .warning-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .warning-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--foreground);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .warning-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    .warning-links a {
+      color: hsl(45, 100%, 65%);
+      text-decoration: underline;
+    }
+    .warning-links a:hover {
+      color: hsl(45, 100%, 72%);
+    }
+    .warning-banner a {
+      color: hsl(45, 100%, 65%);
+      text-decoration: underline;
+    }
+    .warning-banner a:hover {
+      color: hsl(45, 100%, 72%);
+    }
     /* ========== Layout ========== */
     .app {
       display: flex;
@@ -485,6 +558,11 @@
       background: var(--accent);
       color: var(--foreground);
     }
+    .test-tree-hint {
+      padding: 6px 12px 0;
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
     .test-tree {
       flex: 1;
       overflow-y: auto;
@@ -538,6 +616,36 @@
     }
     .tree-name.suite {
       font-weight: 500;
+    }
+    .tree-loading {
+      padding: 6px 12px 6px 34px;
+      color: var(--muted-foreground);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tree-loading .btn {
+      margin-left: 8px;
+      font-size: 11px;
+      padding: 2px 8px;
+      background: var(--muted);
+      color: var(--foreground);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
     .tree-stats {
       display: flex;
@@ -946,6 +1054,9 @@
     .keyword-children .keyword-node {
       border-bottom: 1px solid var(--border);
     }
+    .keyword-children .keyword-node:last-child {
+      border-bottom: none;
+    }
     /* ========== Log Viewer ========== */
     .log-entry {
       display: flex;
@@ -1260,6 +1371,347 @@
       clipboard: `<svg class="icon sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`,
       filter: `<svg class="icon sm" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`
     };
+    // ========== External data config ==========
+    const reportConfigEl = document.getElementById("report-config");
+  const reportConfig = reportConfigEl ? JSON.parse(reportConfigEl.textContent || "{}") : { externalData: false, dataRoot: "reportlens-data", schemaVersion: 1 };
+    const externalData = reportConfig.externalData === true;
+    const dataRoot = (reportConfig.dataRoot || "reportlens-data").replace(/\/$/, "");
+  const cacheVersion = reportConfig.version || reportConfig.generated || (externalData ? String(Date.now()) : "v1");
+    const fileProtocolWarning = {
+      active: false,
+      command: "python -m http.server",
+      portUrl: "http://localhost:8000"
+    };
+    const reportDataEl = document.getElementById("report-data");
+    let reportData = reportDataEl ? JSON.parse(reportDataEl.textContent) : null;
+    if (!reportData && typeof mockData !== "undefined") {
+      reportData = mockData;
+    }
+    const dataStore = {
+      suiteMap: new Map(),
+      testCache: new Map(),
+      testToSuite: new Map(),
+      loadingSuites: new Set(),
+      loadingTests: new Set(),
+      renderedTestCounts: new Map(),
+      renderingSuites: new Set(),
+      rootSuiteId: null,
+      loadError: null,
+      suiteErrors: new Map(),
+      testErrors: new Map()
+    };
+    function setLoadError(err) {
+      dataStore.loadError = err ? String(err) : null;
+    }
+    function setSuiteError(suiteId, err) {
+      if (err) dataStore.suiteErrors.set(suiteId, String(err));
+      else dataStore.suiteErrors.delete(suiteId);
+    }
+    function setTestError(testId, err) {
+      if (err) dataStore.testErrors.set(testId, String(err));
+      else dataStore.testErrors.delete(testId);
+    }
+    function withVersion(path) {
+      const hasQuery = path.includes("?");
+      const versionParam = `v=${encodeURIComponent(cacheVersion)}`;
+      return hasQuery ? `${path}&${versionParam}` : `${path}?${versionParam}`;
+    }
+    async function fetchWithRetry(path, maxRetries = 2, timeoutMs = 10000) {
+      let attempt = 0;
+      while (attempt <= maxRetries) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(path, { signal: controller.signal });
+          if (!res.ok) {
+            if (res.status >= 400 && res.status < 500) {
+              throw new Error(`Failed to load ${path}: ${res.status}`);
+            }
+            throw new Error(`Retryable error ${res.status} for ${path}`);
+          }
+          clearTimeout(timer);
+          return res.json();
+        } catch (err) {
+          clearTimeout(timer);
+          if (attempt >= maxRetries || (err && err.message && /Failed to load/.test(err.message))) {
+            console.warn("ReportLens fetch failed:", err);
+            throw err;
+          }
+          attempt += 1;
+        }
+      }
+      throw new Error(`Failed to load ${path}`);
+    }
+    function createResourceCache() {
+      const cache = new Map();
+      const inflight = new Map();
+      async function load(key, path) {
+        if (cache.has(key)) return cache.get(key);
+        if (inflight.has(key)) return inflight.get(key);
+        const versioned = withVersion(path);
+        const promise = fetchWithRetry(versioned)
+          .then(data => {
+            cache.set(key, data);
+            inflight.delete(key);
+            return data;
+          })
+          .catch(err => {
+            inflight.delete(key);
+            throw err;
+          });
+        inflight.set(key, promise);
+        return promise;
+      }
+      return { load, cache, inflight };
+    }
+    const summaryCache = createResourceCache();
+    const suitesCache = createResourceCache();
+    const suiteCache = createResourceCache();
+    const testCache = createResourceCache();
+  const testLogsCache = createResourceCache();
+
+    function getSummary() {
+      return summaryCache.load("summary", `${dataRoot}/summary.json`);
+    }
+    function getSuites() {
+      return suitesCache.load("suites", `${dataRoot}/suites.json`);
+    }
+    function getSuite(id) {
+      return suiteCache.load(id, `${dataRoot}/suite_${id}.json`);
+    }
+    function getTest(id) {
+      return testCache.load(id, `${dataRoot}/test_${id}.json`);
+    }
+    function getTestLogs(id) {
+      return testLogsCache.load(id, `${dataRoot}/test_${id}_logs.json`);
+    }
+    function handleFileProtocolWarning() {
+      if (!externalData) return false;
+      if (window.location.protocol !== "file:") return false;
+      fileProtocolWarning.active = true;
+      return true;
+    }
+    function renderFileProtocolWarning() {
+      const reportFile = (window.location.pathname || "").split("/").pop() || "report.html";
+      const reportUrl = `${fileProtocolWarning.portUrl}/${reportFile}`;
+      return `
+        <div class="warning-banner">
+          <div class="warning-banner-title">
+            ${icons.alert}
+            <span>External data mode requires a local server</span>
+          </div>
+          <div class="warning-banner-text">
+            This report cannot load data when opened directly from your file system.
+          </div>
+          <ol class="warning-list">
+            <li>
+              Run a local server${""}
+              <span class="warning-code">${fileProtocolWarning.command}</span>
+              <button class="warning-btn" data-action="copy-server-command">Copy command</button>
+            </li>
+            <li>
+              Open the report via
+              <a href="${reportUrl}" target="_blank" rel="noopener noreferrer">${reportUrl}</a>
+            </li>
+          </ol>
+          <div class="warning-banner-text">
+            Or regenerate the report without <span class="warning-code">--external-data</span> for a self-contained file.
+          </div>
+          <div class="warning-links">
+            <a href="https://github.com/deekshith-poojary98/robotframework-reportlens#robotframework-reportlens" target="_blank" rel="noopener noreferrer">Documentation</a>
+          </div>
+        </div>
+      `;
+    }
+    function buildSuiteTree(rootId) {
+      const base = dataStore.suiteMap.get(rootId);
+      if (!base) return null;
+      const suite = {
+        ...base,
+        suites: [],
+        tests: base.tests || []
+      };
+      suite.suites = (base.childSuiteIds || []).map(id => buildSuiteTree(id)).filter(Boolean);
+      return suite;
+    }
+    async function loadExternalData() {
+      setLoadError(null);
+      try {
+        const [summary, suitesPayload] = await Promise.all([
+          getSummary(),
+          getSuites()
+        ]);
+        dataStore.suiteMap.clear();
+        dataStore.testToSuite.clear();
+        dataStore.rootSuiteId = suitesPayload.rootSuiteId;
+        (suitesPayload.suites || []).forEach(suite => {
+          dataStore.suiteMap.set(suite.id, {
+            ...suite,
+            tests: [],
+            testsLoaded: false,
+            loadingTests: false,
+            setup: null,
+            teardown: null,
+            errors: suite.errors || []
+          });
+          (suite.testIds || []).forEach(testId => dataStore.testToSuite.set(testId, suite.id));
+        });
+        reportData = {
+          ...summary,
+          rootSuite: buildSuiteTree(suitesPayload.rootSuiteId)
+        };
+      } catch (err) {
+        console.warn("ReportLens external data load failed:", err);
+        setLoadError(err);
+        reportData = null;
+      }
+    }
+    async function ensureSuiteLoaded(suiteId) {
+      const suite = dataStore.suiteMap.get(suiteId);
+      if (!suite || suite.testsLoaded || dataStore.loadingSuites.has(suiteId)) return;
+      dataStore.loadingSuites.add(suiteId);
+      suite.loadingTests = true;
+      setSuiteError(suiteId, null);
+      render();
+      try {
+        const payload = await getSuite(suiteId);
+        suite.tests = payload.tests || [];
+        suite.testsLoaded = true;
+        suite.loadingTests = false;
+        if (payload.suite) {
+          suite.setup = payload.suite.setup || suite.setup;
+          suite.teardown = payload.suite.teardown || suite.teardown;
+          suite.statistics = payload.suite.statistics || suite.statistics;
+          suite.status = payload.suite.status || suite.status;
+          suite.duration = payload.suite.duration || suite.duration;
+          suite.errors = payload.suite.errors || suite.errors;
+        }
+        dataStore.renderedTestCounts.delete(suiteId);
+        dataStore.renderingSuites.delete(suiteId);
+      } catch (err) {
+        console.warn("ReportLens suite load failed:", err);
+        suite.loadingTests = false;
+        setSuiteError(suiteId, err);
+      } finally {
+        dataStore.loadingSuites.delete(suiteId);
+        if (reportData && reportData.rootSuite) {
+          reportData.rootSuite = buildSuiteTree(reportData.rootSuite.id);
+        }
+        render();
+      }
+    }
+    async function ensureTestLoaded(testId) {
+      if (dataStore.testCache.has(testId)) return dataStore.testCache.get(testId);
+      if (dataStore.loadingTests.has(testId)) return null;
+      dataStore.loadingTests.add(testId);
+      setTestError(testId, null);
+      render();
+      try {
+        const payload = await getTest(testId);
+        const test = payload.test;
+        dataStore.testCache.set(testId, test);
+        return test;
+      } catch (err) {
+        console.warn("ReportLens test load failed:", err);
+        setTestError(testId, err);
+        return null;
+      } finally {
+        dataStore.loadingTests.delete(testId);
+      }
+    }
+    function applyLogsToKeywords(keywords, keywordMessages) {
+      if (!Array.isArray(keywords)) return;
+      keywords.forEach(kw => {
+        if (keywordMessages && keywordMessages[kw.id]) {
+          kw.messages = keywordMessages[kw.id];
+        }
+        if (kw.keywords) applyLogsToKeywords(kw.keywords, keywordMessages);
+      });
+    }
+    async function ensureTestLogsLoaded(test) {
+      if (!test || test.logsLoaded || dataStore.loadingTests.has(`logs:${test.id}`)) return;
+      dataStore.loadingTests.add(`logs:${test.id}`);
+      setTestError(test.id, null);
+      render();
+      try {
+        const logs = await getTestLogs(test.id);
+        applyLogsToKeywords(test.keywords, logs.keywordMessages || {});
+        test.logsLoaded = true;
+      } catch (err) {
+        console.warn("ReportLens test logs load failed:", err);
+        // Backward compatibility: if logs file is missing, keep existing messages
+        if (String(err).includes("404")) {
+          test.logsLoaded = true;
+        } else {
+          setTestError(test.id, err);
+        }
+      } finally {
+        dataStore.loadingTests.delete(`logs:${test.id}`);
+        render();
+      }
+    }
+    const PREFETCH_LIMIT = 10;
+    const prefetchedTests = new Set();
+  const filterPrefetch = { token: 0 };
+  const TEST_RENDER_BATCH = 100;
+    function pickPrefetchTestId(suite) {
+      const tests = Array.isArray(suite.tests) ? suite.tests : [];
+      if (tests.length === 0) return null;
+      const failed = tests.find(t => (t.status || "").toUpperCase() === "FAIL");
+      return (failed || tests[0]).id;
+    }
+    function prefetchTestForSuite(suite) {
+      if (!suite || prefetchedTests.size >= PREFETCH_LIMIT) return;
+      const testId = pickPrefetchTestId(suite);
+      if (!testId || dataStore.testCache.has(testId) || prefetchedTests.has(testId)) return;
+      prefetchedTests.add(testId);
+      // Fire and forget; do not block UI rendering
+      ensureTestLoaded(testId).catch(() => {
+        prefetchedTests.delete(testId);
+      });
+    }
+    async function prefetchSuitesForFilters() {
+      if (!externalData) return;
+      if (!state.tagFilter && !state.searchQuery) return;
+      if (!dataStore.suiteMap.size) return;
+      const token = ++filterPrefetch.token;
+      const suiteIds = Array.from(dataStore.suiteMap.keys());
+      for (const suiteId of suiteIds) {
+        if (token !== filterPrefetch.token) return;
+        const suite = dataStore.suiteMap.get(suiteId);
+        if (!suite || suite.testsLoaded || dataStore.loadingSuites.has(suiteId)) continue;
+        await ensureSuiteLoaded(suiteId);
+      }
+    }
+    function resetSuiteRenderCounts() {
+      dataStore.renderedTestCounts.clear();
+      dataStore.renderingSuites.clear();
+    }
+    function getSuiteRenderCount(suiteId, totalTests) {
+      if (totalTests <= 0) return 0;
+      const current = dataStore.renderedTestCounts.get(suiteId);
+      if (current == null) {
+        const initial = Math.min(TEST_RENDER_BATCH, totalTests);
+        dataStore.renderedTestCounts.set(suiteId, initial);
+        return initial;
+      }
+      if (current > totalTests) {
+        dataStore.renderedTestCounts.set(suiteId, totalTests);
+        return totalTests;
+      }
+      return current;
+    }
+    function scheduleSuiteBatchRender(suiteId, currentCount, totalTests) {
+      if (currentCount >= totalTests) return;
+      if (dataStore.renderingSuites.has(suiteId)) return;
+      dataStore.renderingSuites.add(suiteId);
+      const nextCount = Math.min(totalTests, currentCount + TEST_RENDER_BATCH);
+      setTimeout(() => {
+        dataStore.renderedTestCounts.set(suiteId, nextCount);
+        dataStore.renderingSuites.delete(suiteId);
+        render();
+      }, 16);
+    }
     // ========== State ==========
     const SIDEBAR_MIN = 200;
     const SIDEBAR_MAX = 600;
@@ -1304,10 +1756,11 @@
       }
       suite.suites.forEach(expandFailedSuites);
     }
-    if (mockData.rootSuite) {
-      expandFailedSuites(mockData.rootSuite);
-      if (getFailedTests(mockData.rootSuite).length > 0) {
-        state.expandedSuites.add(mockData.rootSuite.id);
+    function initializeExpandedSuites(rootSuite) {
+      if (!rootSuite) return;
+      expandFailedSuites(rootSuite);
+      if (getFailedTests(rootSuite).length > 0) {
+        state.expandedSuites.add(rootSuite.id);
       }
     }
     // ========== Utilities ==========
@@ -1377,6 +1830,21 @@
       suite.suites.forEach(s => tests = tests.concat(getAllTests(s)));
       return tests;
     }
+    function getSuiteTestCount(suite) {
+      if (!suite) return 0;
+      if (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
+        if (!suite.tests || suite.tests.length === 0) {
+          return suite.statistics?.total ?? suite.testIds.length;
+        }
+      }
+      if (externalData && Array.isArray(suite.suites) && suite.suites.length > 0) {
+        return suite.suites.reduce((sum, child) => {
+          const childCount = getSuiteTestCount(child);
+          return sum + childCount;
+        }, 0);
+      }
+      return getAllTests(suite).length;
+    }
     function getFailedTests(suite) {
       return getAllTests(suite).filter(t => t.status === "FAIL");
     }
@@ -1392,7 +1860,22 @@
       if (state.statusFilter === "ALL") return true;
       return (kw.status || "PASS") === state.statusFilter;
     }
+    function suiteMatchesStatusFilter(suite) {
+      if (state.statusFilter === "ALL") return true;
+      const stats = suite?.statistics || {};
+      if (state.statusFilter === "PASS") return (stats.passed || 0) > 0;
+      if (state.statusFilter === "FAIL") return (stats.failed || 0) > 0;
+      if (state.statusFilter === "SKIP") return (stats.skipped || 0) > 0;
+      return true;
+    }
     function suiteHasVisibleTests(suite) {
+      if (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
+        if (!suiteMatchesStatusFilter(suite)) return false;
+        if (state.searchQuery || state.tagFilter) {
+          return suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests);
+        }
+        return true;
+      }
       if (suite.tests.some(filterTest)) return true;
       if (state.statusFilter === "ALL") {
         if (suite.setup || suite.teardown) return true;
@@ -1411,6 +1894,33 @@
       if (hasChildren) ids.push(suite.id);
       (suite.suites || []).forEach(s => ids.push(...getExpandableSuiteIds(s)));
       return ids;
+    }
+    function findFailedSuiteId(suite) {
+      if (!suite) return null;
+      if (suite.statistics && suite.statistics.failed > 0) return suite.id;
+      for (const child of suite.suites || []) {
+        const found = findFailedSuiteId(child);
+        if (found) return found;
+      }
+      return null;
+    }
+    function getFailedSuiteIds(suite, result = []) {
+      if (!suite) return result;
+      const failedCount = suite.statistics?.failed ?? 0;
+      if (failedCount > 0 || (suite.status || "").toUpperCase() === "FAIL") {
+        result.push(suite.id);
+      }
+      (suite.suites || []).forEach(child => getFailedSuiteIds(child, result));
+      return result;
+    }
+    function getSuitePathToId(suite, suiteId) {
+      if (!suite || !suiteId) return null;
+      if (suite.id === suiteId) return [suite.id];
+      for (const child of suite.suites || []) {
+        const path = getSuitePathToId(child, suiteId);
+        if (path) return [suite.id, ...path];
+      }
+      return null;
     }
     /** Suite IDs from root down to the suite that contains the test (for deep link expand). */
     function getSuitePathToTest(suite, testId) {
@@ -1546,10 +2056,49 @@
       // Save scroll positions before re-rendering
       const testTreeEl = document.querySelector(".test-tree");
       const failedSummaryListEl = document.querySelector(".failed-summary-list");
+      const keywordPanelEl = document.querySelector("#panel-keywords .panel-content");
+      const logPanelEl = document.querySelector("#panel-logs .panel-content");
       const savedScrollPositions = {
         testTree: testTreeEl ? testTreeEl.scrollTop : 0,
-        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0
+        failedSummaryList: failedSummaryListEl ? failedSummaryListEl.scrollTop : 0,
+        keywordPanel: keywordPanelEl ? keywordPanelEl.scrollTop : 0,
+        logPanel: logPanelEl ? logPanelEl.scrollTop : 0
       };
+
+      if (fileProtocolWarning.active) {
+        document.body.className = state.isDark ? "" : "light";
+        document.getElementById("app").innerHTML = `
+          <div class="app">
+            ${renderFileProtocolWarning()}
+            <main class="main-panel">
+              <div class="empty-state">
+                ${icons.clipboard}
+                <h3>Report data is blocked by file://</h3>
+                <p>Use the instructions above to open the report via http.</p>
+              </div>
+            </main>
+          </div>
+        `;
+        attachEventListeners();
+        return;
+      }
+
+      if (!reportData || !reportData.rootSuite) {
+        document.getElementById("app").innerHTML = `
+          <div class="app">
+            <main class="main-panel">
+              ${externalData && dataStore.loadError ? `
+                <div class="empty-state">
+                  <h3>Unable to load report data</h3>
+                  <p>${String(dataStore.loadError)}</p>
+                  <button class="btn" data-action="retry-summary">Retry</button>
+                </div>
+              ` : `<div class="empty-state">Loading report data...</div>`}
+            </main>
+          </div>
+        `;
+        return;
+      }
       
       document.body.className = state.isDark ? "" : "light";
       document.getElementById("app").innerHTML = `
@@ -1569,23 +2118,31 @@
       requestAnimationFrame(() => {
         const newTestTreeEl = document.querySelector(".test-tree");
         const newFailedSummaryListEl = document.querySelector(".failed-summary-list");
+        const newKeywordPanelEl = document.querySelector("#panel-keywords .panel-content");
+        const newLogPanelEl = document.querySelector("#panel-logs .panel-content");
         if (newTestTreeEl && savedScrollPositions.testTree > 0) {
           newTestTreeEl.scrollTop = savedScrollPositions.testTree;
         }
         if (newFailedSummaryListEl && savedScrollPositions.failedSummaryList > 0) {
           newFailedSummaryListEl.scrollTop = savedScrollPositions.failedSummaryList;
         }
+        if (newKeywordPanelEl && savedScrollPositions.keywordPanel > 0) {
+          newKeywordPanelEl.scrollTop = savedScrollPositions.keywordPanel;
+        }
+        if (newLogPanelEl && savedScrollPositions.logPanel > 0) {
+          newLogPanelEl.scrollTop = savedScrollPositions.logPanel;
+        }
       });
     }
     function renderHeader() {
-      const { statistics, rootSuite, startTime, duration } = mockData;
+      const { statistics, rootSuite, startTime, duration } = reportData;
       return `
         <header class="header">
           <div class="header-left">
             <img class="project-badge" src="https://docs.robotframework.org/img/robot-framework-dark.svg" alt="Robot Framework Logo">
             <div class="project-info">
               <h1>${formatTreeName(rootSuite.name)}</h1>
-              <p>${mockData.generator}</p>
+              <p>${reportData.generator}</p>
             </div>
             <span class="status-badge lg ${getStatusClass(rootSuite.status)}">
               ${getStatusIcon(rootSuite.status)}
@@ -1620,9 +2177,11 @@
       `;
     }
     function renderSidebar() {
-      const allTags = getAllTags(mockData.rootSuite);
-      const failedTests = getFailedTests(mockData.rootSuite);
-      
+      const allTags = getAllTags(reportData.rootSuite);
+      const failedTests = getFailedTests(reportData.rootSuite);
+      const totalTests = reportData.rootSuite
+        ? (externalData ? getSuiteTestCount(reportData.rootSuite) : getAllTests(reportData.rootSuite).filter(filterTest).length)
+        : 0;
       return `
         <aside class="sidebar ${state.sidebarCollapsed ? "collapsed" : ""}" id="sidebar" style="${state.sidebarCollapsed ? "" : "width: " + state.sidebarWidth + "px"}">
           <div class="search-filter">
@@ -1663,16 +2222,17 @@
             </div>
           ` : ""}
           <div class="test-tree-bar">
-            <span>${mockData.rootSuite ? getAllTests(mockData.rootSuite).filter(filterTest).length : 0} tests</span>
+            <span>${totalTests} tests</span>
             <button id="test-tree-expand-collapse-btn">${(function() {
-              if (!mockData.rootSuite) return "Expand all";
-              const expandableIds = getExpandableSuiteIds(mockData.rootSuite);
+              if (!reportData.rootSuite) return "Expand all";
+              const expandableIds = getExpandableSuiteIds(reportData.rootSuite);
               const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedSuites.has(id));
               return allExpanded ? "Collapse all" : "Expand all";
             })()}</button>
           </div>
+          ${externalData ? `<div class="test-tree-hint">Tests load when you expand a suite.</div>` : ""}
           <div class="test-tree">
-            ${renderTestTree(mockData.rootSuite)}
+            ${renderTestTree(reportData.rootSuite)}
           </div>
         </aside>
       `;
@@ -1682,9 +2242,19 @@
       
       const isExpanded = state.expandedSuites.has(suite.id);
       const visibleTests = suite.tests.filter(filterTest);
+  const isLoadingTests = suite.loadingTests === true;
+  const suiteError = dataStore.suiteErrors.get(suite.id);
+      const totalVisibleTests = visibleTests.length;
+      const renderedTestCount = getSuiteRenderCount(suite.id, totalVisibleTests);
+      const testsToRender = visibleTests.slice(0, renderedTestCount);
+      const hasMoreTests = renderedTestCount < totalVisibleTests;
       const setupMatchesFilter = !suite.setup || state.statusFilter === "ALL" || suite.setup.status === state.statusFilter;
       const teardownMatchesFilter = !suite.teardown || state.statusFilter === "ALL" || suite.teardown.status === state.statusFilter;
-      const hasChildren = visibleTests.length > 0 || suite.suites.some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
+  const externalHasTests = externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0 && suiteMatchesStatusFilter(suite);
+  const hasChildren = visibleTests.length > 0 || externalHasTests || suite.suites.some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
+      if (isExpanded && hasMoreTests) {
+        scheduleSuiteBatchRender(suite.id, renderedTestCount, totalVisibleTests);
+      }
       
       const suiteTitle = (suite.fullName || suite.name || "").replace(/"/g, "&quot;");
       return `
@@ -1711,7 +2281,14 @@
             </div>
             ` : "")}
             <div class="tree-children">
-              ${visibleTests.map(t => {
+              ${isLoadingTests ? `<div class="tree-loading">Loading tests...</div>` : ""}
+              ${suiteError ? `
+                <div class="tree-loading">
+                  <span>Failed to load suite details.</span>
+                  <button class="btn" data-action="retry-suite" data-suite-id="${suite.id}">Retry</button>
+                </div>
+              ` : ""}
+              ${testsToRender.map(t => {
                 const testTitle = (t.fullName || t.name || "").replace(/"/g, "&quot;");
                 return `
                 <div class="tree-node">
@@ -1724,6 +2301,12 @@
                 </div>
               `;
               }).join("")}
+              ${hasMoreTests ? `
+                <div class="tree-loading">
+                  <span class="spinner"></span>
+                  <span>Rendering ${Math.min(renderedTestCount + TEST_RENDER_BATCH, totalVisibleTests)} of ${totalVisibleTests} tests...</span>
+                </div>
+              ` : ""}
               ${suite.suites.map(s => renderTestTree(s, depth + 1)).join("")}
             </div>
             ${(suite.teardown && teardownMatchesFilter ? `
@@ -1759,6 +2342,10 @@
         `;
       }
       const keywordsInOrder = getCurrentKeywordsInOrder();
+      if (externalData && state.selectedTest && !state.selectedTest.logsLoaded) {
+        // Fire and forget to avoid blocking render
+        ensureTestLogsLoaded(state.selectedTest).catch(() => {});
+      }
       const messagesWithKeyword = state.selectedKeyword 
         ? sortLogEntriesByExecutionOrder(getMessagesFromKeywordSubtree(state.selectedKeyword), keywordsInOrder)
         : sortLogEntriesByExecutionOrder(getAllMessagesWithKeyword(keywordsInOrder), keywordsInOrder);
@@ -1806,6 +2393,14 @@
                   <button id="show-all-logs">${state.logsCleared ? "Show all" : (state.selectedKeyword ? "Show all" : "Clear all")}</button>
                 </div>
                 ${state.logsCleared ? "" : (() => {
+                  const logsLoading = externalData && state.selectedTest && !state.selectedTest.logsLoaded;
+                  const logError = state.selectedTest ? dataStore.testErrors.get(state.selectedTest.id) : null;
+                  if (logsLoading) {
+                    return `<div class="log-empty">Loading logs...</div>`;
+                  }
+                  if (logError) {
+                    return `<div class="log-empty">Unable to load logs. <button class="btn" data-action="retry-test" data-test-id="${state.selectedTest.id}">Retry</button></div>`;
+                  }
                   const levelOrder = ["ERROR", "WARN", "INFO", "DEBUG", "TRACE", "PASS", "FAIL", "SKIP"];
                   const levelCounts = {};
                   messages.forEach(m => {
@@ -1856,6 +2451,7 @@
         `;
       }
       const test = state.selectedTest;
+      const testLoadError = test ? dataStore.testErrors.get(test.id) : null;
       return `
         <main class="main-panel">
           <div class="test-detail">
@@ -1881,7 +2477,18 @@
                 ` : ""}
               </div>
             </div>
-            ${test.status === "FAIL" && test.message ? `
+            ${testLoadError ? `
+              <div class="failure-banner">
+                <div class="failure-content">
+                  <div class="failure-header">
+                    ${icons.alert}
+                    <span>Unable to load test details</span>
+                    <button class="btn-copy" data-action="retry-test" data-test-id="${test.id}">${icons.copy} Retry</button>
+                  </div>
+                  <pre class="failure-message">${String(testLoadError)}</pre>
+                </div>
+              </div>
+            ` : test.status === "FAIL" && test.message ? `
               <div class="failure-banner">
                 <div class="failure-content">
                   <div class="failure-header">
@@ -2049,6 +2656,23 @@
     }
     // ========== Event Listeners ==========
     function attachEventListeners() {
+      document.querySelectorAll("[data-action='copy-server-command']").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(fileProtocolWarning.command);
+            const original = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(() => {
+              btn.textContent = original || "Copy command";
+            }, 1500);
+          } catch (_) {
+            btn.textContent = "Copy failed";
+            setTimeout(() => {
+              btn.textContent = "Copy command";
+            }, 1500);
+          }
+        });
+      });
       // Theme toggle
       document.getElementById("theme-toggle")?.addEventListener("click", () => {
         state.isDark = !state.isDark;
@@ -2062,7 +2686,11 @@
       // Search
       document.getElementById("search-input")?.addEventListener("input", (e) => {
         state.searchQuery = e.target.value;
+        resetSuiteRenderCounts();
         render();
+        if (externalData) {
+          prefetchSuitesForFilters().catch(() => {});
+        }
         const input = document.getElementById("search-input");
         if (input) {
           input.focus();
@@ -2072,12 +2700,20 @@
       // Status filter
       document.getElementById("status-filter")?.addEventListener("change", (e) => {
         state.statusFilter = e.target.value;
+        resetSuiteRenderCounts();
         render();
+        if (externalData) {
+          prefetchSuitesForFilters().catch(() => {});
+        }
       });
       // Tag filter
       document.getElementById("tag-filter")?.addEventListener("change", (e) => {
         state.tagFilter = e.target.value;
+        resetSuiteRenderCounts();
         render();
+        if (externalData) {
+          prefetchSuitesForFilters().catch(() => {});
+        }
       });
       // Failed summary toggle
       document.getElementById("toggle-failed")?.addEventListener("click", () => {
@@ -2086,14 +2722,24 @@
       });
       // Failed item clicks
       document.querySelectorAll(".failed-item").forEach(el => {
-        el.addEventListener("click", () => {
+        el.addEventListener("click", async () => {
           const testId = el.dataset.testId;
           state.selectedSuiteKeyword = null;
-          state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
           state.selectedKeyword = null;
           state.logsCleared = false;
+          if (externalData) {
+            const suiteId = dataStore.testToSuite.get(testId);
+            if (suiteId) await ensureSuiteLoaded(suiteId);
+            const loaded = await ensureTestLoaded(testId);
+            state.selectedTest = loaded || { id: testId, name: "Test", status: "FAIL", tags: [], duration: 0, message: "", documentation: "", suiteErrors: [] };
+          } else {
+            state.selectedTest = getAllTests(reportData.rootSuite).find(t => t.id === testId);
+          }
           if (state.selectedTest) {
             location.hash = "test=" + state.selectedTest.id;
+            if (externalData && !state.selectedTest.logsLoaded) {
+              ensureTestLogsLoaded(state.selectedTest).catch(() => {});
+            }
             const kws = Array.isArray(state.selectedTest.keywords) ? state.selectedTest.keywords : [];
             if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
               state.expandedKeywords.add(kws[0].id);
@@ -2102,27 +2748,66 @@
           render();
         });
       });
+      document.querySelectorAll("[data-action='retry-summary']").forEach(el => {
+        el.addEventListener("click", async () => {
+          await loadExternalData();
+          if (reportData?.rootSuite) initializeExpandedSuites(reportData.rootSuite);
+          render();
+        });
+      });
+      document.querySelectorAll("[data-action='retry-suite']").forEach(el => {
+        el.addEventListener("click", async () => {
+          const suiteId = el.dataset.suiteId;
+          if (suiteId) await ensureSuiteLoaded(suiteId);
+        });
+      });
+      document.querySelectorAll("[data-action='retry-test']").forEach(el => {
+        el.addEventListener("click", async () => {
+          const testId = el.dataset.testId;
+          if (!testId) return;
+          const suiteId = dataStore.testToSuite.get(testId);
+          if (suiteId) await ensureSuiteLoaded(suiteId);
+          const loaded = await ensureTestLoaded(testId);
+          if (loaded) {
+            state.selectedTest = loaded;
+            render();
+          }
+        });
+      });
       // Suite clicks (toggle expand)
       document.querySelectorAll(".tree-node-header[data-suite-id]").forEach(el => {
-        el.addEventListener("click", () => {
+        el.addEventListener("click", async () => {
           const suiteId = el.dataset.suiteId;
           if (state.expandedSuites.has(suiteId)) {
             state.expandedSuites.delete(suiteId);
-          } else {
-            state.expandedSuites.add(suiteId);
+            render();
+            return;
+          }
+          state.expandedSuites.add(suiteId);
+          if (externalData) {
+            await ensureSuiteLoaded(suiteId);
+            const suite = dataStore.suiteMap.get(suiteId);
+            if (suite) prefetchTestForSuite(suite);
           }
           render();
         });
       });
       // Test clicks
       document.querySelectorAll("[data-test-id]").forEach(el => {
-        el.addEventListener("click", (e) => {
+        el.addEventListener("click", async (e) => {
           e.stopPropagation();
           const testId = el.dataset.testId;
           state.selectedSuiteKeyword = null;
-          state.selectedTest = getAllTests(mockData.rootSuite).find(t => t.id === testId);
           state.selectedKeyword = null;
           state.logsCleared = false;
+          if (externalData) {
+            const suiteId = dataStore.testToSuite.get(testId);
+            if (suiteId) await ensureSuiteLoaded(suiteId);
+            const loaded = await ensureTestLoaded(testId);
+            state.selectedTest = loaded || null;
+          } else {
+            state.selectedTest = getAllTests(reportData.rootSuite).find(t => t.id === testId);
+          }
           if (state.selectedTest) {
             location.hash = "test=" + state.selectedTest.id;
             const kws = Array.isArray(state.selectedTest.keywords) ? state.selectedTest.keywords : [];
@@ -2138,7 +2823,7 @@
           e.stopPropagation();
           const suiteId = el.dataset.suiteId;
           const type = el.dataset.keywordType;
-          const suite = getSuiteById(mockData.rootSuite, suiteId);
+          const suite = getSuiteById(reportData.rootSuite, suiteId);
           if (!suite || (type !== "setup" && type !== "teardown")) return;
           const keyword = type === "setup" ? suite.setup : suite.teardown;
           if (!keyword) return;
@@ -2183,6 +2868,9 @@
               if (state.logLevelFilter !== "all" && !keywordHasLogLevel(kw, state.logLevelFilter)) {
                 state.logLevelFilter = "all";
               }
+            }
+            if (externalData && state.selectedTest && !state.selectedTest.logsLoaded) {
+              ensureTestLogsLoaded(state.selectedTest).catch(() => {});
             }
             render();
           }
@@ -2237,8 +2925,8 @@
       });
       // Test tree: Expand all / Collapse all
       document.getElementById("test-tree-expand-collapse-btn")?.addEventListener("click", () => {
-        if (!mockData.rootSuite) return;
-        const expandableIds = getExpandableSuiteIds(mockData.rootSuite);
+        if (!reportData.rootSuite) return;
+        const expandableIds = getExpandableSuiteIds(reportData.rootSuite);
         const allExpanded = expandableIds.length > 0 && expandableIds.every(id => state.expandedSuites.has(id));
         if (allExpanded) {
           expandableIds.forEach(id => state.expandedSuites.delete(id));
@@ -2381,37 +3069,94 @@
       }
     }
     // ========== Deep link: #test=<id> ==========
-    let appliedDeepLink = false;
-    const hashMatch = /^#?test=(.+)$/.exec(window.location.hash || "");
-    const hashTestId = hashMatch ? decodeURIComponent(hashMatch[1].replace(/^#/, "").trim()) : null;
-    if (hashTestId && mockData.rootSuite) {
-      const test = getAllTests(mockData.rootSuite).find(t => t.id === hashTestId);
-      if (test) {
-        const path = getSuitePathToTest(mockData.rootSuite, hashTestId);
-        if (path) path.forEach(id => state.expandedSuites.add(id));
-        state.selectedTest = test;
-        state.selectedKeyword = null;
-        state.logsCleared = false;
-        const kws = Array.isArray(test.keywords) ? test.keywords : [];
-        if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
-          state.expandedKeywords.add(kws[0].id);
+    async function applyDeepLink() {
+      let appliedDeepLink = false;
+      const hashMatch = /^#?test=(.+)$/.exec(window.location.hash || "");
+      const hashTestId = hashMatch ? decodeURIComponent(hashMatch[1].replace(/^#/, "").trim()) : null;
+      if (hashTestId && reportData?.rootSuite) {
+        let test = null;
+        if (externalData) {
+          const suiteId = dataStore.testToSuite.get(hashTestId);
+          if (suiteId) await ensureSuiteLoaded(suiteId);
+          test = await ensureTestLoaded(hashTestId);
+        } else {
+          test = getAllTests(reportData.rootSuite).find(t => t.id === hashTestId);
         }
-        appliedDeepLink = true;
+        if (test) {
+          const path = getSuitePathToTest(reportData.rootSuite, hashTestId);
+          if (path) path.forEach(id => state.expandedSuites.add(id));
+          state.selectedTest = test;
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          const kws = Array.isArray(test.keywords) ? test.keywords : [];
+          if (kws.length === 1 && Array.isArray(kws[0].keywords) && kws[0].keywords.length > 0) {
+            state.expandedKeywords.add(kws[0].id);
+          }
+          appliedDeepLink = true;
+        }
+      }
+      return appliedDeepLink;
+    }
+    async function boot() {
+      if (handleFileProtocolWarning()) {
+        render();
+        return;
+      }
+      if (externalData) {
+        await loadExternalData();
+      }
+      if (reportData?.rootSuite) {
+        initializeExpandedSuites(reportData.rootSuite);
+      }
+      const appliedDeepLink = await applyDeepLink();
+      if (!appliedDeepLink) {
+        if (externalData && reportData?.rootSuite) {
+          const failedSuiteIds = getFailedSuiteIds(reportData.rootSuite);
+          failedSuiteIds.forEach(id => {
+            const path = getSuitePathToId(reportData.rootSuite, id);
+            if (path) path.forEach(pathId => state.expandedSuites.add(pathId));
+          });
+          for (const suiteId of failedSuiteIds) {
+            await ensureSuiteLoaded(suiteId);
+          }
+          const primaryFailedSuiteId = failedSuiteIds[0];
+          if (primaryFailedSuiteId) {
+            const suite = dataStore.suiteMap.get(primaryFailedSuiteId);
+            const failedTest = suite?.tests?.find(t => (t.status || "").toUpperCase() === "FAIL");
+            const fallbackTestId = failedTest?.id || suite?.tests?.[0]?.id || suite?.testIds?.[0];
+            if (fallbackTestId) {
+              const loaded = await ensureTestLoaded(fallbackTestId);
+              if (loaded) state.selectedTest = loaded;
+            }
+          }
+        } else {
+          const failedTests = reportData?.rootSuite ? getFailedTests(reportData.rootSuite) : [];
+          if (failedTests.length > 0) {
+            state.selectedTest = failedTests[0];
+          }
+        }
+      }
+      if (!appliedDeepLink && !state.selectedTest && reportData?.rootSuite) {
+        const failedTests = getFailedTests(reportData.rootSuite);
+        if (failedTests.length > 0) {
+          const firstFailed = failedTests[0];
+          if (externalData) {
+            const suiteId = dataStore.testToSuite.get(firstFailed.id);
+            if (suiteId) await ensureSuiteLoaded(suiteId);
+            const loaded = await ensureTestLoaded(firstFailed.id);
+            if (loaded) state.selectedTest = loaded;
+          } else {
+            state.selectedTest = firstFailed;
+          }
+        }
+      }
+      render();
+      if (appliedDeepLink && state.selectedTest) {
+        const el = document.querySelector(`[data-test-id="${state.selectedTest.id}"]`);
+        if (el) el.scrollIntoView({ behavior: "auto", block: "nearest" });
       }
     }
-    // ========== Auto-select first failed test (if no deep link) ==========
-    if (!appliedDeepLink) {
-      const failedTests = getFailedTests(mockData.rootSuite);
-      if (failedTests.length > 0) {
-        state.selectedTest = failedTests[0];
-      }
-    }
-    // ========== Initial Render ==========
-    render();
-    if (appliedDeepLink && state.selectedTest) {
-      const el = document.querySelector(`[data-test-id="${state.selectedTest.id}"]`);
-      if (el) el.scrollIntoView({ behavior: "auto", block: "nearest" });
-    }
+    boot();
   </script>
 </body>
 </html>

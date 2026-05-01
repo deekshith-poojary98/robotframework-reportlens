@@ -7,7 +7,14 @@ import json
 from pathlib import Path
 
 from .builder import build_report_model
-from .serialize import _error_file_path, model_to_payload
+from .serialize import (
+    _error_file_path,
+    model_to_payload,
+    _keyword_to_dict,
+    _test_to_dict,
+    _collect_keyword_messages,
+    _test_to_dict_without_messages,
+)
 
 
 class RobotFrameworkReportGenerator:
@@ -23,9 +30,12 @@ class RobotFrameworkReportGenerator:
         """Build template-format report data from the internal model."""
         return model_to_payload(self._model)
 
-    def generate_html(self, output_file='report.html'):
+    def generate_html(self, output_file='report.html', external_data: bool = False):
         """Generate the complete HTML report. Overwrites the file if it already exists."""
-        html_content = self._build_html()
+        if external_data:
+            self._build_external(output_file)
+            return
+        html_content = self._build_html(external_data=False)
         path = Path(output_file)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(html_content, encoding='utf-8')
@@ -62,10 +72,7 @@ class RobotFrameworkReportGenerator:
         mock_start = js.find('// ========== Mock Data ==========')
         icons_start = js.find('// ========== Icons ==========')
         if mock_start != -1 and icons_start != -1 and icons_start > mock_start:
-            inject = 'const reportData = JSON.parse(document.getElementById("report-data").textContent);\n    '
-            js = js[:mock_start] + inject + js[icons_start:]
-        else:
-            js = 'const reportData = JSON.parse(document.getElementById("report-data").textContent);\n    ' + js
+            js = js[:mock_start] + js[icons_start:]
         js = js.replace(
             'expandFailedSuites(reportData.rootSuite);',
             'if (reportData.rootSuite) expandFailedSuites(reportData.rootSuite);'
@@ -76,13 +83,19 @@ class RobotFrameworkReportGenerator:
         )
         return js.strip()
 
-    def _build_html(self):
+    def _build_html(self, external_data: bool = False, data_root: str = "reportlens-data"):
         """Build the complete HTML document (template-style, data-driven)."""
-        report_data = self._build_report_data()
-        json_str = json.dumps(report_data, ensure_ascii=False)
-        json_str = json_str.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/SCRIPT>')
+        report_data = None if external_data else self._build_report_data()
+        json_str = json.dumps(report_data, ensure_ascii=False) if report_data is not None else ""
+        json_str = json_str.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/SCRIPT>') if json_str else ""
         css = self._get_template_css()
         js = self._get_template_javascript()
+        config = {
+            "externalData": external_data,
+            "dataRoot": data_root,
+            "schemaVersion": 1,
+        }
+        config_str = json.dumps(config, ensure_ascii=False)
         return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,9 +110,139 @@ class RobotFrameworkReportGenerator:
 </head>
 <body>
   <div class="app" id="app"></div>
-  <script type="application/json" id="report-data">{json_str}</script>
+  <script type="application/json" id="report-config">{config_str}</script>
+  {'' if external_data else f'<script type="application/json" id="report-data">{json_str}</script>'}
   <script>
 {js}
   </script>
 </body>
 </html>'''
+
+    def _build_external(self, output_file: str):
+        """Generate report.html plus external JSON payload split across files."""
+        report_data = self._build_report_data()
+        payload = model_to_payload(self._model)
+
+        path = Path(output_file)
+        data_dir = path.parent / "reportlens-data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+
+        suite_errors_map = {}
+        test_suite_errors = {}
+
+        def walk_errors(suite_dict):
+            suite_errors_map[suite_dict.get("id")] = suite_dict.get("errors", [])
+            for t in suite_dict.get("tests", []):
+                test_suite_errors[t.get("id")] = t.get("suiteErrors", [])
+            for child in suite_dict.get("suites", []):
+                walk_errors(child)
+
+        if payload.get("rootSuite"):
+            walk_errors(payload["rootSuite"])
+
+        def iter_suites(suite):
+            yield suite
+            for child in suite.suites:
+                yield from iter_suites(child)
+
+        root = self._model.root_suite
+        summary = {
+            "schemaVersion": 1,
+            "generated": report_data.get("generated", ""),
+            "generator": report_data.get("generator", ""),
+            "startTime": report_data.get("startTime", ""),
+            "endTime": report_data.get("endTime", ""),
+            "duration": report_data.get("duration", 0),
+            "statistics": report_data.get("statistics", {}),
+            "errors": report_data.get("errors", []),
+            "rootSuiteId": root.id,
+            "rootSuiteName": root.name,
+        }
+
+        suites_list = []
+        for suite in iter_suites(root):
+            suites_list.append(
+                {
+                    "id": suite.id,
+                    "name": suite.name,
+                    "fullName": suite.full_name,
+                    "status": suite.status,
+                    "startTime": suite.start_time,
+                    "duration": suite.duration,
+                    "statistics": suite.statistics,
+                    "childSuiteIds": [s.id for s in suite.suites],
+                    "testIds": [t.id for t in suite.tests],
+                }
+            )
+
+        suites_json = {
+            "schemaVersion": 1,
+            "rootSuiteId": root.id,
+            "suites": suites_list,
+        }
+
+        def write_json(path_obj: Path, data: dict):
+            path_obj.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+
+        write_json(data_dir / "summary.json", summary)
+        write_json(data_dir / "suites.json", suites_json)
+
+        for suite in iter_suites(root):
+            tests_stub = []
+            for test in suite.tests:
+                tests_stub.append(
+                    {
+                        "id": test.id,
+                        "name": test.name,
+                        "fullName": test.full_name,
+                        "status": test.status,
+                        "duration": test.duration,
+                        "startTime": test.start_time,
+                        "message": test.message,
+                        "tags": test.tags,
+                    }
+                )
+
+            suite_payload = {
+                "schemaVersion": 1,
+                "suite": {
+                    "id": suite.id,
+                    "name": suite.name,
+                    "fullName": suite.full_name,
+                    "status": suite.status,
+                    "startTime": suite.start_time,
+                    "duration": suite.duration,
+                    "statistics": suite.statistics,
+                    "setup": _keyword_to_dict(suite.setup) if suite.setup else None,
+                    "teardown": _keyword_to_dict(suite.teardown) if suite.teardown else None,
+                    "childSuiteIds": [s.id for s in suite.suites],
+                    "testIds": [t.id for t in suite.tests],
+                    "errors": suite_errors_map.get(suite.id, []),
+                },
+                "tests": tests_stub,
+            }
+            write_json(data_dir / f"suite_{suite.id}.json", suite_payload)
+
+            for test in suite.tests:
+                test_payload = _test_to_dict_without_messages(test)
+                test_payload["suiteErrors"] = test_suite_errors.get(test.id, [])
+                test_file = {
+                    "schemaVersion": 1,
+                    "test": test_payload,
+                }
+                write_json(data_dir / f"test_{test.id}.json", test_file)
+
+                log_map: dict[str, list[dict]] = {}
+                for kw in test.keywords:
+                    _collect_keyword_messages(kw, log_map)
+                logs_file = {
+                    "schemaVersion": 1,
+                    "testId": test.id,
+                    "keywordMessages": log_map,
+                }
+                write_json(data_dir / f"test_{test.id}_logs.json", logs_file)
+
+        html_content = self._build_html(external_data=True, data_root="reportlens-data")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(html_content, encoding="utf-8")
+        print(f"Report generated: {output_file}")

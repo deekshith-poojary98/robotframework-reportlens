@@ -1,5 +1,36 @@
 # Release Notes
 
+## [0.1.6] - 2026-05-02
+
+### What’s New
+- **External-data mode (`--external-data`)**
+  - Split report output into lightweight HTML + `reportlens-data/` JSON files.
+  - Lazy loading for suites/tests to handle large runs.
+
+### Improvements
+- **Performance**
+  - Test lists render in batches (size controlled by `TEST_RENDER_BATCH`).
+  - Spinner + “Rendering X of Y tests” indicator for long lists.
+- **Filtering**
+  - Status + tag filters now work consistently with external-data + lazy-loaded suites.
+- **User Experience**
+  - Auto-expand failed suites and select first failed test on load (external-data).
+  - Added “load on expand” hint in external-data mode.
+
+### Changes / Updates
+- External-data mode uses cached `fetch()` with retry + timeout handling.
+- Split test logs into separate `test_<id>_logs.json` (lazy logs loading).
+
+### Bug Fixes
+- Fixed missing expand arrows in external-data suite tree.
+- Fixed incorrect test totals in external-data sidebar.
+- Added file:// warning banner to prevent broken UI for external-data reports.
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
 ## [0.1.5] - 2026-03-04
 
 ### Bug Fixes
