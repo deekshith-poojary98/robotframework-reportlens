@@ -26,13 +26,14 @@ class Keyword:
     status: str
     duration: int  # milliseconds
     start_time: str
-    arguments: list[str]
-    documentation: str
-    messages: list[LogMessage]
-    keywords: list["Keyword"]
-    fail_message: str
-    returned: bool
-    return_values: list[str]
+    end_time: str = ""
+    arguments: list[str] = field(default_factory=list)
+    documentation: str = ""
+    messages: list[LogMessage] = field(default_factory=list)
+    keywords: list["Keyword"] = field(default_factory=list)
+    fail_message: str = ""
+    returned: bool = False
+    return_values: list[str] = field(default_factory=list)
     badge: str | None = None  # Reserved control word shown as badge: FOR, IF, ELSE IF, ELSE, TRY, EXCEPT, FINALLY, WHILE
 
 
@@ -47,8 +48,9 @@ class Test:
     duration: int  # milliseconds
     message: str
     start_time: str
-    documentation: str
-    keywords: list[Keyword]
+    end_time: str = ""
+    documentation: str = ""
+    keywords: list[Keyword] = field(default_factory=list)
     setup: "Keyword | None" = None
     teardown: "Keyword | None" = None
 
@@ -61,11 +63,12 @@ class Suite:
     full_name: str
     status: str
     start_time: str
-    duration: int  # milliseconds
-    source: str
-    tests: list[Test]
-    suites: list["Suite"]
-    statistics: dict[str, Any]  # total, passed, failed, skipped
+    end_time: str = ""
+    duration: int = 0  # milliseconds
+    source: str = ""
+    tests: list[Test] = field(default_factory=list)
+    suites: list["Suite"] = field(default_factory=list)
+    statistics: dict[str, Any] = field(default_factory=dict)
     setup: "Keyword | None" = None
     teardown: "Keyword | None" = None
 

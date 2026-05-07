@@ -27,6 +27,20 @@ from .model import (
     Test,
 )
 
+# Log level filtering: map to numeric priorities
+_LEVELS = {
+    "TRACE": 10,
+    "DEBUG": 20,
+    "INFO": 30,
+    "WARN": 40,
+    "WARNING": 40,
+    "ERROR": 50,
+    "FAIL": 50,
+}
+
+
+# NOTE: min log level is passed explicitly into builder functions to avoid global env state.
+
 # Robot legacy timestamp format: "YYYYMMDD HH:MM:SS.fff" (e.g. "20260201 14:04:20.902")
 _LEGACY_TS = re.compile(r"^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$")
 # ISO 8601 timezone suffix (Z or ±HH:MM) so we don't double-append
@@ -116,6 +130,16 @@ def _start_time(robot_item) -> str:
     if start is not None:
         return _to_iso_time(start)
     return ""
+    
+def _end_time(robot_item) -> str:
+    """Get end time as ISO 8601 with timezone from a Robot result item."""
+    et = getattr(robot_item, "endtime", None)
+    if et:
+        return _to_iso_time(et)
+    end = getattr(robot_item, "end_time", None)
+    if end is not None:
+        return _to_iso_time(end)
+    return ""
 
 
 def _get_body(robot_item):
@@ -161,7 +185,7 @@ def _is_executable_body_item(robot_item) -> bool:
     return _get_body(robot_item) is not None
 
 
-def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
+def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyword:
     """Build a Keyword from Robot's keyword or control structure. Recurses into body for all nested steps."""
     type_name = type(robot_kw).__name__
     body = _get_body(robot_kw)
@@ -254,7 +278,7 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
         child_keywords = []
         for i, item in enumerate(body_list):
             if _is_executable_body_item(item):
-                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{i}"))
+                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{i}", min_level_val))
         _debug(f"  control badge={badge!r} name={name_rest!r} child_keywords len={len(child_keywords)}")
         return Keyword(
             id=kw_id,
@@ -302,6 +326,10 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
             elif type_name == "Message":
                 msg = item
                 level = (getattr(msg, "level", "INFO") or "INFO").upper()
+                # Filter out messages below configured min_level_val
+                lvl_val = _LEVELS.get(level, _LEVELS.get("INFO"))
+                if lvl_val < min_level_val:
+                    continue
                 text = (getattr(msg, "message", None) or "").strip()
                 is_html = bool(getattr(msg, "html", False))
                 ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
@@ -309,13 +337,16 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
                     LogMessage(timestamp=ts, level=level, message=text, is_return=seen_return, html=is_html)
                 )
             elif _is_executable_body_item(item):
-                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{child_kw_index}"))
+                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{child_kw_index}", min_level_val))
                 child_kw_index += 1
 
     # If no body iteration (e.g. body empty), use keyword.messages
     if not messages_list and hasattr(robot_kw, "messages") and robot_kw.messages:
         for msg in robot_kw.messages:
             level = (getattr(msg, "level", "INFO") or "INFO").upper()
+            lvl_val = _LEVELS.get(level, _LEVELS.get("INFO"))
+            if lvl_val < min_level_val:
+                continue
             text = (getattr(msg, "message", None) or "").strip()
             is_html = bool(getattr(msg, "html", False))
             ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
@@ -346,7 +377,7 @@ def _build_keyword(robot_kw, test_id: str, kw_index) -> Keyword:
     )
 
 
-def _build_test(robot_test, suite_full_name: str) -> Test:
+def _build_test(robot_test, suite_full_name: str, min_level_val: int) -> Test:
     """Build a Test from Robot's test case result."""
     test_id = getattr(robot_test, "id", "") or ""
     name = getattr(robot_test, "name", "Test") or "Test"
@@ -375,14 +406,14 @@ def _build_test(robot_test, suite_full_name: str) -> Test:
             is_exec = _is_executable_body_item(item)
             _debug(f"  body[{i}] type={item_type} executable={is_exec}")
             if is_exec:
-                keywords.append(_build_keyword(item, test_id, kw_index))
+                keywords.append(_build_keyword(item, test_id, kw_index, min_level_val))
                 kw_index += 1
         _debug(f"  -> keywords len={len(keywords)}")
 
     robot_setup = getattr(robot_test, "setup", None)
     robot_teardown = getattr(robot_test, "teardown", None)
-    test_setup = _build_keyword(robot_setup, test_id, "setup") if robot_setup else None
-    test_teardown = _build_keyword(robot_teardown, test_id, "teardown") if robot_teardown else None
+    test_setup = _build_keyword(robot_setup, test_id, "setup", min_level_val) if robot_setup else None
+    test_teardown = _build_keyword(robot_teardown, test_id, "teardown", min_level_val) if robot_teardown else None
 
     return Test(
         id=test_id,
@@ -400,7 +431,7 @@ def _build_test(robot_test, suite_full_name: str) -> Test:
     )
 
 
-def _build_suite(robot_suite, parent_full_name: str) -> Suite:
+def _build_suite(robot_suite, parent_full_name: str, min_level_val: int) -> Suite:
     """Build a Suite from Robot's test suite result."""
     suite_id = getattr(robot_suite, "id", "") or ""
     name = getattr(robot_suite, "name", "Suite") or "Suite"
@@ -412,11 +443,11 @@ def _build_suite(robot_suite, parent_full_name: str) -> Suite:
 
     tests = []
     for robot_test in getattr(robot_suite, "tests", []) or []:
-        tests.append(_build_test(robot_test, full_name))
+        tests.append(_build_test(robot_test, full_name, min_level_val))
 
     suites = []
     for child in getattr(robot_suite, "suites", []) or []:
-        suites.append(_build_suite(child, full_name))
+        suites.append(_build_suite(child, full_name, min_level_val))
 
     passed = sum(1 for t in tests if t.status == "PASS")
     failed = sum(1 for t in tests if t.status == "FAIL")
@@ -425,8 +456,8 @@ def _build_suite(robot_suite, parent_full_name: str) -> Suite:
 
     robot_setup = getattr(robot_suite, "setup", None)
     robot_teardown = getattr(robot_suite, "teardown", None)
-    suite_setup = _build_keyword(robot_setup, f"suite-{suite_id}", "setup") if robot_setup else None
-    suite_teardown = _build_keyword(robot_teardown, f"suite-{suite_id}", "teardown") if robot_teardown else None
+    suite_setup = _build_keyword(robot_setup, f"suite-{suite_id}", "setup", min_level_val) if robot_setup else None
+    suite_teardown = _build_keyword(robot_teardown, f"suite-{suite_id}", "teardown", min_level_val) if robot_teardown else None
 
     return Suite(
         id=suite_id,
@@ -444,15 +475,18 @@ def _build_suite(robot_suite, parent_full_name: str) -> Suite:
     )
 
 
-def build_report_model(xml_path: str) -> ReportModel:
+def build_report_model(xml_path: str, min_log_level: int = _LEVELS.get("DEBUG")) -> ReportModel:
     """
     Load output.xml via Robot's ExecutionResult and build our ReportModel.
     No manual XML, no HTML. IDs are deterministic (from Robot).
     """
     result = ExecutionResult(xml_path)
     root = result.suite
+
+    # Project name based on xml_path's parent directory
+    project_name = (Path(xml_path).resolve().parent.name or "Test Run").upper()
+
     if root is None:
-        project_name = (Path(xml_path).resolve().parent.name or "Test Run").upper()
         root_suite = Suite(
             id="s0",
             name=project_name,
@@ -468,8 +502,7 @@ def build_report_model(xml_path: str) -> ReportModel:
             teardown=None,
         )
     else:
-        root_suite = _build_suite(root, "")
-        project_name = (Path(xml_path).resolve().parent.name or "Test Run").upper()
+        root_suite = _build_suite(root, "", min_log_level)
         root_suite.name = project_name
         root_suite.full_name = project_name
 

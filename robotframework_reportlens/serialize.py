@@ -9,6 +9,24 @@ from typing import Any
 
 from .model import Keyword, LogMessage, ReportModel, Suite, Test
 
+# Helper: decide whether to include a value in output
+def _include_value(v):
+    """Return True if value v should be included in JSON output.
+
+    Exclude empty lists, empty strings, None, and False booleans (conservative).
+    """
+    if v is None:
+        return False
+    if isinstance(v, bool):
+        # Only include True booleans (False is default/omitted)
+        return v is True
+    if isinstance(v, (list, tuple)):
+        return len(v) > 0
+    if isinstance(v, str):
+        return bool(v)
+    # Numbers, dicts, and other truthy values are included
+    return True
+
 
 def _error_file_path(text: str) -> str | None:
     """Extract file path from error text. Used for assigning errors to suites."""
@@ -47,14 +65,19 @@ def _assign_errors_to_suites_and_tests(suite: dict, errors: list[dict]) -> None:
 
 
 def _log_message_to_dict(msg: LogMessage, msg_id: str) -> dict:
-    return {
-        "id": msg_id,
-        "timestamp": msg.timestamp,
-        "level": msg.level,
-        "message": msg.message,
-        "isReturn": msg.is_return,
-        "isHtml": msg.html,
-    }
+    out: dict = {"id": msg_id}
+    if _include_value(msg.timestamp):
+        out["timestamp"] = msg.timestamp
+    if _include_value(msg.level):
+        out["level"] = msg.level
+    if _include_value(msg.message):
+        out["message"] = msg.message
+    # Booleans: only include if True
+    if _include_value(msg.is_return):
+        out["isReturn"] = True
+    if _include_value(msg.html):
+        out["isHtml"] = True
+    return out
 
 
 def _keyword_to_dict(kw: Keyword) -> dict:
@@ -62,22 +85,36 @@ def _keyword_to_dict(kw: Keyword) -> dict:
         _log_message_to_dict(m, f"{kw.id}-msg-{i}") for i, m in enumerate(kw.messages)
     ]
     children = [_keyword_to_dict(c) for c in kw.keywords]
-    out = {
-        "id": kw.id,
-        "name": kw.name,
-        "type": kw.type,
-        "status": kw.status,
-        "duration": kw.duration,
-        "startTime": kw.start_time or "",
-        "endTime": kw.start_time or "",
-        "arguments": kw.arguments,
-        "documentation": kw.documentation,
-        "messages": messages,
-        "keywords": children,
-        "failMessage": kw.fail_message,
-        "returned": kw.returned,
-        "returnValues": kw.return_values,
-    }
+    out: dict = {"id": kw.id}
+    if _include_value(kw.name):
+        out["name"] = kw.name
+    if _include_value(kw.type):
+        out["type"] = kw.type
+    if _include_value(kw.status):
+        out["status"] = kw.status
+    if _include_value(kw.duration):
+        out["duration"] = kw.duration
+    if _include_value(kw.start_time):
+        out["startTime"] = kw.start_time
+    # endTime: only include if present and different from start_time
+    if _include_value(getattr(kw, "end_time", None)):
+        endt = getattr(kw, "end_time")
+        if endt and endt != kw.start_time:
+            out["endTime"] = endt
+    if _include_value(kw.arguments):
+        out["arguments"] = kw.arguments
+    if _include_value(kw.documentation):
+        out["documentation"] = kw.documentation
+    if _include_value(messages):
+        out["messages"] = messages
+    if _include_value(children):
+        out["keywords"] = children
+    if _include_value(kw.fail_message):
+        out["failMessage"] = kw.fail_message
+    if _include_value(kw.returned):
+        out["returned"] = True
+    if _include_value(kw.return_values):
+        out["returnValues"] = kw.return_values
     if getattr(kw, "badge", None):
         out["badge"] = kw.badge
     return out
@@ -85,22 +122,33 @@ def _keyword_to_dict(kw: Keyword) -> dict:
 
 def _keyword_to_dict_without_messages(kw: Keyword) -> dict:
     children = [_keyword_to_dict_without_messages(c) for c in kw.keywords]
-    out = {
-        "id": kw.id,
-        "name": kw.name,
-        "type": kw.type,
-        "status": kw.status,
-        "duration": kw.duration,
-        "startTime": kw.start_time or "",
-        "endTime": kw.start_time or "",
-        "arguments": kw.arguments,
-        "documentation": kw.documentation,
-        "messages": [],
-        "keywords": children,
-        "failMessage": kw.fail_message,
-        "returned": kw.returned,
-        "returnValues": kw.return_values,
-    }
+    out: dict = {"id": kw.id}
+    if _include_value(kw.name):
+        out["name"] = kw.name
+    if _include_value(kw.type):
+        out["type"] = kw.type
+    if _include_value(kw.status):
+        out["status"] = kw.status
+    if _include_value(kw.duration):
+        out["duration"] = kw.duration
+    if _include_value(kw.start_time):
+        out["startTime"] = kw.start_time
+    if _include_value(getattr(kw, "end_time", None)):
+        endt = getattr(kw, "end_time")
+        if endt and endt != kw.start_time:
+            out["endTime"] = endt
+    if _include_value(kw.arguments):
+        out["arguments"] = kw.arguments
+    if _include_value(kw.documentation):
+        out["documentation"] = kw.documentation
+    if _include_value(children):
+        out["keywords"] = children
+    if _include_value(kw.fail_message):
+        out["failMessage"] = kw.fail_message
+    if _include_value(kw.returned):
+        out["returned"] = True
+    if _include_value(kw.return_values):
+        out["returnValues"] = kw.return_values
     if getattr(kw, "badge", None):
         out["badge"] = kw.badge
     return out
@@ -114,57 +162,112 @@ def _collect_keyword_messages(kw: Keyword, out: dict[str, list[dict]]) -> None:
 
 
 def _test_to_dict(t: Test) -> dict:
-    return {
-        "id": t.id,
-        "name": t.name,
-        "fullName": t.full_name,
-        "status": t.status,
-        "tags": t.tags,
-        "duration": t.duration,
-        "message": t.message,
-        "startTime": t.start_time or "",
-        "endTime": t.start_time or "",
-        "keywords": [_keyword_to_dict(k) for k in t.keywords],
-        "documentation": t.documentation,
-        "setup": _keyword_to_dict(t.setup) if t.setup else None,
-        "teardown": _keyword_to_dict(t.teardown) if t.teardown else None,
-    }
+    out: dict = {"id": t.id}
+    if _include_value(t.name):
+        out["name"] = t.name
+    if _include_value(t.full_name):
+        out["fullName"] = t.full_name
+    if _include_value(t.status):
+        out["status"] = t.status
+    if _include_value(t.tags):
+        out["tags"] = t.tags
+    if _include_value(t.duration):
+        out["duration"] = t.duration
+    if _include_value(t.message):
+        out["message"] = t.message
+    if _include_value(t.start_time):
+        out["startTime"] = t.start_time
+    if _include_value(getattr(t, "end_time", None)):
+        endt = getattr(t, "end_time")
+        if endt and endt != t.start_time:
+            out["endTime"] = endt
+    kws = [_keyword_to_dict(k) for k in t.keywords]
+    if _include_value(kws):
+        out["keywords"] = kws
+    if _include_value(t.documentation):
+        out["documentation"] = t.documentation
+    if t.setup:
+        out_setup = _keyword_to_dict(t.setup)
+        if _include_value(out_setup):
+            out["setup"] = out_setup
+    if t.teardown:
+        out_teardown = _keyword_to_dict(t.teardown)
+        if _include_value(out_teardown):
+            out["teardown"] = out_teardown
+    return out
 
 
 def _test_to_dict_without_messages(t: Test) -> dict:
-    return {
-        "id": t.id,
-        "name": t.name,
-        "fullName": t.full_name,
-        "status": t.status,
-        "tags": t.tags,
-        "duration": t.duration,
-        "message": t.message,
-        "startTime": t.start_time or "",
-        "endTime": t.start_time or "",
-        "keywords": [_keyword_to_dict_without_messages(k) for k in t.keywords],
-        "documentation": t.documentation,
-        "setup": _keyword_to_dict_without_messages(t.setup) if t.setup else None,
-        "teardown": _keyword_to_dict_without_messages(t.teardown) if t.teardown else None,
-    }
+    out: dict = {"id": t.id}
+    if _include_value(t.name):
+        out["name"] = t.name
+    if _include_value(t.full_name):
+        out["fullName"] = t.full_name
+    if _include_value(t.status):
+        out["status"] = t.status
+    if _include_value(t.tags):
+        out["tags"] = t.tags
+    if _include_value(t.duration):
+        out["duration"] = t.duration
+    if _include_value(t.message):
+        out["message"] = t.message
+    if _include_value(t.start_time):
+        out["startTime"] = t.start_time
+    if _include_value(getattr(t, "end_time", None)):
+        endt = getattr(t, "end_time")
+        if endt and endt != t.start_time:
+            out["endTime"] = endt
+    kws = [_keyword_to_dict_without_messages(k) for k in t.keywords]
+    if _include_value(kws):
+        out["keywords"] = kws
+    if _include_value(t.documentation):
+        out["documentation"] = t.documentation
+    if t.setup:
+        out_setup = _keyword_to_dict_without_messages(t.setup)
+        if _include_value(out_setup):
+            out["setup"] = out_setup
+    if t.teardown:
+        out_teardown = _keyword_to_dict_without_messages(t.teardown)
+        if _include_value(out_teardown):
+            out["teardown"] = out_teardown
+    return out
 
 
 def _suite_to_dict(s: Suite) -> dict:
-    return {
-        "id": s.id,
-        "name": s.name,
-        "fullName": s.full_name,
-        "status": s.status,
-        "startTime": s.start_time or "",
-        "endTime": s.start_time or "",
-        "duration": s.duration,
-        "statistics": s.statistics,
-        "tests": [_test_to_dict(t) for t in s.tests],
-        "suites": [_suite_to_dict(c) for c in s.suites],
-        "source": s.source or "",
-        "setup": _keyword_to_dict(s.setup) if s.setup else None,
-        "teardown": _keyword_to_dict(s.teardown) if s.teardown else None,
-    }
+    out: dict = {"id": s.id}
+    if _include_value(s.name):
+        out["name"] = s.name
+    if _include_value(s.full_name):
+        out["fullName"] = s.full_name
+    if _include_value(s.status):
+        out["status"] = s.status
+    if _include_value(s.start_time):
+        out["startTime"] = s.start_time
+    if _include_value(getattr(s, "end_time", None)):
+        endt = getattr(s, "end_time")
+        if endt and endt != s.start_time:
+            out["endTime"] = endt
+    if _include_value(s.duration):
+        out["duration"] = s.duration
+    if _include_value(s.statistics):
+        out["statistics"] = s.statistics
+    tests = [_test_to_dict(t) for t in s.tests]
+    if _include_value(tests):
+        out["tests"] = tests
+    suites = [_suite_to_dict(c) for c in s.suites]
+    if _include_value(suites):
+        out["suites"] = suites
+    if _include_value(s.source):
+        out["source"] = s.source
+    if s.setup:
+        out_setup = _keyword_to_dict(s.setup)
+        if _include_value(out_setup):
+            out["setup"] = out_setup
+    if s.teardown:
+        out_teardown = _keyword_to_dict(s.teardown)
+        if _include_value(out_teardown):
+            out["teardown"] = out_teardown
+    return out
 
 
 def model_to_payload(model: ReportModel) -> dict[str, Any]:
@@ -177,10 +280,13 @@ def model_to_payload(model: ReportModel) -> dict[str, Any]:
     return {
         "generated": model.generated,
         "generator": model.generator,
-        "startTime": model.start_time,
-        "endTime": model.end_time,
-        "duration": model.duration,
-        "statistics": model.statistics,
-        "errors": model.errors,
+        # Only include top-level values when present
+        **({"startTime": model.start_time} if _include_value(model.start_time) else {}),
+        **({"endTime": model.end_time} if _include_value(model.end_time) else {}),
+        **({"duration": model.duration} if _include_value(model.duration) else {}),
+        **({"statistics": model.statistics} if _include_value(model.statistics) else {}),
+        **({"errors": model.errors} if _include_value(model.errors) else {}),
+        "generated": model.generated,
+        "generator": model.generator,
         "rootSuite": root_suite,
     }

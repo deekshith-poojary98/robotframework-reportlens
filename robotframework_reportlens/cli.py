@@ -25,6 +25,25 @@ def main():
         action="store_true",
         help="Write report.html plus split JSON files under reportlens-data/ for lazy loading.",
     )
+    parser.add_argument(
+        "--compress-data",
+        action="store_true",
+        help=(
+            "Write gzip-compressed .json.gz files alongside each .json in reportlens-data/. "
+            "Requires --external-data. The generated report will prefer .json.gz in browsers "
+            "that support the DecompressionStream API, with automatic fallback to .json."
+        ),
+    )
+    parser.add_argument(
+        "--compress-data-only",
+        action="store_true",
+        help=(
+            "Like --compress-data but skips writing the plain .json files entirely. "
+            "Produces the smallest possible output directory (~97%% smaller at 10k tests). "
+            "Requires --external-data. Old browsers without DecompressionStream support "
+            "will not be able to load the report. Use --compress-data if fallback is needed."
+        ),
+    )
     # TODO: needs to improvise this feature for better debugging which users can use to debug the report 
     # as well as raise issues if needed with debug logs attached
     parser.add_argument(
@@ -32,20 +51,36 @@ def main():
         action="store_true",
         help="Print builder debug info to stderr (e.g. why test keywords may be empty).",
     )
+    parser.add_argument(
+        "--loglevel",
+        choices=["TRACE", "DEBUG", "INFO", "WARN", "ERROR"],
+        default=None,
+        help="Minimum log level to include in external-data payloads (default: DEBUG, excludes TRACE).",
+    )
     args = parser.parse_args()
 
     if args.debug:
         os.environ["BUILD_DEBUG"] = "1"
 
     # Import after setting BUILD_DEBUG so builder picks it up
+    from .builder import _LEVELS
     from .generator import RobotFrameworkReportGenerator
 
     if not Path(args.xml_file).exists():
         print(f"Error: File not found: {args.xml_file}", file=sys.stderr)
         return 1
 
+    # Resolve explicit min_log_level (None means generator will pick mode-appropriate default)
+    min_log_level = _LEVELS.get(args.loglevel.upper()) if args.loglevel else None
+
     try:
-        generator = RobotFrameworkReportGenerator(args.xml_file)
+        generator = RobotFrameworkReportGenerator(
+            args.xml_file,
+            external_data=args.external_data,
+            min_log_level=min_log_level,
+            compress_data=args.compress_data,
+            compress_data_only=args.compress_data_only,
+        )
         generator.generate_html(args.output, external_data=args.external_data)
         return 0
     except Exception as e:

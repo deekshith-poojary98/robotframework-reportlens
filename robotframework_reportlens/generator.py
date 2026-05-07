@@ -3,10 +3,11 @@ Robot Framework Report Generator.
 Uses ExecutionResult -> ReportModel -> template payload. No manual XML.
 """
 
+import gzip
 import json
 from pathlib import Path
 
-from .builder import build_report_model
+from .builder import build_report_model, _LEVELS
 from .serialize import (
     _error_file_path,
     model_to_payload,
@@ -20,11 +21,41 @@ from .serialize import (
 class RobotFrameworkReportGenerator:
     """Generate HTML report from Robot Framework output.xml via internal ReportModel."""
 
-    def __init__(self, xml_file):
+    def __init__(self, xml_file, external_data: bool = False, min_log_level: int | None = None, compress_data: bool = False, compress_data_only: bool = False):
         self.xml_file = xml_file
-        self._model = build_report_model(xml_file)
+        # Default loglevel: TRACE (include everything) for self-contained; DEBUG (exclude TRACE) for external-data
+        if min_log_level is None:
+            min_log_level = _LEVELS["DEBUG"] if external_data else _LEVELS["TRACE"]
+        self._model = build_report_model(xml_file, min_log_level=min_log_level)
+        self._external_data = external_data
+        self._compress_data = compress_data or compress_data_only
+        # When True, skip writing plain .json files (only .json.gz is written).
+        # The frontend falls back to .json if .gz is unavailable, so skipping .json
+        # saves disk space at the cost of no fallback for old browsers.
+        self._gz_only = compress_data_only
 
     _error_file_path = staticmethod(_error_file_path)
+
+    @staticmethod
+    def _write_json_files(path_obj: Path, data: dict, compress: bool = False, gz_only: bool = False) -> None:
+        """Write *data* as UTF-8 JSON to *path_obj* (must end in ``.json``).
+
+        When *compress* is ``True``, also write a sibling ``<name>.json.gz``
+        at gzip compresslevel 9.
+
+        When *gz_only* is ``True``, the plain ``.json`` file is **not** written —
+        only the ``.json.gz`` sibling is created.  Use this when old-browser fallback
+        is not required and you want the smallest possible output directory.
+        *gz_only* implies *compress*; passing ``gz_only=True, compress=False`` is
+        treated as ``gz_only=True, compress=True``.
+        """
+        json_bytes = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        if not gz_only:
+            path_obj.write_bytes(json_bytes)
+        if compress or gz_only:
+            gz_path = path_obj.parent / (path_obj.name + ".gz")
+            with gzip.open(gz_path, "wb", compresslevel=9) as fh:
+                fh.write(json_bytes)
 
     def _build_report_data(self):
         """Build template-format report data from the internal model."""
@@ -95,6 +126,10 @@ class RobotFrameworkReportGenerator:
             "dataRoot": data_root,
             "schemaVersion": 1,
         }
+        if external_data and self._compress_data:
+            config["compressed"] = True
+        if external_data and self._gz_only:
+            config["compressedOnly"] = True
         config_str = json.dumps(config, ensure_ascii=False)
         return f'''<!DOCTYPE html>
 <html lang="en">
@@ -182,7 +217,7 @@ class RobotFrameworkReportGenerator:
         }
 
         def write_json(path_obj: Path, data: dict):
-            path_obj.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            self._write_json_files(path_obj, data, compress=self._compress_data, gz_only=self._gz_only)
 
         write_json(data_dir / "summary.json", summary)
         write_json(data_dir / "suites.json", suites_json)

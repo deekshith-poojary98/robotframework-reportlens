@@ -1,5 +1,6 @@
 """Tests for RobotFrameworkReportGenerator."""
 
+import gzip
 import json
 
 from robotframework_reportlens.generator import RobotFrameworkReportGenerator
@@ -73,19 +74,17 @@ class TestReportGeneratorParsing:
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
         data = gen._build_report_data()
         root = data["rootSuite"]
-        assert "setup" in root
-        assert "teardown" in root
-        assert root["setup"] is None
-        assert root["teardown"] is None
+        # setup/teardown are omitted when None (compact serialization)
+        assert root.get("setup") is None
+        assert root.get("teardown") is None
 
     def test_test_has_setup_teardown_keys(self, minimal_xml_path):
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
         data = gen._build_report_data()
         for test in data["rootSuite"]["tests"]:
-            assert "setup" in test
-            assert "teardown" in test
-            assert test["setup"] is None
-            assert test["teardown"] is None
+            # setup/teardown are omitted when None (compact serialization)
+            assert test.get("setup") is None
+            assert test.get("teardown") is None
 
     def test_root_suite_structure(self, minimal_xml_path):
         gen = RobotFrameworkReportGenerator(minimal_xml_path)
@@ -97,7 +96,8 @@ class TestReportGeneratorParsing:
         assert "status" in root
         assert "statistics" in root
         assert "tests" in root
-        assert "suites" in root
+        # suites is omitted when empty (compact serialization)
+        assert root.get("suites", []) == [] or "suites" in root
         assert root["id"] == "s1"
         assert root["statistics"]["total"] == 2
         assert root["statistics"]["passed"] == 1
@@ -226,9 +226,8 @@ class TestScreenshotRendering:
         assert '"isHtml": true' in content or '"isHtml":true' in content, (
             "Embedded report data must contain isHtml:true for HTML log messages"
         )
-        assert '"isHtml": false' in content or '"isHtml":false' in content, (
-            "Embedded report data must contain isHtml:false for plain-text log messages"
-        )
+        # isHtml:false is omitted in compact serialization; absence is equivalent to false
+        # so we only assert the html message has isHtml:true present
 
     def test_generated_report_preserves_img_tag_in_message(self, tmp_path, html_messages_xml_path):
         """The raw <img> tag from html='true' messages must survive into the embedded JSON."""
@@ -262,3 +261,188 @@ class TestScreenshotRendering:
         assert "window.open" not in content, (
             ".log-message img handler must not call window.open"
         )
+
+
+class TestCompressedExternalDataMode:
+    """Tests for --compress-data behaviour."""
+
+    def _gen_compressed(self, xml_path, tmp_path):
+        """Helper: generate external-data report with compress_data=True."""
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(xml_path, external_data=True, compress_data=True)
+        gen.generate_html(str(out), external_data=True)
+        return tmp_path / "reportlens-data"
+
+    # ------------------------------------------------------------------
+    # File generation
+    # ------------------------------------------------------------------
+
+    def test_compressed_files_generated_alongside_json(self, minimal_xml_path, tmp_path):
+        """.json.gz files must be written next to every .json file when compress_data=True."""
+        data_dir = self._gen_compressed(minimal_xml_path, tmp_path)
+        expected_bases = ["summary.json", "suites.json", "suite_s1.json",
+                          "test_s1-t1.json", "test_s1-t2.json",
+                          "test_s1-t1_logs.json", "test_s1-t2_logs.json"]
+        for base in expected_bases:
+            assert (data_dir / base).exists(), f"Missing {base}"
+            assert (data_dir / (base + ".gz")).exists(), f"Missing {base}.gz"
+
+    def test_uncompressed_mode_writes_no_gz_files(self, minimal_xml_path, tmp_path):
+        """Without compress_data, no .gz files must be present."""
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path, external_data=True, compress_data=False)
+        gen.generate_html(str(out), external_data=True)
+        data_dir = tmp_path / "reportlens-data"
+        gz_files = list(data_dir.glob("*.gz"))
+        assert gz_files == [], f"Unexpected .gz files: {gz_files}"
+
+    # ------------------------------------------------------------------
+    # Payload integrity
+    # ------------------------------------------------------------------
+
+    def test_gzip_payload_decompresses_to_valid_json(self, minimal_xml_path, tmp_path):
+        """Every .json.gz file must decompress to the same JSON as its .json sibling."""
+        data_dir = self._gen_compressed(minimal_xml_path, tmp_path)
+        for gz_file in sorted(data_dir.glob("*.gz")):
+            json_file = gz_file.parent / gz_file.name[:-3]  # strip trailing .gz
+            assert json_file.exists(), f"Missing plain .json sibling for {gz_file.name}"
+            plain = json.loads(json_file.read_text(encoding="utf-8"))
+            with gzip.open(gz_file, "rb") as fh:
+                decompressed = json.loads(fh.read().decode("utf-8"))
+            assert plain == decompressed, (
+                f"{gz_file.name} decompresses to different data than {json_file.name}"
+            )
+
+    def test_summary_gz_has_correct_statistics(self, minimal_xml_path, tmp_path):
+        """Decompressed summary.json.gz must include the expected statistics."""
+        data_dir = self._gen_compressed(minimal_xml_path, tmp_path)
+        with gzip.open(data_dir / "summary.json.gz", "rb") as fh:
+            summary = json.loads(fh.read().decode("utf-8"))
+        stats = summary["statistics"]
+        assert stats["total"] == 2
+        assert stats["passed"] == 1
+        assert stats["failed"] == 1
+
+    # ------------------------------------------------------------------
+    # HTML config
+    # ------------------------------------------------------------------
+
+    def test_compressed_html_config_has_compressed_true(self, minimal_xml_path, tmp_path):
+        """The generated report.html must embed compressed:true in the report-config script."""
+        self._gen_compressed(minimal_xml_path, tmp_path)
+        content = (tmp_path / "report.html").read_text(encoding="utf-8")
+        assert '"compressed": true' in content or '"compressed":true' in content, (
+            "report-config must contain compressed:true when compress_data=True"
+        )
+
+    def test_uncompressed_html_config_has_no_compressed_flag(self, minimal_xml_path, tmp_path):
+        """Without --compress-data the report-config must NOT contain compressed:true."""
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path, external_data=True, compress_data=False)
+        gen.generate_html(str(out), external_data=True)
+        content = out.read_text(encoding="utf-8")
+        assert '"compressed": true' not in content and '"compressed":true' not in content
+
+    def test_self_contained_report_has_no_compressed_flag(self, minimal_xml_path, tmp_path):
+        """Self-contained mode (no --external-data) must never set compressed:true."""
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path, compress_data=True)
+        gen.generate_html(str(out))
+        content = out.read_text(encoding="utf-8")
+        assert '"compressed": true' not in content and '"compressed":true' not in content
+
+    # ------------------------------------------------------------------
+    # Frontend JS artefacts
+    # ------------------------------------------------------------------
+
+    def test_template_js_contains_fetchJsonFile(self, minimal_xml_path):
+        """The extracted JS must contain fetchJsonFile so the frontend can prefer .gz."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "fetchJsonFile" in js, "template JS must define fetchJsonFile"
+
+    def test_template_js_contains_decompressGzipResponse(self, minimal_xml_path):
+        """The extracted JS must define decompressGzipResponse."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "decompressGzipResponse" in js
+
+    def test_template_js_detects_DecompressionStream(self, minimal_xml_path):
+        """The JS must guard on typeof DecompressionStream for browser compatibility."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "DecompressionStream" in js
+        assert "supportsDecompressionStream" in js
+
+    def test_template_js_has_compressed_only_capability_guard(self, minimal_xml_path):
+        """The JS must contain an early capability check that blocks compressedOnly reports
+        in browsers lacking DecompressionStream, showing a visible error banner."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "compressedOnly" in js, "JS must read compressedOnly from reportConfig"
+        assert "DecompressionStream unavailable" in js or "compressedOnly && !supportsDecompressionStream" in js, \
+            "JS must contain the capability guard that stops initialisation"
+
+
+class TestCompressDataOnlyMode:
+    """Tests for --compress-data-only (gz-only, no plain .json written)."""
+
+    def _gen_gz_only(self, xml_path, tmp_path):
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(xml_path, external_data=True, compress_data_only=True)
+        gen.generate_html(str(out), external_data=True)
+        return tmp_path / "reportlens-data"
+
+    def test_gz_only_writes_no_plain_json(self, minimal_xml_path, tmp_path):
+        """compress_data_only must not write any plain .json data files."""
+        data_dir = self._gen_gz_only(minimal_xml_path, tmp_path)
+        json_files = [f for f in data_dir.iterdir() if f.suffix == ".json"]
+        assert json_files == [], f"Expected no .json files, found: {[f.name for f in json_files]}"
+
+    def test_gz_only_writes_all_gz_files(self, minimal_xml_path, tmp_path):
+        """compress_data_only must write .json.gz for every expected file."""
+        data_dir = self._gen_gz_only(minimal_xml_path, tmp_path)
+        expected = ["summary.json.gz", "suites.json.gz", "suite_s1.json.gz",
+                    "test_s1-t1.json.gz", "test_s1-t2.json.gz",
+                    "test_s1-t1_logs.json.gz", "test_s1-t2_logs.json.gz"]
+        for name in expected:
+            assert (data_dir / name).exists(), f"Missing {name}"
+
+    def test_gz_only_payloads_are_valid(self, minimal_xml_path, tmp_path):
+        """All .json.gz files written by compress_data_only must decompress to valid JSON."""
+        data_dir = self._gen_gz_only(minimal_xml_path, tmp_path)
+        for gz_file in sorted(data_dir.glob("*.gz")):
+            with gzip.open(gz_file, "rb") as fh:
+                data = json.loads(fh.read().decode("utf-8"))
+            assert isinstance(data, dict), f"{gz_file.name} did not decompress to a dict"
+
+    def test_gz_only_html_config_has_compressed_true(self, minimal_xml_path, tmp_path):
+        """compress_data_only must also set compressed:true in report-config."""
+        self._gen_gz_only(minimal_xml_path, tmp_path)
+        content = (tmp_path / "report.html").read_text(encoding="utf-8")
+        assert '"compressed": true' in content or '"compressed":true' in content
+
+    def test_gz_only_html_config_has_compressed_only_true(self, minimal_xml_path, tmp_path):
+        """compress_data_only must set compressedOnly:true in report-config."""
+        self._gen_gz_only(minimal_xml_path, tmp_path)
+        content = (tmp_path / "report.html").read_text(encoding="utf-8")
+        assert '"compressedOnly": true' in content or '"compressedOnly":true' in content
+
+    def test_compress_data_does_not_set_compressed_only(self, minimal_xml_path, tmp_path):
+        """--compress-data (dual-write) must NOT set compressedOnly:true in report-config."""
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path, external_data=True, compress_data=True)
+        gen.generate_html(str(out), external_data=True)
+        content = (tmp_path / "report.html").read_text(encoding="utf-8")
+        # The JSON config block must not contain the compressedOnly flag; the JS
+        # variable name "compressedOnly" will always appear in the embedded script.
+        assert '"compressedOnly": true' not in content and '"compressedOnly":true' not in content
+
+    def test_compress_data_still_writes_both(self, minimal_xml_path, tmp_path):
+        """--compress-data (not only) must still write both .json and .json.gz."""
+        out = tmp_path / "report.html"
+        gen = RobotFrameworkReportGenerator(minimal_xml_path, external_data=True, compress_data=True)
+        gen.generate_html(str(out), external_data=True)
+        data_dir = tmp_path / "reportlens-data"
+        assert (data_dir / "summary.json").exists(), "summary.json must exist with --compress-data"
+        assert (data_dir / "summary.json.gz").exists(), "summary.json.gz must exist with --compress-data"

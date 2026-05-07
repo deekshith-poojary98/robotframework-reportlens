@@ -1375,6 +1375,53 @@
     const reportConfigEl = document.getElementById("report-config");
   const reportConfig = reportConfigEl ? JSON.parse(reportConfigEl.textContent || "{}") : { externalData: false, dataRoot: "reportlens-data", schemaVersion: 1 };
     const externalData = reportConfig.externalData === true;
+    // Whether the generator wrote .json.gz siblings for every .json file.
+    // When true the frontend prefers the compressed variant; plain .json is the fallback.
+    const compressed = reportConfig.compressed === true;
+    // When true ONLY .json.gz files were written — no plain .json fallback exists.
+    // The report will refuse to load in browsers that lack DecompressionStream.
+    const compressedOnly = reportConfig.compressedOnly === true;
+    // DecompressionStream (WICG Compression Streams) is supported by all evergreen browsers
+    // (Chrome 80+, Edge 80+, Firefox 113+, Safari 16.4+).  We detect once at startup.
+    const supportsDecompressionStream = typeof DecompressionStream !== "undefined";
+    // ── Early capability check ────────────────────────────────────────────────
+    // If the report was generated with --compress-data-only there are no plain
+    // .json files on disk.  A browser that lacks DecompressionStream cannot fetch
+    // any data, so we must fail loudly rather than silently queue 10k failed
+    // requests and show a blank UI.
+    if (compressedOnly && !supportsDecompressionStream) {
+      const banner = document.createElement("div");
+      banner.style.cssText = [
+        "position:fixed", "inset:0", "z-index:99999",
+        "display:flex", "flex-direction:column", "align-items:center", "justify-content:center",
+        "background:#1a1a2e", "color:#f0f0f0", "font-family:system-ui,sans-serif",
+        "padding:2rem", "text-align:center", "gap:1rem"
+      ].join(";");
+      banner.innerHTML = `
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <h2 style="margin:0;font-size:1.4rem;font-weight:700;color:#f59e0b">Browser not supported</h2>
+        <p style="margin:0;max-width:480px;line-height:1.6">
+          This report was generated with <code style="background:#ffffff1a;padding:2px 6px;border-radius:4px">--compress-data-only</code>.
+          All data files are gzip-compressed and require the
+          <a href="https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream"
+             style="color:#60a5fa" target="_blank" rel="noopener">DecompressionStream API</a>
+          to load, which your browser does not support.
+        </p>
+        <p style="margin:0;max-width:480px;line-height:1.6;color:#a0aec0">
+          Please open this report in a modern browser:<br>
+          <strong style="color:#f0f0f0">Chrome&nbsp;80+&nbsp;·&nbsp;Edge&nbsp;80+&nbsp;·&nbsp;Firefox&nbsp;113+&nbsp;·&nbsp;Safari&nbsp;16.4+</strong>
+        </p>
+        <p style="margin:0;font-size:0.85rem;color:#718096">
+          Alternatively, regenerate the report without <code style="background:#ffffff1a;padding:2px 6px;border-radius:4px">--compress-data-only</code>
+          to produce plain&nbsp;.json files that work in all browsers.
+        </p>`;
+      document.body.appendChild(banner);
+      throw new Error("ReportLens: DecompressionStream unavailable — cannot load compressedOnly report");
+    }
+    // ─────────────────────────────────────────────────────────────────────────
     const dataRoot = (reportConfig.dataRoot || "reportlens-data").replace(/\/$/, "");
   const cacheVersion = reportConfig.version || reportConfig.generated || (externalData ? String(Date.now()) : "v1");
     const fileProtocolWarning = {
@@ -1442,6 +1489,50 @@
       }
       throw new Error(`Failed to load ${path}`);
     }
+    /**
+     * Decompress a gzip Response using the browser-native DecompressionStream API and
+     * parse the result as JSON.  The caller must verify that DecompressionStream exists
+     * before calling this function.
+     */
+    async function decompressGzipResponse(response) {
+      const ds = new DecompressionStream("gzip");
+      const decompressedStream = response.body.pipeThrough(ds);
+      const text = await new Response(decompressedStream).text();
+      return JSON.parse(text);
+    }
+    /**
+     * Fetch *path* as JSON, preferring the .json.gz variant when the report was
+     * generated with --compress-data AND the browser supports DecompressionStream.
+     *
+     * Strategy:
+     *   1. If compressed assets exist and DecompressionStream is available:
+     *      - Attempt to fetch <path>.gz  (e.g. summary.json?v=…  → summary.json.gz?v=…)
+     *      - On success: decompress with DecompressionStream and return parsed JSON.
+     *      - On any failure (404, network error, decompression error): fall through.
+     *   2. Fall back to the plain fetchWithRetry(path) call.
+     *
+     * This keeps behaviour 100 % backward-compatible: reports without --compress-data
+     * never attempt .gz requests at all.
+     */
+    async function fetchJsonFile(path, maxRetries = 2, timeoutMs = 10000) {
+      if (compressed && supportsDecompressionStream) {
+        // Build the versioned .gz URL by inserting ".gz" before the query string.
+        const gzPath = path.replace(/(\?|$)/, ".gz$1");
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), timeoutMs);
+          const res = await fetch(gzPath, { signal: controller.signal });
+          clearTimeout(timer);
+          if (res.ok) {
+            return await decompressGzipResponse(res);
+          }
+          // 4xx means the server doesn't have the .gz file — fall through to plain .json.
+        } catch (_) {
+          // Network error, abort, or decompression failure — fall through to plain .json.
+        }
+      }
+      return fetchWithRetry(path, maxRetries, timeoutMs);
+    }
     function createResourceCache() {
       const cache = new Map();
       const inflight = new Map();
@@ -1449,7 +1540,7 @@
         if (cache.has(key)) return cache.get(key);
         if (inflight.has(key)) return inflight.get(key);
         const versioned = withVersion(path);
-        const promise = fetchWithRetry(versioned)
+        const promise = fetchJsonFile(versioned)
           .then(data => {
             cache.set(key, data);
             inflight.delete(key);
@@ -1754,7 +1845,7 @@
       if (suite.statistics.failed > 0) {
         state.expandedSuites.add(suite.id);
       }
-      suite.suites.forEach(expandFailedSuites);
+      (suite.suites || []).forEach(expandFailedSuites);
     }
     function initializeExpandedSuites(rootSuite) {
       if (!rootSuite) return;
@@ -1826,8 +1917,8 @@
       return status.toLowerCase();
     }
     function getAllTests(suite) {
-      let tests = [...suite.tests];
-      suite.suites.forEach(s => tests = tests.concat(getAllTests(s)));
+      let tests = [...(suite.tests || [])];
+      (suite.suites || []).forEach(s => tests = tests.concat(getAllTests(s)));
       return tests;
     }
     function getSuiteTestCount(suite) {
@@ -1851,7 +1942,7 @@
     function filterTest(test) {
       if (state.statusFilter !== "ALL" && test.status !== state.statusFilter) return false;
       if (state.searchQuery && !test.name.toLowerCase().includes(state.searchQuery.toLowerCase())) return false;
-      if (state.tagFilter && !test.tags.includes(state.tagFilter)) return false;
+      if (state.tagFilter && !(test.tags || []).includes(state.tagFilter)) return false;
       return true;
     }
     /** Keyword (setup/teardown/body) matches current status filter. */
@@ -1872,11 +1963,11 @@
       if (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
         if (!suiteMatchesStatusFilter(suite)) return false;
         if (state.searchQuery || state.tagFilter) {
-          return suite.tests.some(filterTest) || suite.suites.some(suiteHasVisibleTests);
+          return (suite.tests || []).some(filterTest) || (suite.suites || []).some(suiteHasVisibleTests);
         }
         return true;
       }
-      if (suite.tests.some(filterTest)) return true;
+      if ((suite.tests || []).some(filterTest)) return true;
       if (state.statusFilter === "ALL") {
         if (suite.setup || suite.teardown) return true;
       } else {
@@ -2031,7 +2122,7 @@
     }
     function getAllTags(suite) {
       const tags = new Set();
-      getAllTests(suite).forEach(t => t.tags.forEach(tag => tags.add(tag)));
+      getAllTests(suite).forEach(t => (t.tags || []).forEach(tag => tags.add(tag)));
       return Array.from(tags).sort();
     }
     /** Test keywords in execution order: setup, body keywords, teardown. */
@@ -2468,11 +2559,11 @@
               </div>
               <div class="test-meta">
                 <span>${icons.clock} ${formatDuration(test.duration)}</span>
-                ${test.tags.length > 0 ? `
+                ${(test.tags || []).length > 0 ? `
                   <div class="test-tags">
                     ${icons.tag}
-                    ${test.tags.slice(0, 5).map(t => `<span class="tag">${t}</span>`).join("")}
-                    ${test.tags.length > 5 ? `<span class="tag">+${test.tags.length - 5}</span>` : ""}
+                    ${(test.tags || []).slice(0, 5).map(t => `<span class="tag">${t}</span>`).join("")}
+                    ${(test.tags || []).length > 5 ? `<span class="tag">+${(test.tags || []).length - 5}</span>` : ""}
                   </div>
                 ` : ""}
               </div>
