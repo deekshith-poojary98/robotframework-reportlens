@@ -1,5 +1,48 @@
 # Release Notes
 
+## [0.1.7] - 2026-05-08
+
+### Added
+
+* Added gzip compression support for `--external-data`
+* Added `--compress-data` mode (`.json` + `.json.gz`)
+* Added `--compress-data-only` mode (`.json.gz` only)
+* Added frontend gzip loading using `DecompressionStream`
+* Added browser capability guard for compressed-only reports
+* Added `--loglevel` CLI option for generation-time log filtering
+
+### Changed
+
+* External-data mode now defaults to `DEBUG` log level instead of `TRACE`
+* Serializer now omits empty/default fields from payload JSON
+* Log level configuration now uses explicit parameter passing instead of environment variables
+* Improved external-data payload generation and compression pipeline
+* Improved frontend fetch/decompression handling
+* Improved fixture isolation for deterministic tests
+
+### Fixed
+
+* Fixed duplicated `endTime` serialization bug
+* Fixed test contamination caused by mutable root `output.xml`
+* Fixed silent failures in compressed-only mode on unsupported browsers
+* Fixed several payload serialization edge cases
+
+### Performance
+
+* Reduced compressed external-data size from ~650 MB to ~20 MB (~33x smaller)
+* Added support for gzip-compressed lazy-loaded report assets
+* Improved large-suite scalability for external-data reports
+
+### Tests
+
+* Expanded test coverage from 53 to 71 passing tests
+* Added compression, decompression, capability-guard, and payload optimization tests
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
 ## [0.1.6] - 2026-05-02
 
 ### What’s New
