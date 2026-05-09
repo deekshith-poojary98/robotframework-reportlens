@@ -11,14 +11,6 @@ from pathlib import Path
 
 from robot.api import ExecutionResult
 
-# Set BUILD_DEBUG=1 in env to print builder debug info (e.g. why test keywords may be empty).
-BUILD_DEBUG = os.environ.get("BUILD_DEBUG", "").strip() in ("1", "true", "yes")
-
-
-def _debug(*args, **kwargs):
-    if BUILD_DEBUG:
-        print("[builder]", *args, **kwargs, file=sys.stderr)
-
 from .model import (
     Keyword,
     LogMessage,
@@ -26,6 +18,14 @@ from .model import (
     Suite,
     Test,
 )
+
+# Set BUILD_DEBUG=1 in env to print builder debug info (e.g. why test keywords may be empty).
+BUILD_DEBUG = os.environ.get("BUILD_DEBUG", "").strip() in ("1", "true", "yes")
+
+
+def _debug(*args, **kwargs):
+    if BUILD_DEBUG:
+        print("[builder]", *args, **kwargs, file=sys.stderr)
 
 # Log level filtering: map to numeric priorities
 _LEVELS = {
@@ -42,7 +42,9 @@ _LEVELS = {
 # NOTE: min log level is passed explicitly into builder functions to avoid global env state.
 
 # Robot legacy timestamp format: "YYYYMMDD HH:MM:SS.fff" (e.g. "20260201 14:04:20.902")
-_LEGACY_TS = re.compile(r"^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$")
+_LEGACY_TS = re.compile(
+    r"^(\d{4})(\d{2})(\d{2})\s+(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$"
+)
 # ISO 8601 timezone suffix (Z or ±HH:MM) so we don't double-append
 _ISO_TZ = re.compile(r"(Z|[+-]\d{2}:\d{2})$")
 
@@ -130,7 +132,8 @@ def _start_time(robot_item) -> str:
     if start is not None:
         return _to_iso_time(start)
     return ""
-    
+
+
 def _end_time(robot_item) -> str:
     """Get end time as ISO 8601 with timezone from a Robot result item."""
     et = getattr(robot_item, "endtime", None)
@@ -195,7 +198,9 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
     # Control structure (FOR / IF / WHILE / TRY or branch/iteration): one Keyword node, children from body
     if type_name != "Keyword" and body is not None:
         body_list = list(body) if body is not None else []
-        _debug(f"_build_keyword control type={type_name!r} test_id={test_id!r} body_list len={len(body_list)}")
+        _debug(
+            f"_build_keyword control type={type_name!r} test_id={test_id!r} body_list len={len(body_list)}"
+        )
         kw_id = f"kw-{test_id}-{kw_index}"
         name = _control_display_name(robot_kw)
         if not name:
@@ -205,7 +210,12 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
             name = ""
         if not name:
             # Friendly labels for root control structures that have no _log_name
-            _root_labels = {"For": "FOR", "While": "WHILE", "If": "IF / ELSE", "Try": "TRY / EXCEPT"}
+            _root_labels = {
+                "For": "FOR",
+                "While": "WHILE",
+                "If": "IF / ELSE",
+                "Try": "TRY / EXCEPT",
+            }
             name = _root_labels.get(type_name, type_name)
         # ForIteration / WhileIteration: show "Iteration 1", "Iteration 2", ... instead of class name
         if type_name in ("ForIteration", "WhileIteration"):
@@ -221,20 +231,34 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
             name = "WHILE " + name
         elif type_name == "If" and name and not name.upper().startswith(("IF", "ELSE")):
             name = "IF " + name
-        elif type_name == "Try" and name and not name.upper().startswith(("TRY", "EXCEPT", "ELSE", "FINALLY")):
+        elif (
+            type_name == "Try"
+            and name
+            and not name.upper().startswith(("TRY", "EXCEPT", "ELSE", "FINALLY"))
+        ):
             name = "TRY " + name
         elif type_name == "IfBranch":
             branch_type = (getattr(robot_kw, "type", None) or "").upper()
             if branch_type in ("IF", "ELSE IF", "ELSE"):
                 if branch_type == "IF" and name and not name.upper().startswith("IF"):
                     name = "IF " + name
-                elif branch_type == "ELSE IF" and name and not name.upper().startswith("ELSE"):
+                elif (
+                    branch_type == "ELSE IF"
+                    and name
+                    and not name.upper().startswith("ELSE")
+                ):
                     name = "ELSE IF " + name
-                elif branch_type == "ELSE" and (not name or name.upper().strip() != "ELSE"):
+                elif branch_type == "ELSE" and (
+                    not name or name.upper().strip() != "ELSE"
+                ):
                     name = "ELSE"
         elif type_name == "TryBranch":
             branch_type = (getattr(robot_kw, "type", None) or "").upper()
-            if branch_type and name and not name.upper().startswith(("TRY", "EXCEPT", "ELSE", "FINALLY")):
+            if (
+                branch_type
+                and name
+                and not name.upper().startswith(("TRY", "EXCEPT", "ELSE", "FINALLY"))
+            ):
                 name = branch_type + " " + name
         # Reserve a badge for control words and use the rest as display name
         badge = None
@@ -268,7 +292,9 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
                 elif u == branch_type:
                     name_rest = ""
         raw_type = getattr(robot_kw, "type", None)
-        kw_type = (raw_type.upper() if isinstance(raw_type, str) else "KEYWORD") or "KEYWORD"
+        kw_type = (
+            raw_type.upper() if isinstance(raw_type, str) else "KEYWORD"
+        ) or "KEYWORD"
         if kw_type not in ("SETUP", "TEARDOWN", "KEYWORD"):
             kw_type = "KEYWORD"
         status = getattr(robot_kw, "status", "PASS") or "PASS"
@@ -278,8 +304,12 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
         child_keywords = []
         for i, item in enumerate(body_list):
             if _is_executable_body_item(item):
-                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{i}", min_level_val))
-        _debug(f"  control badge={badge!r} name={name_rest!r} child_keywords len={len(child_keywords)}")
+                child_keywords.append(
+                    _build_keyword(item, test_id, f"{kw_index}-{i}", min_level_val)
+                )
+        _debug(
+            f"  control badge={badge!r} name={name_rest!r} child_keywords len={len(child_keywords)}"
+        )
         return Keyword(
             id=kw_id,
             name=name_rest,
@@ -321,7 +351,9 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
             type_name = type(item).__name__
             if type_name == "Return":
                 seen_return = True
-                return_values = [str(v).strip() for v in getattr(item, "values", []) or []]
+                return_values = [
+                    str(v).strip() for v in getattr(item, "values", []) or []
+                ]
                 returned = True
             elif type_name == "Message":
                 msg = item
@@ -334,10 +366,20 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
                 is_html = bool(getattr(msg, "html", False))
                 ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
                 messages_list.append(
-                    LogMessage(timestamp=ts, level=level, message=text, is_return=seen_return, html=is_html)
+                    LogMessage(
+                        timestamp=ts,
+                        level=level,
+                        message=text,
+                        is_return=seen_return,
+                        html=is_html,
+                    )
                 )
             elif _is_executable_body_item(item):
-                child_keywords.append(_build_keyword(item, test_id, f"{kw_index}-{child_kw_index}", min_level_val))
+                child_keywords.append(
+                    _build_keyword(
+                        item, test_id, f"{kw_index}-{child_kw_index}", min_level_val
+                    )
+                )
                 child_kw_index += 1
 
     # If no body iteration (e.g. body empty), use keyword.messages
@@ -350,13 +392,29 @@ def _build_keyword(robot_kw, test_id: str, kw_index, min_level_val: int) -> Keyw
             text = (getattr(msg, "message", None) or "").strip()
             is_html = bool(getattr(msg, "html", False))
             ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
-            messages_list.append(LogMessage(timestamp=ts, level=level, message=text, is_return=False, html=is_html))
+            messages_list.append(
+                LogMessage(
+                    timestamp=ts,
+                    level=level,
+                    message=text,
+                    is_return=False,
+                    html=is_html,
+                )
+            )
 
     # Failed keyword with no log messages: treat failure message as a log entry so it appears in Logs pane
     if fail_message and not messages_list:
-        ts = _to_iso_time(getattr(robot_kw, "endtime", None) or getattr(robot_kw, "end_time", None)) or start_time
+        ts = (
+            _to_iso_time(
+                getattr(robot_kw, "endtime", None)
+                or getattr(robot_kw, "end_time", None)
+            )
+            or start_time
+        )
         messages_list.append(
-            LogMessage(timestamp=ts, level="FAIL", message=fail_message, is_return=False)
+            LogMessage(
+                timestamp=ts, level="FAIL", message=fail_message, is_return=False
+            )
         )
 
     return Keyword(
@@ -392,7 +450,9 @@ def _build_test(robot_test, suite_full_name: str, min_level_val: int) -> Test:
 
     keywords = []
     body = _get_body(robot_test) or getattr(robot_test, "body", None)
-    _debug(f"_build_test id={test_id!r} name={name!r} body={type(body).__name__ if body is not None else None!r}")
+    _debug(
+        f"_build_test id={test_id!r} name={name!r} body={type(body).__name__ if body is not None else None!r}"
+    )
     if body is not None:
         body_items = list(body)
         _debug(f"  body_items len={len(body_items)}")
@@ -412,8 +472,16 @@ def _build_test(robot_test, suite_full_name: str, min_level_val: int) -> Test:
 
     robot_setup = getattr(robot_test, "setup", None)
     robot_teardown = getattr(robot_test, "teardown", None)
-    test_setup = _build_keyword(robot_setup, test_id, "setup", min_level_val) if robot_setup else None
-    test_teardown = _build_keyword(robot_teardown, test_id, "teardown", min_level_val) if robot_teardown else None
+    test_setup = (
+        _build_keyword(robot_setup, test_id, "setup", min_level_val)
+        if robot_setup
+        else None
+    )
+    test_teardown = (
+        _build_keyword(robot_teardown, test_id, "teardown", min_level_val)
+        if robot_teardown
+        else None
+    )
 
     return Test(
         id=test_id,
@@ -452,12 +520,25 @@ def _build_suite(robot_suite, parent_full_name: str, min_level_val: int) -> Suit
     passed = sum(1 for t in tests if t.status == "PASS")
     failed = sum(1 for t in tests if t.status == "FAIL")
     skipped = sum(1 for t in tests if t.status == "SKIP")
-    statistics = {"total": len(tests), "passed": passed, "failed": failed, "skipped": skipped}
+    statistics = {
+        "total": len(tests),
+        "passed": passed,
+        "failed": failed,
+        "skipped": skipped,
+    }
 
     robot_setup = getattr(robot_suite, "setup", None)
     robot_teardown = getattr(robot_suite, "teardown", None)
-    suite_setup = _build_keyword(robot_setup, f"suite-{suite_id}", "setup", min_level_val) if robot_setup else None
-    suite_teardown = _build_keyword(robot_teardown, f"suite-{suite_id}", "teardown", min_level_val) if robot_teardown else None
+    suite_setup = (
+        _build_keyword(robot_setup, f"suite-{suite_id}", "setup", min_level_val)
+        if robot_setup
+        else None
+    )
+    suite_teardown = (
+        _build_keyword(robot_teardown, f"suite-{suite_id}", "teardown", min_level_val)
+        if robot_teardown
+        else None
+    )
 
     return Suite(
         id=suite_id,
@@ -475,7 +556,9 @@ def _build_suite(robot_suite, parent_full_name: str, min_level_val: int) -> Suit
     )
 
 
-def build_report_model(xml_path: str, min_log_level: int = _LEVELS.get("DEBUG")) -> ReportModel:
+def build_report_model(
+    xml_path: str, min_log_level: int = _LEVELS.get("DEBUG")
+) -> ReportModel:
     """
     Load output.xml via Robot's ExecutionResult and build our ReportModel.
     No manual XML, no HTML. IDs are deterministic (from Robot).
@@ -510,8 +593,10 @@ def build_report_model(xml_path: str, min_log_level: int = _LEVELS.get("DEBUG"))
     errors = []
     errs = getattr(result, "errors", None)
     if errs is not None:
-        messages = getattr(errs, "messages", errs) if hasattr(errs, "messages") else errs
-        for msg in (messages or []):
+        messages = (
+            getattr(errs, "messages", errs) if hasattr(errs, "messages") else errs
+        )
+        for msg in messages or []:
             level = (getattr(msg, "level", "WARN") or "WARN").upper()
             ts = _to_iso_time(getattr(msg, "timestamp", None) or "")
             text = getattr(msg, "message", None) or getattr(msg, "text", "") or ""
@@ -522,8 +607,14 @@ def build_report_model(xml_path: str, min_log_level: int = _LEVELS.get("DEBUG"))
     total_stats = getattr(stats, "total", None)
     if total_stats is not None:
         passed = getattr(total_stats, "passed", 0) or 0
-        failed = getattr(total_stats, "fail", None) or getattr(total_stats, "failed", 0) or 0
-        skipped = getattr(total_stats, "skip", None) or getattr(total_stats, "skipped", 0) or 0
+        failed = (
+            getattr(total_stats, "fail", None) or getattr(total_stats, "failed", 0) or 0
+        )
+        skipped = (
+            getattr(total_stats, "skip", None)
+            or getattr(total_stats, "skipped", 0)
+            or 0
+        )
     else:
         passed = sum(1 for t in _all_tests(root_suite) if t.status == "PASS")
         failed = sum(1 for t in _all_tests(root_suite) if t.status == "FAIL")
@@ -532,7 +623,9 @@ def build_report_model(xml_path: str, min_log_level: int = _LEVELS.get("DEBUG"))
     pass_rate = int((passed / total * 100)) if total > 0 else 0
     # Generated / generator from result (generation_time is set from <robot generated="..."> when loading XML)
     gen = getattr(result, "generator", "Robot Framework") or "Robot Framework"
-    gen_time = getattr(result, "generation_time", None) or getattr(result, "generated", None)
+    gen_time = getattr(result, "generation_time", None) or getattr(
+        result, "generated", None
+    )
     gen_str = _to_iso_time(gen_time) if gen_time else ""
     # Report start: root suite start_time, then generation_time, then suite status start, then earliest test
     start_time = _report_start_time(result, root)
