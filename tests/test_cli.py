@@ -41,7 +41,9 @@ def test_cli_generator_exception_returns_1(capsys, tmp_path):
     """When generator raises, main returns 1 and prints error."""
     invalid_xml = tmp_path / "bad.xml"
     invalid_xml.write_text("not valid xml", encoding="utf-8")
-    with patch("sys.argv", ["reportlens", str(invalid_xml), "-o", str(tmp_path / "out.html")]):
+    with patch(
+        "sys.argv", ["reportlens", str(invalid_xml), "-o", str(tmp_path / "out.html")]
+    ):
         exit_code = main()
     assert exit_code == 1
     out, err = capsys.readouterr()
@@ -71,7 +73,10 @@ def test_cli_custom_output_filename(tmp_path, sample_output_xml):
 def test_cli_external_data_mode(tmp_path, sample_output_xml):
     """--external-data writes report.html plus reportlens-data/*.json files."""
     out_html = tmp_path / "report.html"
-    with patch("sys.argv", ["reportlens", str(sample_output_xml), "-o", str(out_html), "--external-data"]):
+    with patch(
+        "sys.argv",
+        ["reportlens", str(sample_output_xml), "-o", str(out_html), "--external-data"],
+    ):
         exit_code = main()
     assert exit_code == 0
     assert out_html.exists()

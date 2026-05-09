@@ -1,8 +1,10 @@
 """Tests for the report model builder."""
 
-from pathlib import Path
 
-from robotframework_reportlens.builder import build_report_model, _is_executable_body_item
+from robotframework_reportlens.builder import (
+    build_report_model,
+    _is_executable_body_item,
+)
 from robotframework_reportlens.model import ReportModel, Suite, Test as TestCaseModel
 from robotframework_reportlens.model import Keyword
 
@@ -87,10 +89,16 @@ class TestBuildReportModel:
         """Report start_time and generated come from XML (root suite or generation_time)."""
         model = build_report_model(minimal_xml_path)
         assert model.generated, "generated should be set from <robot generated='...'>"
-        assert model.start_time, "start_time should be set (suite/status or generation_time fallback)"
+        assert model.start_time, (
+            "start_time should be set (suite/status or generation_time fallback)"
+        )
         # Should be ISO-like so JS Date(iso) parses
-        assert "T" in model.start_time or model.start_time.startswith("202"), model.start_time
-        assert "T" in model.generated or model.generated.startswith("202"), model.generated
+        assert "T" in model.start_time or model.start_time.startswith("202"), (
+            model.start_time
+        )
+        assert "T" in model.generated or model.generated.startswith("202"), (
+            model.generated
+        )
 
     def test_nested_keywords_preserved(self, fixtures_dir):
         """Keywords executed inside another keyword are built recursively and appear in the report."""
@@ -109,23 +117,33 @@ class TestBuildReportModel:
     def test_is_executable_body_item(self):
         """_is_executable_body_item identifies Keyword and body-bearing control structures."""
         assert _is_executable_body_item(None) is False
+
         # Object with body is executable (e.g. For, If, While, Try)
         class WithBody:
             body = []
+
         assert _is_executable_body_item(WithBody()) is True
+
         # Object without body is not (e.g. Message, Return)
         class NoBody:
             pass
+
         assert _is_executable_body_item(NoBody()) is False
 
     def test_for_loop_built_with_badge_and_children(self, control_structures_xml_path):
         """FOR loop is built as a control keyword with badge FOR and nested children."""
         model = build_report_model(control_structures_xml_path)
         for_test = next(
-            (t for t in model.root_suite.tests if "FOR Loop" in t.name and "Range" in t.name),
+            (
+                t
+                for t in model.root_suite.tests
+                if "FOR Loop" in t.name and "Range" in t.name
+            ),
             None,
         )
-        assert for_test is not None, "Expected test 'Accounts: FOR Loop In Range Create Accounts'"
+        assert for_test is not None, (
+            "Expected test 'Accounts: FOR Loop In Range Create Accounts'"
+        )
         # FOR node can be first keyword or after a Log; find by badge
         for_kw = next(
             (kw for kw in for_test.keywords if getattr(kw, "badge", None) == "FOR"),
@@ -133,44 +151,63 @@ class TestBuildReportModel:
         )
         assert for_kw is not None, "Expected a keyword with badge FOR"
         assert isinstance(for_kw, Keyword)
-        assert len(for_kw.keywords) >= 1, "FOR loop should have at least one iteration (child keywords)"
+        assert len(for_kw.keywords) >= 1, (
+            "FOR loop should have at least one iteration (child keywords)"
+        )
 
-    def test_while_loop_built_with_badge_and_children(self, control_structures_xml_path):
+    def test_while_loop_built_with_badge_and_children(
+        self, control_structures_xml_path
+    ):
         """WHILE loop is built as a control keyword with badge WHILE and iteration children (friendly names)."""
         model = build_report_model(control_structures_xml_path)
         while_test = next(
             (t for t in model.root_suite.tests if "WHILE Loop" in t.name),
             None,
         )
-        assert while_test is not None, "Expected test 'Accounts: WHILE Loop Retry Until Success'"
+        assert while_test is not None, (
+            "Expected test 'Accounts: WHILE Loop Retry Until Success'"
+        )
         while_kw = next(
             (kw for kw in while_test.keywords if getattr(kw, "badge", None) == "WHILE"),
             None,
         )
         assert while_kw is not None, "Expected a keyword with badge WHILE"
         assert isinstance(while_kw, Keyword)
-        assert len(while_kw.keywords) >= 1, "WHILE loop should have at least one iteration (child keywords)"
+        assert len(while_kw.keywords) >= 1, (
+            "WHILE loop should have at least one iteration (child keywords)"
+        )
         # Iterations should show friendly names "Iteration 1", "Iteration 2", ... not "WhileIteration"
         iteration_names = [c.name for c in while_kw.keywords]
         assert any("Iteration" in (n or "") for n in iteration_names), (
-            "WHILE iterations should have friendly names like 'Iteration 1', got: %s" % iteration_names
+            "WHILE iterations should have friendly names like 'Iteration 1', got: %s"
+            % iteration_names
         )
 
     def test_if_else_built_with_branches(self, control_structures_xml_path):
         """IF/ELSE is built with root control node and branch children (IF, ELSE badges)."""
         model = build_report_model(control_structures_xml_path)
         if_test = next(
-            (t for t in model.root_suite.tests if "IF ELSE" in t.name and "Balance" in t.name),
+            (
+                t
+                for t in model.root_suite.tests
+                if "IF ELSE" in t.name and "Balance" in t.name
+            ),
             None,
         )
         assert if_test is not None, "Expected test 'Accounts: IF ELSE Balance Tier'"
         # Root IF has no badge; children are IfBranches with badge IF / ELSE
         if_kw = next(
-            (kw for kw in if_test.keywords if "IF" in (kw.name or "") and "ELSE" in (kw.name or "")),
+            (
+                kw
+                for kw in if_test.keywords
+                if "IF" in (kw.name or "") and "ELSE" in (kw.name or "")
+            ),
             None,
         )
         assert if_kw is not None, "Expected keyword for IF/ELSE structure"
-        assert len(if_kw.keywords) >= 2, "IF/ELSE should have at least IF and ELSE branches"
+        assert len(if_kw.keywords) >= 2, (
+            "IF/ELSE should have at least IF and ELSE branches"
+        )
         branch_badges = [c.badge for c in if_kw.keywords if getattr(c, "badge", None)]
         assert "IF" in branch_badges and "ELSE" in branch_badges
 
@@ -178,16 +215,28 @@ class TestBuildReportModel:
         """TRY/EXCEPT is built with root control node and branch children (TRY, EXCEPT badges)."""
         model = build_report_model(control_structures_xml_path)
         try_test = next(
-            (t for t in model.root_suite.tests if "TRY EXCEPT" in t.name and "Delete" in t.name),
+            (
+                t
+                for t in model.root_suite.tests
+                if "TRY EXCEPT" in t.name and "Delete" in t.name
+            ),
             None,
         )
-        assert try_test is not None, "Expected test 'Accounts: TRY EXCEPT Delete Handles Error'"
+        assert try_test is not None, (
+            "Expected test 'Accounts: TRY EXCEPT Delete Handles Error'"
+        )
         try_kw = next(
-            (kw for kw in try_test.keywords if "TRY" in (kw.name or "") and "EXCEPT" in (kw.name or "")),
+            (
+                kw
+                for kw in try_test.keywords
+                if "TRY" in (kw.name or "") and "EXCEPT" in (kw.name or "")
+            ),
             None,
         )
         assert try_kw is not None, "Expected keyword for TRY/EXCEPT structure"
-        assert len(try_kw.keywords) >= 2, "TRY/EXCEPT should have at least TRY and EXCEPT branches"
+        assert len(try_kw.keywords) >= 2, (
+            "TRY/EXCEPT should have at least TRY and EXCEPT branches"
+        )
         branch_badges = [c.badge for c in try_kw.keywords if getattr(c, "badge", None)]
         assert "TRY" in branch_badges or "EXCEPT" in branch_badges
 
@@ -204,4 +253,6 @@ class TestBuildReportModel:
         assert len(plain_kw.messages) == 1
         plain_msg = plain_kw.messages[0]
         assert plain_msg.html is False, "plain-text message should have html=False"
-        assert "<" in plain_msg.message, "Plain text message should contain unescaped < character"
+        assert "<" in plain_msg.message, (
+            "Plain text message should contain unescaped < character"
+        )

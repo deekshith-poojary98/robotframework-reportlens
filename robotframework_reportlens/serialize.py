@@ -9,6 +9,7 @@ from typing import Any
 
 from .model import Keyword, LogMessage, ReportModel, Suite, Test
 
+
 # Helper: decide whether to include a value in output
 def _include_value(v):
     """Return True if value v should be included in JSON output.
@@ -38,7 +39,11 @@ def _assign_errors_to_suites_and_tests(suite: dict, errors: list[dict]) -> None:
     """Assign root-level errors to suites by source file. Mutates suite dict."""
     errors_with_path = []
     for e in errors:
-        err = {"time": e.get("time", ""), "level": (e.get("level") or "WARN").upper(), "text": e.get("text", "")}
+        err = {
+            "time": e.get("time", ""),
+            "level": (e.get("level") or "WARN").upper(),
+            "text": e.get("text", ""),
+        }
         path = _error_file_path(e.get("text", ""))
         if path:
             errors_with_path.append((path, err))
@@ -156,7 +161,10 @@ def _keyword_to_dict_without_messages(kw: Keyword) -> dict:
 
 def _collect_keyword_messages(kw: Keyword, out: dict[str, list[dict]]) -> None:
     if kw.messages:
-        out[kw.id] = [_log_message_to_dict(m, f"{kw.id}-msg-{i}") for i, m in enumerate(kw.messages)]
+        out[kw.id] = [
+            _log_message_to_dict(m, f"{kw.id}-msg-{i}")
+            for i, m in enumerate(kw.messages)
+        ]
     for child in kw.keywords:
         _collect_keyword_messages(child, out)
 
@@ -284,9 +292,9 @@ def model_to_payload(model: ReportModel) -> dict[str, Any]:
         **({"startTime": model.start_time} if _include_value(model.start_time) else {}),
         **({"endTime": model.end_time} if _include_value(model.end_time) else {}),
         **({"duration": model.duration} if _include_value(model.duration) else {}),
-        **({"statistics": model.statistics} if _include_value(model.statistics) else {}),
+        **(
+            {"statistics": model.statistics} if _include_value(model.statistics) else {}
+        ),
         **({"errors": model.errors} if _include_value(model.errors) else {}),
-        "generated": model.generated,
-        "generator": model.generator,
         "rootSuite": root_suite,
     }

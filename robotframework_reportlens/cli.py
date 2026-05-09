@@ -16,7 +16,8 @@ def main():
         help="Path to Robot Framework XML output (e.g. output.xml)",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default="report.html",
         help="Output HTML file path (default: report.html)",
     )
@@ -29,22 +30,13 @@ def main():
         "--compress-data",
         action="store_true",
         help=(
-            "Write gzip-compressed .json.gz files alongside each .json in reportlens-data/. "
-            "Requires --external-data. The generated report will prefer .json.gz in browsers "
-            "that support the DecompressionStream API, with automatic fallback to .json."
+            "Write gzip-compressed .json.gz files instead of plain .json in reportlens-data/. "
+            "Requires --external-data. Produces the smallest possible output (~97%% smaller at 10k tests). "
+            "Requires Chrome 80+, Edge 80+, Firefox 113+, or Safari 16.4+ (DecompressionStream API). "
+            "Reports will not load in older browsers — a clear error banner is shown instead."
         ),
     )
-    parser.add_argument(
-        "--compress-data-only",
-        action="store_true",
-        help=(
-            "Like --compress-data but skips writing the plain .json files entirely. "
-            "Produces the smallest possible output directory (~97%% smaller at 10k tests). "
-            "Requires --external-data. Old browsers without DecompressionStream support "
-            "will not be able to load the report. Use --compress-data if fallback is needed."
-        ),
-    )
-    # TODO: needs to improvise this feature for better debugging which users can use to debug the report 
+    # TODO: needs to improvise this feature for better debugging which users can use to debug the report
     # as well as raise issues if needed with debug logs attached
     parser.add_argument(
         "--debug",
@@ -79,7 +71,6 @@ def main():
             external_data=args.external_data,
             min_log_level=min_log_level,
             compress_data=args.compress_data,
-            compress_data_only=args.compress_data_only,
         )
         generator.generate_html(args.output, external_data=args.external_data)
         return 0

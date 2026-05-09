@@ -12,7 +12,6 @@ from .serialize import (
     _error_file_path,
     model_to_payload,
     _keyword_to_dict,
-    _test_to_dict,
     _collect_keyword_messages,
     _test_to_dict_without_messages,
 )
@@ -21,47 +20,44 @@ from .serialize import (
 class RobotFrameworkReportGenerator:
     """Generate HTML report from Robot Framework output.xml via internal ReportModel."""
 
-    def __init__(self, xml_file, external_data: bool = False, min_log_level: int | None = None, compress_data: bool = False, compress_data_only: bool = False):
+    def __init__(
+        self,
+        xml_file,
+        external_data: bool = False,
+        min_log_level: int | None = None,
+        compress_data: bool = False,
+    ):
         self.xml_file = xml_file
         # Default loglevel: TRACE (include everything) for self-contained; DEBUG (exclude TRACE) for external-data
         if min_log_level is None:
             min_log_level = _LEVELS["DEBUG"] if external_data else _LEVELS["TRACE"]
         self._model = build_report_model(xml_file, min_log_level=min_log_level)
         self._external_data = external_data
-        self._compress_data = compress_data or compress_data_only
-        # When True, skip writing plain .json files (only .json.gz is written).
-        # The frontend falls back to .json if .gz is unavailable, so skipping .json
-        # saves disk space at the cost of no fallback for old browsers.
-        self._gz_only = compress_data_only
+        self._compress_data = compress_data
 
     _error_file_path = staticmethod(_error_file_path)
 
     @staticmethod
-    def _write_json_files(path_obj: Path, data: dict, compress: bool = False, gz_only: bool = False) -> None:
-        """Write *data* as UTF-8 JSON to *path_obj* (must end in ``.json``).
+    def _write_json_files(path_obj: Path, data: dict, compress: bool = False) -> None:
+        """Write *data* as JSON to *path_obj*.
 
-        When *compress* is ``True``, also write a sibling ``<name>.json.gz``
-        at gzip compresslevel 9.
-
-        When *gz_only* is ``True``, the plain ``.json`` file is **not** written —
-        only the ``.json.gz`` sibling is created.  Use this when old-browser fallback
-        is not required and you want the smallest possible output directory.
-        *gz_only* implies *compress*; passing ``gz_only=True, compress=False`` is
-        treated as ``gz_only=True, compress=True``.
+        compress=False → write plain ``.json`` only.
+        compress=True  → write ``.json.gz`` only (no plain .json).
+                         mtime=0 ensures deterministic output across runs.
         """
         json_bytes = json.dumps(data, ensure_ascii=False).encode("utf-8")
-        if not gz_only:
-            path_obj.write_bytes(json_bytes)
-        if compress or gz_only:
+        if compress:
             gz_path = path_obj.parent / (path_obj.name + ".gz")
-            with gzip.open(gz_path, "wb", compresslevel=9) as fh:
+            with gzip.GzipFile(gz_path, "wb", compresslevel=9, mtime=0) as fh:
                 fh.write(json_bytes)
+        else:
+            path_obj.write_bytes(json_bytes)
 
     def _build_report_data(self):
         """Build template-format report data from the internal model."""
         return model_to_payload(self._model)
 
-    def generate_html(self, output_file='report.html', external_data: bool = False):
+    def generate_html(self, output_file="report.html", external_data: bool = False):
         """Generate the complete HTML report. Overwrites the file if it already exists."""
         if external_data:
             self._build_external(output_file)
@@ -69,23 +65,23 @@ class RobotFrameworkReportGenerator:
         html_content = self._build_html(external_data=False)
         path = Path(output_file)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(html_content, encoding='utf-8')
+        path.write_text(html_content, encoding="utf-8")
         print(f"Report generated: {output_file}")
 
     def _get_template_html_path(self):
         """Path to template.html inside this package (works when installed)."""
-        return Path(__file__).resolve().parent / 'template' / 'template.html'
+        return Path(__file__).resolve().parent / "template" / "template.html"
 
     def _get_template_css(self):
         """Extract CSS from template/template.html."""
         path = self._get_template_html_path()
         if not path.exists():
-            return '/* template.html not found */'
-        text = path.read_text(encoding='utf-8')
-        start = text.find('<style>') + len('<style>')
-        end = text.find('</style>')
-        if start < len('<style>') or end == -1:
-            return ''
+            return "/* template.html not found */"
+        text = path.read_text(encoding="utf-8")
+        start = text.find("<style>") + len("<style>")
+        end = text.find("</style>")
+        if start < len("<style>") or end == -1:
+            return ""
         return text[start:end].strip()
 
     def _get_template_javascript(self):
@@ -93,32 +89,44 @@ class RobotFrameworkReportGenerator:
         path = self._get_template_html_path()
         if not path.exists():
             return 'console.error("template.html not found");'
-        text = path.read_text(encoding='utf-8')
-        start = text.find('<script>') + len('<script>')
-        end = text.find('</script>', start)
-        if start < len('<script>') or end == -1:
-            return ''
+        text = path.read_text(encoding="utf-8")
+        start = text.find("<script>") + len("<script>")
+        end = text.find("</script>", start)
+        if start < len("<script>") or end == -1:
+            return ""
         js = text[start:end]
-        js = js.replace('mockData', 'reportData')
-        mock_start = js.find('// ========== Mock Data ==========')
-        icons_start = js.find('// ========== Icons ==========')
+        js = js.replace("mockData", "reportData")
+        mock_start = js.find("// ========== Mock Data ==========")
+        icons_start = js.find("// ========== Icons ==========")
         if mock_start != -1 and icons_start != -1 and icons_start > mock_start:
             js = js[:mock_start] + js[icons_start:]
         js = js.replace(
-            'expandFailedSuites(reportData.rootSuite);',
-            'if (reportData.rootSuite) expandFailedSuites(reportData.rootSuite);'
+            "expandFailedSuites(reportData.rootSuite);",
+            "if (reportData.rootSuite) expandFailedSuites(reportData.rootSuite);",
         )
         js = js.replace(
-            'const failedTests = getFailedTests(reportData.rootSuite);\n    if (failedTests.length > 0)',
-            'const failedTests = reportData.rootSuite ? getFailedTests(reportData.rootSuite) : [];\n    if (failedTests.length > 0)'
+            "const failedTests = getFailedTests(reportData.rootSuite);\n    if (failedTests.length > 0)",
+            "const failedTests = reportData.rootSuite ? getFailedTests(reportData.rootSuite) : [];\n    if (failedTests.length > 0)",
         )
         return js.strip()
 
-    def _build_html(self, external_data: bool = False, data_root: str = "reportlens-data"):
+    def _build_html(
+        self, external_data: bool = False, data_root: str = "reportlens-data"
+    ):
         """Build the complete HTML document (template-style, data-driven)."""
         report_data = None if external_data else self._build_report_data()
-        json_str = json.dumps(report_data, ensure_ascii=False) if report_data is not None else ""
-        json_str = json_str.replace('</script>', '<\\/script>').replace('</SCRIPT>', '<\\/SCRIPT>') if json_str else ""
+        json_str = (
+            json.dumps(report_data, ensure_ascii=False)
+            if report_data is not None
+            else ""
+        )
+        json_str = (
+            json_str.replace("</script>", "<\\/script>").replace(
+                "</SCRIPT>", "<\\/SCRIPT>"
+            )
+            if json_str
+            else ""
+        )
         css = self._get_template_css()
         js = self._get_template_javascript()
         config = {
@@ -128,10 +136,8 @@ class RobotFrameworkReportGenerator:
         }
         if external_data and self._compress_data:
             config["compressed"] = True
-        if external_data and self._gz_only:
-            config["compressedOnly"] = True
         config_str = json.dumps(config, ensure_ascii=False)
-        return f'''<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -146,12 +152,12 @@ class RobotFrameworkReportGenerator:
 <body>
   <div class="app" id="app"></div>
   <script type="application/json" id="report-config">{config_str}</script>
-  {'' if external_data else f'<script type="application/json" id="report-data">{json_str}</script>'}
+  {"" if external_data else f'<script type="application/json" id="report-data">{json_str}</script>'}
   <script>
 {js}
   </script>
 </body>
-</html>'''
+</html>"""
 
     def _build_external(self, output_file: str):
         """Generate report.html plus external JSON payload split across files."""
@@ -217,7 +223,7 @@ class RobotFrameworkReportGenerator:
         }
 
         def write_json(path_obj: Path, data: dict):
-            self._write_json_files(path_obj, data, compress=self._compress_data, gz_only=self._gz_only)
+            self._write_json_files(path_obj, data, compress=self._compress_data)
 
         write_json(data_dir / "summary.json", summary)
         write_json(data_dir / "suites.json", suites_json)
@@ -249,7 +255,9 @@ class RobotFrameworkReportGenerator:
                     "duration": suite.duration,
                     "statistics": suite.statistics,
                     "setup": _keyword_to_dict(suite.setup) if suite.setup else None,
-                    "teardown": _keyword_to_dict(suite.teardown) if suite.teardown else None,
+                    "teardown": _keyword_to_dict(suite.teardown)
+                    if suite.teardown
+                    else None,
                     "childSuiteIds": [s.id for s in suite.suites],
                     "testIds": [t.id for t in suite.tests],
                     "errors": suite_errors_map.get(suite.id, []),

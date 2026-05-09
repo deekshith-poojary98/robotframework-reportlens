@@ -10,6 +10,7 @@ from typing import Any
 @dataclass
 class LogMessage:
     """A single log message (e.g. from a keyword or return)."""
+
     timestamp: str
     level: str
     message: str
@@ -20,6 +21,7 @@ class LogMessage:
 @dataclass
 class Keyword:
     """An executed keyword (setup, teardown, or test step)."""
+
     id: str
     name: str
     type: str  # SETUP, TEARDOWN, KEYWORD
@@ -34,12 +36,15 @@ class Keyword:
     fail_message: str = ""
     returned: bool = False
     return_values: list[str] = field(default_factory=list)
-    badge: str | None = None  # Reserved control word shown as badge: FOR, IF, ELSE IF, ELSE, TRY, EXCEPT, FINALLY, WHILE
+    badge: str | None = (
+        None  # Reserved control word shown as badge: FOR, IF, ELSE IF, ELSE, TRY, EXCEPT, FINALLY, WHILE
+    )
 
 
 @dataclass
 class Test:
     """A single test case."""
+
     id: str
     name: str
     full_name: str
@@ -58,6 +63,7 @@ class Test:
 @dataclass
 class Suite:
     """A test suite (root or nested)."""
+
     id: str
     name: str
     full_name: str
@@ -76,6 +82,7 @@ class Suite:
 @dataclass
 class ReportModel:
     """Root model for a Robot Framework execution result."""
+
     generated: str
     generator: str
     start_time: str

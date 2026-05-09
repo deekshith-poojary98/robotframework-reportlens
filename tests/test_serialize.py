@@ -2,7 +2,6 @@
 
 from robotframework_reportlens.builder import build_report_model
 from robotframework_reportlens.serialize import model_to_payload
-import os
 
 
 class TestModelToPayload:
@@ -65,15 +64,23 @@ class TestModelToPayload:
         html_msg = screenshot_kw["messages"][0]
         plain_msg = plain_kw["messages"][0]
         assert "isHtml" in html_msg, "Serialized message must have isHtml key"
-        assert html_msg["isHtml"] is True, "HTML message must serialize with isHtml=True"
+        assert html_msg["isHtml"] is True, (
+            "HTML message must serialize with isHtml=True"
+        )
         # isHtml is omitted when False (compact serialization) so absence means False
         assert html_msg.get("isHtml", False) is True  # double-check html message
-        assert plain_msg.get("isHtml", False) is False, "Plain-text message must serialize without isHtml or isHtml=False"
+        assert plain_msg.get("isHtml", False) is False, (
+            "Plain-text message must serialize without isHtml or isHtml=False"
+        )
 
-    def test_trace_messages_filtered_when_debug_level(self, fixtures_dir, minimal_xml_path):
+    def test_trace_messages_filtered_when_debug_level(
+        self, fixtures_dir, minimal_xml_path
+    ):
         """TRACE-level messages are filtered when min_log_level=DEBUG is passed explicitly."""
         from robotframework_reportlens.builder import _LEVELS
+
         model = build_report_model(minimal_xml_path, min_log_level=_LEVELS["DEBUG"])
+
         # Look through all messages and assert none has level TRACE
         def collect_levels(tests):
             for t in tests:
@@ -82,5 +89,6 @@ class TestModelToPayload:
                         yield m.level
                     for child in kw.keywords:
                         yield from collect_levels([child])
+
         levels = list(collect_levels(model.root_suite.tests))
         assert "TRACE" not in levels
