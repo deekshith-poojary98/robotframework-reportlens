@@ -1,5 +1,44 @@
 # Release Notes
 
+## [0.1.8] - 2026-05-09
+
+### Changed
+
+* **`--compress-data` is now the sole compression flag** — writes `.json.gz` files only; no plain `.json` counterparts are produced (breaking change from 0.1.7).
+* **Removed `--compress-data-only` flag** — merged into `--compress-data`; update any scripts that used `--compress-data-only` to use `--compress-data` instead.
+* **No dual-write** — `--external-data --compress-data` no longer writes both `.json` and `.json.gz`; only `.json.gz` files are written, halving disk usage.
+* **No `.json` fallback** — frontend no longer retries with plain `.json` when compressed fetch fails; failure raises an explicit console error.
+* **Deterministic `.json.gz` output** — gzip `mtime` is fixed to `0` so repeated runs produce bitwise-identical compressed files (useful for caching and CI artefact comparison).
+* **Browser capability guard updated** — the `DecompressionStream` check now triggers on any compressed report (flag: `compressed`), not only `compressedOnly` reports.
+
+### Fixed
+
+* Fixed duplicate `"generated"` and `"generator"` keys in serialized payload dict (`serialize.py`).
+* Fixed `E402` import-order lint error in `builder.py` — model imports moved above module-level code.
+* Fixed `gzip.open()` `mtime` kwarg incompatibility — switched to `gzip.GzipFile` which accepts `mtime`.
+* Fixed `TypeError: Cannot read properties of undefined` crash in normal (self-contained) mode caused by compact serialiser omitting empty arrays — added `|| []` guards in `renderTestTree`, `suiteHasVisibleTests`, and `getExpandableSuiteIds`.
+
+### Removed
+
+* Removed `--compress-data-only` CLI flag.
+* Removed `compressedOnly` config key from generated HTML.
+* Removed dual-write logic and `.json`-fallback fetch from frontend.
+
+### Tests
+
+* Deleted `TestCompressDataOnlyMode` test class (7 tests removed, flag deleted).
+* Rewrote `TestCompressedExternalDataMode` for new single-file contract (`.json.gz` only).
+* Added `TestCompactSerialiserGuards` — 3 static assertions that bare `.map`/`.filter`/`.some` on `suite.tests` / `suite.suites` are absent from the template JS.
+* Added determinism test: two runs produce bitwise-identical `.gz` files.
+* 68 passing tests.
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
+---
+
 ## [0.1.7] - 2026-05-08
 
 ### Added
