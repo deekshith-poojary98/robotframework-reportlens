@@ -42,8 +42,7 @@ reportlens output.xml -o report.html
 | `xml_file` | Path to Robot Framework XML output (e.g. `output.xml`) |
 | `-o`, `--output` | Output HTML path (default: `report.html`) |
 | `--external-data` | Store report data in `reportlens-data/` and fetch it lazily (recommended for large suites) |
-| `--compress-data` | Write gzip-compressed `.json.gz` files **alongside** every `.json` in `reportlens-data/`. Requires `--external-data`. The report automatically prefers `.json.gz` in browsers that support the `DecompressionStream` API, with transparent fallback to plain `.json`. Both formats are written so older browsers still work. |
-| `--compress-data-only` | Like `--compress-data` but writes **only** `.json.gz` files — no plain `.json` files are written. Requires `--external-data`. Produces the smallest possible output (~20 MB for 10k tests vs ~650 MB uncompressed) but drops support for browsers without `DecompressionStream` (Chrome < 80, Firefox < 113, Safari < 16.4). |
+| `--compress-data` | Write only gzip-compressed `.json.gz` files in `reportlens-data/`. Requires `--external-data`. |
 | `--loglevel` | Minimum log level to include (`TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`). Default: `DEBUG` for external-data mode, `TRACE` for self-contained mode. |
 
 **Examples:**
@@ -58,11 +57,8 @@ reportlens output.xml -o docs/report.html
 # External-data mode (lazy loading + smaller HTML)
 reportlens output.xml -o report.html --external-data
 
-# External-data + gzip compression (recommended for CI artifacts and large suites)
+# External-data + gzip compression (writes only `.json.gz` files)
 reportlens output.xml -o report.html --external-data --compress-data
-
-# External-data + gz-only (smallest output, modern browsers only)
-reportlens output.xml -o report.html --external-data --compress-data-only
 
 # Only include INFO and above (exclude DEBUG messages)
 reportlens output.xml -o report.html --loglevel INFO
@@ -74,10 +70,7 @@ Open the generated `.html` file in a browser.
 > When using `--external-data`, open the report via a local web server (e.g. `python -m http.server`). Opening the file directly with `file://` will show a banner explaining how to start a server.
 
 > **`--compress-data` note**
-> Gzip compression requires no server configuration. The browser fetches `.json.gz` files directly and decompresses them client-side using the browser-native `DecompressionStream` API. Older browsers automatically fall back to the plain `.json` files. Both formats are always written so static hosting works without any special server settings.
-
-> **`--compress-data-only` note**
-> Produces the smallest possible output by writing **only** `.json.gz` files (no `.json` fallback). Ideal for CI artefact storage and modern-browser dashboards. Not recommended if you need to support Chrome < 80, Firefox < 113, or Safari < 16.4.
+> Gzip compression requires no server configuration. The browser fetches `.json.gz` files directly and decompresses them client-side using the browser-native `DecompressionStream` API. `--compress-data` writes only `.json.gz` files; there is no plain `.json` fallback in the frontend.
 
 You can also run the module directly:
 
@@ -90,7 +83,7 @@ python -m robotframework_reportlens output.xml -o report.html
 - **Suite/test tree** – Navigate suites and tests with pass/fail/skip counts
 - **Search & filters** – Filter by status and tags; search test names
 - **External-data mode** – Optional `--external-data` output splits the report into small JSON files fetched lazily, keeping the HTML shell tiny regardless of suite size
-- **Compressed external data** – `--compress-data` writes gzip-compressed `.json.gz` siblings for every JSON file alongside the plain `.json` files (dual-write, full browser compatibility). `--compress-data-only` skips the plain `.json` files entirely — at 10k tests this reduces the data directory from ~650 MB to ~20 MB (97% smaller) with no server configuration needed. The browser decompresses files natively using the `DecompressionStream` API; `--compress-data` adds automatic fallback to plain `.json` on older browsers
+- **Compressed external data** – `--compress-data` writes only gzip-compressed `.json.gz` files in external-data mode. At 10k tests this reduces the data directory from ~650 MB to ~20 MB (97% smaller) with no server configuration needed. The browser decompresses files natively using the `DecompressionStream` API
 - **Log level filtering at generation time** – `--loglevel` controls which messages are included; defaults to `DEBUG` in external-data mode (excludes `TRACE`) and `TRACE` in self-contained mode (includes everything)
 - **Keyword tree** – Expand SETUP, keywords, and TEARDOWN; select a keyword to scope the logs panel to that keyword only; control structures (FOR, WHILE, IF/ELSE, TRY/EXCEPT) render with distinct badges and collapsible iteration/branch children
 - **Logs panel** – Log level filter (All, ERROR, WARN, INFO, etc.); copy button on each log message (shown on hover); HTML log messages (e.g. embedded screenshots) render inline with images opening in a new tab
@@ -104,7 +97,7 @@ python -m robotframework_reportlens output.xml -o report.html
 
 ReportLens reads `output.xml` using the Robot Framework execution result API, builds an internal `ReportModel`, serialises it to a compact JSON payload (empty arrays and default-value fields are omitted), then injects the result into a single self-contained HTML file built from a bundled template.
 
-In **external-data mode** the JSON payload is split across small per-suite and per-test files written to a `reportlens-data/` directory. The HTML shell fetches only the data it needs as the user navigates (suite files on expand, test files on click). With `--compress-data` every file is additionally written as a `.json.gz` sibling; the browser fetches the compressed variant automatically using the native `DecompressionStream` API and falls back to plain JSON if the API is unavailable. With `--compress-data-only` only `.json.gz` files are written, producing the smallest possible output at the cost of dropping support for very old browsers (Chrome < 80, Firefox < 113, Safari < 16.4).
+In **external-data mode** the JSON payload is split across small per-suite and per-test files written to a `reportlens-data/` directory. The HTML shell fetches only the data it needs as the user navigates (suite files on expand, test files on click). With `--compress-data`, files are written only as `.json.gz`; the browser fetches and decompresses them using the native `DecompressionStream` API, with no plain `.json` fallback in the frontend.
 
 No server is required for self-contained reports. External-data mode requires a static file server (any HTTP server works — `python -m http.server` is sufficient for local use).
 
