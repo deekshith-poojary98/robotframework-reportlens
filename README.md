@@ -12,8 +12,9 @@
 
 View generated reports here
 
-- [Pass Report](https://deekshith-poojary98.github.io/robotframework-reportlens/pass/pass_report.html "Link to sample report")
-- [Fail Report](https://deekshith-poojary98.github.io/robotframework-reportlens/fail/fail_report.html "Link to sample report")
+- [Pass Report](https://deekshith-poojary98.github.io/robotframework-reportlens/pass/pass_report.html "Link to sample pass report")
+- [Fail Report](https://deekshith-poojary98.github.io/robotframework-reportlens/fail/fail_report.html "Link to sample fail report")
+- [Compare Report](https://deekshith-poojary98.github.io/robotframework-reportlens/compare/compare_report.html "Link to sample compare report")
 
 ![Sample Report](https://raw.githubusercontent.com/deekshith-poojary98/robotframework-reportlens/main/assets/sample_report1.png)
 

@@ -298,3 +298,4 @@ Requires **Python 3.10+**. No extra runtime dependencies (stdlib only).
 - [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
 - [Sample report (pass)](https://deekshith-poojary98.github.io/robotframework-reportlens/pass/pass_report.html)
 - [Sample report (fail)](https://deekshith-poojary98.github.io/robotframework-reportlens/fail/fail_report.html)
+- [Sample report (compare)](https://deekshith-poojary98.github.io/robotframework-reportlens/compare/compare_report.html)
