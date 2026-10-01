@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .insights import compute_duration_insights
 from .model import Keyword, LogMessage, ReportModel, Suite, Test
 
 
@@ -36,8 +37,14 @@ def _error_file_path(text: str) -> str | None:
 
 
 def _assign_errors_to_suites_and_tests(suite: dict, errors: list[dict]) -> None:
-    """Assign root-level errors to suites by source file. Mutates suite dict."""
+    """Assign root-level errors to suites by source file. Mutates suite dict.
+
+    Errors that include ``Error in file '…' on line`` are attached to the matching
+    suite (and its tests). Pathless errors (e.g. BuiltIn deprecation warnings)
+    are attached to the root suite so they remain visible in the report.
+    """
     errors_with_path = []
+    pathless_errors = []
     for e in errors:
         err = {
             "time": e.get("time", ""),
@@ -47,8 +54,10 @@ def _assign_errors_to_suites_and_tests(suite: dict, errors: list[dict]) -> None:
         path = _error_file_path(e.get("text", ""))
         if path:
             errors_with_path.append((path, err))
+        else:
+            pathless_errors.append(err)
 
-    def walk(s: dict) -> None:
+    def walk(s: dict, is_root: bool = False) -> None:
         source = (s.get("source") or "").strip()
         source_norm = str(Path(source).resolve()) if source else None
         suite_errors = []
@@ -60,13 +69,15 @@ def _assign_errors_to_suites_and_tests(suite: dict, errors: list[dict]) -> None:
                     path_norm = path
                 if path_norm == source_norm:
                     suite_errors.append(err)
+        if is_root and pathless_errors:
+            suite_errors.extend(pathless_errors)
         s["errors"] = suite_errors
         for t in s.get("tests", []):
-            t["suiteErrors"] = suite_errors
+            t["suiteErrors"] = list(suite_errors)
         for child in s.get("suites", []):
-            walk(child)
+            walk(child, is_root=False)
 
-    walk(suite)
+    walk(suite, is_root=True)
 
 
 def _log_message_to_dict(msg: LogMessage, msg_id: str) -> dict:
@@ -202,6 +213,8 @@ def _test_to_dict(t: Test) -> dict:
         out_teardown = _keyword_to_dict(t.teardown)
         if _include_value(out_teardown):
             out["teardown"] = out_teardown
+    if getattr(t, "attempts", None) and len(t.attempts) > 1:
+        out["attempts"] = t.attempts
     return out
 
 
@@ -238,6 +251,8 @@ def _test_to_dict_without_messages(t: Test) -> dict:
         out_teardown = _keyword_to_dict_without_messages(t.teardown)
         if _include_value(out_teardown):
             out["teardown"] = out_teardown
+    if getattr(t, "attempts", None) and len(t.attempts) > 1:
+        out["attempts"] = t.attempts
     return out
 
 
@@ -285,6 +300,7 @@ def model_to_payload(model: ReportModel) -> dict[str, Any]:
     """
     root_suite = _suite_to_dict(model.root_suite)
     _assign_errors_to_suites_and_tests(root_suite, model.errors)
+    insights = compute_duration_insights(model)
     return {
         "generated": model.generated,
         "generator": model.generator,
@@ -297,4 +313,5 @@ def model_to_payload(model: ReportModel) -> dict[str, Any]:
         ),
         **({"errors": model.errors} if _include_value(model.errors) else {}),
         "rootSuite": root_suite,
+        "durationInsights": insights,
     }

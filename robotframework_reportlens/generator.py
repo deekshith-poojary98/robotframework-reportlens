@@ -22,20 +22,39 @@ class RobotFrameworkReportGenerator:
 
     def __init__(
         self,
-        xml_file,
+        xml_file=None,
         external_data: bool = False,
         min_log_level: int | None = None,
         compress_data: bool = False,
+        model=None,
+        payload: dict | None = None,
     ):
         self.xml_file = xml_file
-        # Default loglevel: TRACE (include everything) for self-contained; DEBUG (exclude TRACE) for external-data
-        if min_log_level is None:
-            min_log_level = _LEVELS["DEBUG"] if external_data else _LEVELS["TRACE"]
-        self._model = build_report_model(xml_file, min_log_level=min_log_level)
         self._external_data = external_data
         self._compress_data = compress_data
+        self._payload_override = payload
+        if payload is not None:
+            self._model = None
+        elif model is not None:
+            self._model = model
+        else:
+            if xml_file is None:
+                raise ValueError("xml_file, model, or payload is required")
+            if min_log_level is None:
+                min_log_level = _LEVELS["DEBUG"] if external_data else _LEVELS["TRACE"]
+            self._model = build_report_model(xml_file, min_log_level=min_log_level)
 
     _error_file_path = staticmethod(_error_file_path)
+
+    @classmethod
+    def from_model(cls, model, **kwargs):
+        """Build a generator from an existing ReportModel (e.g. after merge)."""
+        return cls(model=model, **kwargs)
+
+    @classmethod
+    def from_payload(cls, payload: dict, **kwargs):
+        """Build a generator from a prebuilt template payload (e.g. compare)."""
+        return cls(payload=payload, **kwargs)
 
     @staticmethod
     def _write_json_files(path_obj: Path, data: dict, compress: bool = False) -> None:
@@ -54,12 +73,18 @@ class RobotFrameworkReportGenerator:
             path_obj.write_bytes(json_bytes)
 
     def _build_report_data(self):
-        """Build template-format report data from the internal model."""
+        """Build template-format report data from the internal model or override."""
+        if self._payload_override is not None:
+            return self._payload_override
         return model_to_payload(self._model)
 
     def generate_html(self, output_file="report.html", external_data: bool = False):
         """Generate the complete HTML report. Overwrites the file if it already exists."""
         if external_data:
+            if self._model is None:
+                raise ValueError(
+                    "external-data mode requires a ReportModel (not a compare payload)"
+                )
             self._build_external(output_file)
             return
         html_content = self._build_html(external_data=False)
@@ -198,6 +223,7 @@ class RobotFrameworkReportGenerator:
             "errors": report_data.get("errors", []),
             "rootSuiteId": root.id,
             "rootSuiteName": root.name,
+            "durationInsights": report_data.get("durationInsights"),
         }
 
         suites_list = []
@@ -225,24 +251,49 @@ class RobotFrameworkReportGenerator:
         def write_json(path_obj: Path, data: dict):
             self._write_json_files(path_obj, data, compress=self._compress_data)
 
+        # Lightweight index of every test for global search/filter without
+        # loading each suite_*.json first (critical for large suites).
+        tests_index = []
+        for suite in iter_suites(root):
+            for test in suite.tests:
+                entry = {
+                    "id": test.id,
+                    "name": test.name,
+                    "fullName": test.full_name,
+                    "status": test.status,
+                    "duration": test.duration,
+                    "tags": list(test.tags or []),
+                    "suiteId": suite.id,
+                }
+                if test.message:
+                    # Keep failed-summary usable before suite JSON is loaded.
+                    msg = str(test.message)
+                    entry["message"] = msg if len(msg) <= 300 else msg[:297] + "..."
+                tests_index.append(entry)
+
         write_json(data_dir / "summary.json", summary)
         write_json(data_dir / "suites.json", suites_json)
+        write_json(
+            data_dir / "tests-index.json",
+            {"schemaVersion": 1, "tests": tests_index},
+        )
 
         for suite in iter_suites(root):
             tests_stub = []
             for test in suite.tests:
-                tests_stub.append(
-                    {
-                        "id": test.id,
-                        "name": test.name,
-                        "fullName": test.full_name,
-                        "status": test.status,
-                        "duration": test.duration,
-                        "startTime": test.start_time,
-                        "message": test.message,
-                        "tags": test.tags,
-                    }
-                )
+                stub = {
+                    "id": test.id,
+                    "name": test.name,
+                    "fullName": test.full_name,
+                    "status": test.status,
+                    "duration": test.duration,
+                    "startTime": test.start_time,
+                    "message": test.message,
+                    "tags": test.tags,
+                }
+                if getattr(test, "attempts", None) and len(test.attempts) > 1:
+                    stub["attempts"] = test.attempts
+                tests_stub.append(stub)
 
             suite_payload = {
                 "schemaVersion": 1,

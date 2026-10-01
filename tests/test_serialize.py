@@ -40,6 +40,44 @@ class TestModelToPayload:
         for test in root["tests"]:
             assert "suiteErrors" in test
 
+    def test_pathless_errors_assigned_to_root(self):
+        from robotframework_reportlens.serialize import _assign_errors_to_suites_and_tests
+
+        root = {
+            "id": "s1",
+            "name": "Root",
+            "source": "",
+            "tests": [],
+            "suites": [
+                {
+                    "id": "s1-s1",
+                    "name": "Leaf",
+                    "source": "/tmp/leaf.robot",
+                    "tests": [{"id": "t1", "name": "T"}],
+                    "suites": [],
+                }
+            ],
+        }
+        errors = [
+            {
+                "time": "2026-01-01T00:00:00",
+                "level": "WARN",
+                "text": "The 'repr' argument of 'BuiltIn.Log' is deprecated.",
+            },
+            {
+                "time": "2026-01-01T00:00:01",
+                "level": "WARN",
+                "text": "Error in file '/tmp/leaf.robot' on line 3: something",
+            },
+        ]
+        _assign_errors_to_suites_and_tests(root, errors)
+        assert len(root["errors"]) == 1
+        assert "deprecated" in root["errors"][0]["text"]
+        leaf = root["suites"][0]
+        assert len(leaf["errors"]) == 1
+        assert "Error in file" in leaf["errors"][0]["text"]
+        assert leaf["tests"][0]["suiteErrors"] == leaf["errors"]
+
     def test_keyword_has_camel_case_keys(self, minimal_xml_path):
         model = build_report_model(minimal_xml_path)
         payload = model_to_payload(model)

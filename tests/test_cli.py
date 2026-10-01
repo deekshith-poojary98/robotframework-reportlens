@@ -85,3 +85,4 @@ def test_cli_external_data_mode(tmp_path, sample_output_xml):
     assert data_dir.exists()
     assert (data_dir / "summary.json").exists()
     assert (data_dir / "suites.json").exists()
+    assert (data_dir / "tests-index.json").exists()
