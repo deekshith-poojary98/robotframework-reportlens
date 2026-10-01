@@ -58,6 +58,9 @@ class Test:
     keywords: list[Keyword] = field(default_factory=list)
     setup: "Keyword | None" = None
     teardown: "Keyword | None" = None
+    # Merge/rebot: prior attempts when the same test appears in multiple XMLs.
+    # Each entry: {index, status, duration, message, startTime, source, id}
+    attempts: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass

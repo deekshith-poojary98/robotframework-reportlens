@@ -520,8 +520,14 @@ def _build_suite(robot_suite, parent_full_name: str, min_level_val: int) -> Suit
     passed = sum(1 for t in tests if t.status == "PASS")
     failed = sum(1 for t in tests if t.status == "FAIL")
     skipped = sum(1 for t in tests if t.status == "SKIP")
+    # Roll up child-suite counts so parent/group nodes show aggregate badges.
+    for child in suites:
+        child_stats = child.statistics or {}
+        passed += int(child_stats.get("passed", 0) or 0)
+        failed += int(child_stats.get("failed", 0) or 0)
+        skipped += int(child_stats.get("skipped", 0) or 0)
     statistics = {
-        "total": len(tests),
+        "total": passed + failed + skipped,
         "passed": passed,
         "failed": failed,
         "skipped": skipped,
@@ -566,7 +572,7 @@ def build_report_model(
     result = ExecutionResult(xml_path)
     root = result.suite
 
-    # Project name based on xml_path's parent directory
+    # Fallback label from output directory when Robot provides no suite name.
     project_name = (Path(xml_path).resolve().parent.name or "Test Run").upper()
 
     if root is None:
@@ -586,8 +592,12 @@ def build_report_model(
         )
     else:
         root_suite = _build_suite(root, "", min_log_level)
-        root_suite.name = project_name
-        root_suite.full_name = project_name
+        # Prefer Robot's suite name (including --name); only fall back to the
+        # output-directory label when Robot left the name empty.
+        robot_name = (getattr(root, "name", None) or "").strip()
+        if not robot_name:
+            root_suite.name = project_name
+            root_suite.full_name = project_name
 
     # Errors (ExecutionErrors has .messages)
     errors = []
@@ -666,6 +676,24 @@ def _all_tests(suite: Suite) -> list:
     for s in suite.suites:
         out.extend(_all_tests(s))
     return out
+
+
+def _iter_tests_with_suite_path(suite: Suite):
+    """Yield ``(suite_names_under_root, test)`` in tree order.
+
+    The yielded suite names are the real suite ``name`` fields under ``suite``,
+    not a split of ``full_name``. Test and suite names may contain dots, so
+    ``full_name`` cannot be split back into a path without collapsing distinct
+    tests (for example ``API.Health`` vs suite ``API`` / test ``Health``).
+    """
+
+    def walk(current: Suite, parts: tuple[str, ...]):
+        for test in current.tests:
+            yield parts, test
+        for child in current.suites:
+            yield from walk(child, parts + (child.name or "",))
+
+    yield from walk(suite, ())
 
 
 def _all_robot_tests(robot_suite):

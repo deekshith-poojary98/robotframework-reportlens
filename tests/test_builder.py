@@ -29,8 +29,40 @@ class TestBuildReportModel:
         model = build_report_model(minimal_xml_path)
         root = model.root_suite
         assert root.id == "s1"
-        assert root.name
-        assert root.full_name
+        assert root.name == "Minimal Suite"
+        assert root.full_name == "Minimal Suite"
+
+    def test_parent_suite_statistics_include_children(self, tmp_path):
+        """Nested parent suites must roll up child pass/fail/skip counts."""
+        xml = tmp_path / "nested.xml"
+        xml.write_text(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.0" generated="2026-01-31T12:00:00" schemaversion="5">
+<suite id="s1" name="Root">
+<suite id="s1-s1" name="Group">
+<suite id="s1-s1-s1" name="Leaf">
+<test id="s1-s1-s1-t1" name="Pass"><status status="PASS" start="2026-01-31T12:00:01" elapsed="0.001"/></test>
+<test id="s1-s1-s1-t2" name="Fail"><status status="FAIL" start="2026-01-31T12:00:02" elapsed="0.001">boom</status></test>
+<test id="s1-s1-s1-t3" name="Skip"><status status="SKIP" start="2026-01-31T12:00:03" elapsed="0.001">nope</status></test>
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.003"/>
+</suite>
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.003"/>
+</suite>
+<status status="FAIL" start="2026-01-31T12:00:01" elapsed="0.003"/>
+</suite>
+<statistics><total><stat pass="1" fail="1" skip="1">All Tests</stat></total></statistics>
+<errors></errors>
+</robot>
+""",
+            encoding="utf-8",
+        )
+        model = build_report_model(str(xml))
+        root = model.root_suite
+        group = root.suites[0]
+        leaf = group.suites[0]
+        assert leaf.statistics == {"total": 3, "passed": 1, "failed": 1, "skipped": 1}
+        assert group.statistics == {"total": 3, "passed": 1, "failed": 1, "skipped": 1}
+        assert root.statistics == {"total": 3, "passed": 1, "failed": 1, "skipped": 1}
 
     def test_root_suite_has_tests(self, minimal_xml_path):
         model = build_report_model(minimal_xml_path)

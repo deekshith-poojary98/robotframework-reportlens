@@ -1,5 +1,32 @@
 # Release Notes
 
+## [0.1.9] - 2026-09-30
+
+### Added
+
+* **Compare two runs** — `reportlens compare a.xml b.xml -o diff.html` joins tests by `fullName` and reports newly failing, newly passing, still failing, only-in-A/B, and duration deltas in a dedicated compare UI.
+* **Merge / rebot mode** — `reportlens merge shard1.xml shard2.xml … -o report.html` unions CI shards and preserves attempt history for retries (same test across XMLs); last attempt wins for status/keywords. Single-file merge is a no-op.
+* **Duration insights** — every report payload includes `durationInsights` (slowest tests/keywords + duration histogram). The sidebar shows a collapsible Duration Insights panel for triage beyond pass/fail.
+* **Listener / live mode** — `reportlens live --outdir live-report` prepares a polling HTML shell; run Robot with `--listener robotframework_reportlens.listener.LiveReportListener:outdir=live-report` to stream completed tests into `live-data/` while the suite runs. Mid-run exit still leaves completed tests on disk.
+
+### Changed
+
+* CLI supports subcommands `compare`, `merge`, and `live` while keeping backward-compatible `reportlens output.xml -o report.html`.
+* Generator accepts a prebuilt `ReportModel` (`from_model`) or payload (`from_payload`) for compare/merge flows.
+* Test model/serializer may include `attempts` when a merged report has retry history.
+
+### Tests
+
+* Added `test_compare.py`, `test_merge.py`, `test_insights.py`, `test_listener.py` covering happy paths and edge cases (identical runs, missing files, empty suites, single-XML merge, duplicate retry names, zero-duration tests, mid-run listener flush).
+* 92 passing tests.
+
+### Links
+
+- [PyPI](https://pypi.org/project/robotframework-reportlens/)
+- [Repository](https://github.com/deekshith-poojary98/robotframework-reportlens)
+
+---
+
 ## [0.1.8] - 2026-05-09
 
 ### Changed

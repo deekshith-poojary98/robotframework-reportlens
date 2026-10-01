@@ -185,10 +185,22 @@ class TestExternalDataMode:
         assert data_dir.exists()
         assert (data_dir / "summary.json").exists()
         assert (data_dir / "suites.json").exists()
+        assert (data_dir / "tests-index.json").exists()
         summary = json.loads((data_dir / "summary.json").read_text(encoding="utf-8"))
         suites = json.loads((data_dir / "suites.json").read_text(encoding="utf-8"))
+        tests_index = json.loads(
+            (data_dir / "tests-index.json").read_text(encoding="utf-8")
+        )
         root_id = suites.get("rootSuiteId")
         assert summary.get("rootSuiteId") == root_id
+        assert tests_index.get("schemaVersion") == 1
+        assert isinstance(tests_index.get("tests"), list)
+        assert len(tests_index["tests"]) >= 2
+        for entry in tests_index["tests"]:
+            assert "id" in entry
+            assert "name" in entry
+            assert "suiteId" in entry
+            assert "status" in entry
         # Minimal suite and test files should be created for root suite and its tests
         assert (data_dir / f"suite_{root_id}.json").exists()
         # minimal_output.xml contains s1-t1 and s1-t2
@@ -326,6 +338,7 @@ class TestCompressedExternalDataMode:
         expected = [
             "summary.json.gz",
             "suites.json.gz",
+            "tests-index.json.gz",
             "suite_s1.json.gz",
             "test_s1-t1.json.gz",
             "test_s1-t2.json.gz",
@@ -424,6 +437,33 @@ class TestCompressedExternalDataMode:
         js = gen._get_template_javascript()
         assert "decompressGzipResponse" in js
 
+    def test_template_js_uses_tests_index_for_search(self, minimal_xml_path):
+        """External-data search must use tests-index.json for global matching."""
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "getTestsIndex" in js
+        assert "tests-index.json" in js
+        assert "expandSuitesForActiveFilters" in js
+        assert "suitePathFromFullName" in js
+        assert "name-suite" in js
+
+    def test_template_js_shows_errors_and_failed_suite_paths(self, minimal_xml_path):
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "errors-summary" in js
+        assert "getDedupedErrors" in js
+        assert "failed-item-suite" in js
+        assert 'state.statusFilter === "ALL"' in js
+
+    def test_template_js_has_triage_panel_ux(self, minimal_xml_path):
+        gen = RobotFrameworkReportGenerator(minimal_xml_path)
+        js = gen._get_template_javascript()
+        assert "triage-panel" in js
+        assert "applyTriageDefaults" in js
+        assert "FAILED_LIST_PAGE" in js
+        assert "failed-show-more" in js
+        assert "LARGE_FAIL_THRESHOLD" in js
+        assert "BOOT_LOAD_FAILED_SUITES" in js
     def test_template_js_detects_DecompressionStream(self, minimal_xml_path):
         """The JS must guard on typeof DecompressionStream for browser compatibility."""
         gen = RobotFrameworkReportGenerator(minimal_xml_path)

@@ -376,6 +376,12 @@
     .sidebar.collapsed {
       width: 0;
     }
+    .sidebar > .search-filter,
+    .sidebar > .triage-panel,
+    .sidebar > .test-tree-bar,
+    .sidebar > .test-tree-hint {
+      flex-shrink: 0;
+    }
     .sidebar-toggle {
       position: absolute;
       left: 320px;
@@ -480,10 +486,10 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 12px;
-      background: var(--status-fail-muted);
+      padding: 8px 12px;
+      background: transparent;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--status-fail);
       border: none;
@@ -491,15 +497,26 @@
       text-align: left;
     }
     .failed-summary-header:hover {
-      background: hsla(0, 50%, 18%, 0.8);
-    }
-    .light .failed-summary-header:hover {
-      background: hsl(0, 45%, 92%);
+      background: var(--accent);
     }
     .failed-summary-list {
-      max-height: 156px;
+      max-height: 160px;
       overflow-y: auto;
     }
+    .failed-summary-more {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      border-top: 1px solid var(--border);
+      background: transparent;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+    .failed-summary-more:hover { background: var(--accent); }
     .failed-item {
       display: block;
       width: 100%;
@@ -517,10 +534,685 @@
     .failed-item.selected {
       background: var(--accent);
     }
+    /* ========== Triage panel (warnings / failed / insights) ========== */
+    .triage-panel {
+      border-bottom: 1px solid var(--border);
+      background: hsla(220, 14%, 14%, 0.55);
+    }
+    .light .triage-panel { background: hsla(220, 20%, 96%, 0.9); }
+    .triage-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: var(--foreground);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+    }
+    .triage-header:hover { background: var(--accent); }
+    .triage-header-label { flex-shrink: 0; }
+    .triage-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+    .triage-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: var(--muted);
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
+    }
+    .triage-chip.fail { background: var(--status-fail-muted); color: var(--status-fail); }
+    .triage-chip.warn { background: var(--status-skip-muted); color: var(--status-skip); }
+    .triage-body {
+      max-height: min(36vh, 260px);
+      overflow-y: auto;
+      border-top: 1px solid var(--border);
+    }
+    /* ========== Duration Insights ========== */
+    .insights-panel {
+      border-bottom: 1px solid var(--border);
+    }
+    .insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--foreground);
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .insights-header:hover { background: var(--accent); }
+    .insights-body { padding: 8px 12px 12px; max-height: 180px; overflow-y: auto; }
+    .insights-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted-foreground);
+      margin: 8px 0 6px;
+    }
+    .insights-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      padding: 3px 0;
+      cursor: pointer;
+    }
+    .insights-row:hover { color: var(--primary); }
+    .insights-row .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .insights-row .name-main { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .insights-row .name-suite {
+      font-size: 10px;
+      color: var(--muted-foreground);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .insights-row .dur { flex-shrink: 0; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .histogram { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+    .histogram-row { display: grid; grid-template-columns: 72px 1fr 36px; gap: 6px; align-items: center; font-size: 11px; color: var(--muted-foreground); }
+    .histogram-bar-track { height: 8px; background: var(--muted); border-radius: 2px; overflow: hidden; }
+    .histogram-bar-fill { height: 100%; background: var(--primary); border-radius: 2px; min-width: 0; }
+    /* ========== Attempt history ========== */
+    .attempts-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--muted);
+    }
+    .attempt-chip {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted-foreground);
+    }
+    .attempt-chip.pass { border-color: var(--status-pass); color: var(--status-pass); }
+    .attempt-chip.fail { border-color: var(--status-fail); color: var(--status-fail); }
+    .attempt-chip.skip { border-color: var(--status-skip); color: var(--status-skip); }
+    /* ========== Compare mode ========== */
+    .compare-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--background);
+    }
+    .compare-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+    .compare-top-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .compare-top-brand img { width: 28px; height: 28px; }
+    .compare-top-titles { min-width: 0; }
+    .compare-top-titles h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .compare-top-titles p {
+      margin: 2px 0 0;
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
+    .compare-runs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 8px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+    .compare-run-pill {
+      padding: 3px 8px;
+      border-radius: var(--radius);
+      background: var(--muted);
+      color: var(--foreground);
+      font-weight: 500;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .compare-run-arrow { color: var(--muted-foreground); }
+    .compare-top-stats {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-left: auto;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .compare-top-stats .fail { color: var(--status-fail); font-weight: 600; }
+    .compare-top-stats .pass { color: var(--status-pass); font-weight: 600; }
+    .compare-top-stats .muted { color: var(--muted-foreground); }
+    .compare-health {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: stretch;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .compare-health-run {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    .compare-health-run .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted-foreground);
+    }
+    .compare-health-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+    }
+    .compare-health-metrics .m { color: var(--foreground); }
+    .compare-health-metrics .m strong { font-weight: 600; }
+    .compare-health-metrics .fail { color: var(--status-fail); }
+    .compare-health-metrics .pass { color: var(--status-pass); }
+    .compare-health-verdict {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      min-width: 160px;
+      text-align: center;
+    }
+    .compare-health-verdict .badge {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .compare-health-verdict.worse .badge { color: var(--status-fail); }
+    .compare-health-verdict.better .badge { color: var(--status-pass); }
+    .compare-health-verdict.mixed .badge { color: var(--status-skip); }
+    .compare-health-verdict.same .badge { color: var(--muted-foreground); }
+    .compare-health-verdict .sub {
+      font-size: 11px;
+      color: var(--muted-foreground);
+      max-width: 200px;
+    }
+    .compare-blockers {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--status-fail-muted);
+      flex-shrink: 0;
+    }
+    .compare-blockers-body { flex: 1; min-width: 0; }
+    .compare-blockers-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--status-fail);
+      margin-bottom: 2px;
+    }
+    .compare-blockers-list {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      overflow: hidden;
+      align-items: center;
+    }
+    .compare-blocker-chip {
+      border: 1px solid hsla(0, 70%, 50%, 0.35);
+      background: var(--card);
+      color: var(--foreground);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+    .compare-blocker-chip:hover { border-color: var(--status-fail); color: var(--status-fail); }
+    .compare-blockers-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .compare-blockers .btn-copy,
+    .compare-blockers .btn-view-blockers {
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+    .btn-view-blockers {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--foreground);
+      border-radius: var(--radius);
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .btn-view-blockers:hover { border-color: var(--status-fail); color: var(--status-fail); }
+    .compare-suite-group { border-bottom: 1px solid var(--border); }
+    .compare-suite-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 12px;
+      border: none;
+      background: var(--muted);
+      color: var(--muted-foreground);
+      font-size: 11px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+    .compare-suite-header:hover { color: var(--foreground); }
+    .compare-suite-header .suite-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .compare-suite-header .suite-count {
+      font-variant-numeric: tabular-nums;
+      opacity: 0.8;
+    }
+    .compare-suite-chevron {
+      width: 12px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    .compare-list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px 6px;
+      font-size: 11px;
+      color: var(--muted-foreground);
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-list-toolbar button {
+      border: none;
+      background: transparent;
+      color: var(--muted-foreground);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .compare-list-toolbar button:hover { color: var(--foreground); }
+    .compare-tools {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 10px 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .compare-tools .search-input {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .compare-tools .search-input input {
+      width: 100%;
+      padding: 6px 8px 6px 28px;
+      font-size: 12px;
+    }
+    .compare-tools .search-input svg {
+      position: absolute;
+      left: 8px;
+      width: 14px;
+      height: 14px;
+      color: var(--muted-foreground);
+    }
+    .compare-tools-row {
+      display: flex;
+      gap: 6px;
+    }
+    .compare-tools-row select,
+    .compare-tools-row input[type="number"] {
+      flex: 1;
+      min-width: 0;
+      font-size: 11px;
+      padding: 5px 6px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--foreground);
+    }
+    .compare-tools-hint {
+      font-size: 10px;
+      color: var(--muted-foreground);
+    }
+    .compare-detail-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .compare-detail-tags .tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--muted);
+      color: var(--muted-foreground);
+    }
+    .compare-investigate {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+    }
+    .compare-investigate h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .compare-investigate ul {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+      line-height: 1.5;
+    }
+    .compare-investigate li { margin-bottom: 4px; }
+    .compare-msg-changed {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--status-skip);
+      font-weight: 600;
+    }
+    .compare-body {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      flex: 1;
+      min-height: 0;
+    }
+    .compare-sidebar {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--sidebar);
+      min-height: 0;
+    }
+    .compare-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .compare-nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      border: none;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--muted-foreground);
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .compare-nav-btn:hover { background: var(--accent); color: var(--foreground); }
+    .compare-nav-btn.active {
+      background: var(--accent);
+      color: var(--foreground);
+      font-weight: 600;
+    }
+    .compare-nav-btn .count {
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
+    .compare-nav-btn.active .count { color: var(--foreground); }
+    .compare-nav-btn.has-fail .count { color: var(--status-fail); }
+    .compare-nav-btn.has-pass .count { color: var(--status-pass); }
+    .compare-nav-btn.is-empty { opacity: 0.45; }
+    .compare-list {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+    .compare-list-empty {
+      padding: 20px 14px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+    .compare-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      color: var(--foreground);
+    }
+    .compare-item:hover { background: var(--accent); }
+    .compare-item.selected {
+      background: var(--accent);
+      box-shadow: inset 2px 0 0 var(--primary);
+    }
+    .compare-item-name {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .compare-item-meta {
+      font-size: 11px;
+      color: var(--muted-foreground);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .compare-item-meta .st-a,
+    .compare-item-meta .st-b { font-weight: 600; }
+    .compare-item-meta .st-a.pass,
+    .compare-item-meta .st-b.pass { color: var(--status-pass); }
+    .compare-item-meta .st-a.fail,
+    .compare-item-meta .st-b.fail { color: var(--status-fail); }
+    .compare-item-meta .st-a.skip,
+    .compare-item-meta .st-b.skip { color: var(--status-skip); }
+    .compare-main {
+      overflow-y: auto;
+      padding: 28px 32px;
+      min-width: 0;
+    }
+    .compare-detail-head { margin-bottom: 24px; }
+    .compare-detail-head h2 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .compare-detail-path {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+    }
+    .compare-transition {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--muted);
+    }
+    .compare-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .compare-status-pill.pass {
+      background: hsla(142, 60%, 40%, 0.2);
+      color: var(--status-pass);
+    }
+    .compare-status-pill.fail {
+      background: hsla(0, 70%, 50%, 0.2);
+      color: var(--status-fail);
+    }
+    .compare-status-pill.skip {
+      background: hsla(45, 70%, 45%, 0.2);
+      color: var(--status-skip);
+    }
+    .compare-status-pill.absent {
+      background: var(--card);
+      color: var(--muted-foreground);
+      border: 1px dashed var(--border);
+    }
+    .compare-transition-arrow {
+      color: var(--muted-foreground);
+      font-size: 14px;
+    }
+    .compare-delta-badge {
+      margin-left: auto;
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .compare-delta.up { color: var(--status-fail); }
+    .compare-delta.down { color: var(--status-pass); }
+    .compare-delta.flat { color: var(--muted-foreground); }
+    .compare-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .compare-side { padding: 16px 18px; min-width: 0; }
+    .compare-side + .compare-side { border-left: 1px solid var(--border); }
+    .compare-side-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted-foreground);
+      margin-bottom: 12px;
+    }
+    .compare-side-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      padding: 4px 0;
+    }
+    .compare-side-row .k { color: var(--muted-foreground); }
+    .compare-side-row .v { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .compare-side-msg {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      background: var(--status-fail-muted);
+      color: var(--status-fail);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .compare-category-tag {
+      display: inline-block;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
+    @media (max-width: 900px) {
+      .compare-body { grid-template-columns: 1fr; }
+      .compare-sidebar { max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+      .compare-split { grid-template-columns: 1fr; }
+      .compare-side + .compare-side { border-left: none; border-top: 1px solid var(--border); }
+    }
     .failed-item-name {
       font-size: 12px;
       font-weight: 500;
       color: var(--foreground);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .failed-item-suite {
+      font-size: 10px;
+      color: var(--muted-foreground);
       margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
@@ -533,6 +1225,62 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .errors-summary {
+      border-bottom: 1px solid var(--border);
+    }
+    .errors-summary-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: var(--status-skip);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+    }
+    .errors-summary-header:hover { background: var(--accent); }
+    .errors-summary-list {
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 0 12px 10px;
+    }
+    .errors-summary-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .errors-summary-item:last-child { border-bottom: none; }
+    .errors-summary-badge {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--status-skip-muted);
+      color: var(--status-skip);
+    }
+    .errors-summary-item.level-error .errors-summary-badge {
+      background: hsla(0, 70%, 50%, 0.2);
+      color: var(--status-fail);
+    }
+    .errors-summary-text {
+      min-width: 0;
+      color: var(--foreground);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .errors-summary-count {
+      flex-shrink: 0;
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
     }
     /* ========== Test Tree ========== */
     .test-tree-bar {
@@ -1434,6 +2182,8 @@
       suiteMap: new Map(),
       testCache: new Map(),
       testToSuite: new Map(),
+      testIndex: [],
+      testsBySuite: new Map(),
       loadingSuites: new Set(),
       loadingTests: new Set(),
       renderedTestCounts: new Map(),
@@ -1560,6 +2310,9 @@
     function getSuites() {
       return suitesCache.load("suites", `${dataRoot}/suites.json`);
     }
+    function getTestsIndex() {
+      return suitesCache.load("tests-index", `${dataRoot}/tests-index.json`);
+    }
     function getSuite(id) {
       return suiteCache.load(id, `${dataRoot}/suite_${id}.json`);
     }
@@ -1621,12 +2374,15 @@
     async function loadExternalData() {
       setLoadError(null);
       try {
-        const [summary, suitesPayload] = await Promise.all([
+        const [summary, suitesPayload, testsIndexPayload] = await Promise.all([
           getSummary(),
-          getSuites()
+          getSuites(),
+          getTestsIndex().catch(() => ({ tests: [] }))
         ]);
         dataStore.suiteMap.clear();
         dataStore.testToSuite.clear();
+        dataStore.testIndex = [];
+        dataStore.testsBySuite.clear();
         dataStore.rootSuiteId = suitesPayload.rootSuiteId;
         (suitesPayload.suites || []).forEach(suite => {
           dataStore.suiteMap.set(suite.id, {
@@ -1639,6 +2395,16 @@
             errors: suite.errors || []
           });
           (suite.testIds || []).forEach(testId => dataStore.testToSuite.set(testId, suite.id));
+        });
+        const indexTests = Array.isArray(testsIndexPayload?.tests) ? testsIndexPayload.tests : [];
+        dataStore.testIndex = indexTests;
+        indexTests.forEach(entry => {
+          if (!entry || !entry.suiteId) return;
+          if (!dataStore.testsBySuite.has(entry.suiteId)) {
+            dataStore.testsBySuite.set(entry.suiteId, []);
+          }
+          dataStore.testsBySuite.get(entry.suiteId).push(entry);
+          if (entry.id) dataStore.testToSuite.set(entry.id, entry.suiteId);
         });
         reportData = {
           ...summary,
@@ -1756,16 +2522,42 @@
     }
     async function prefetchSuitesForFilters() {
       if (!externalData) return;
-      if (!state.tagFilter && !state.searchQuery) return;
+      if (!state.tagFilter && !state.searchQuery && state.statusFilter === "ALL") return;
       if (!dataStore.suiteMap.size) return;
       const token = ++filterPrefetch.token;
-      const suiteIds = Array.from(dataStore.suiteMap.keys());
+      let suiteIds;
+      if (dataStore.testIndex.length > 0) {
+        suiteIds = Array.from(new Set(
+          dataStore.testIndex.filter(indexEntryMatchesFilters).map(e => e.suiteId).filter(Boolean)
+        ));
+      } else {
+        suiteIds = Array.from(dataStore.suiteMap.keys());
+      }
       for (const suiteId of suiteIds) {
         if (token !== filterPrefetch.token) return;
         const suite = dataStore.suiteMap.get(suiteId);
         if (!suite || suite.testsLoaded || dataStore.loadingSuites.has(suiteId)) continue;
         await ensureSuiteLoaded(suiteId);
       }
+    }
+    function expandSuitesForActiveFilters() {
+      if (!externalData || !reportData?.rootSuite) return;
+      if (!state.searchQuery && !state.tagFilter && state.statusFilter === "ALL") return;
+      const matchingSuiteIds = new Set();
+      if (dataStore.testIndex.length > 0) {
+        dataStore.testIndex.forEach(entry => {
+          if (indexEntryMatchesFilters(entry) && entry.suiteId) matchingSuiteIds.add(entry.suiteId);
+        });
+      } else {
+        dataStore.suiteMap.forEach(suite => {
+          if ((suite.tests || []).some(filterTest)) matchingSuiteIds.add(suite.id);
+        });
+      }
+      matchingSuiteIds.forEach(suiteId => {
+        const path = getSuitePathToId(reportData.rootSuite, suiteId);
+        if (path) path.forEach(id => state.expandedSuites.add(id));
+        else state.expandedSuites.add(suiteId);
+      });
     }
     function resetSuiteRenderCounts() {
       dataStore.renderedTestCounts.clear();
@@ -1816,6 +2608,12 @@
       }
     }
     const layoutState = loadLayoutState();
+    const TRIAGE_COLLAPSE_FAILED_AT = 20;
+    const TRIAGE_COLLAPSE_ERRORS_AT = 15;
+    const FAILED_LIST_PAGE = 40;
+    const LARGE_FAIL_THRESHOLD = 50;
+    const BOOT_LOAD_FAILED_SUITES_MAX = 3;
+    const BOOT_LOAD_FAILED_SUITES_LARGE = 1;
     let state = {
       isDark: true,
       sidebarCollapsed: false,
@@ -1831,21 +2629,61 @@
       tagFilter: "",
       expandedSuites: new Set(),
       expandedKeywords: new Set(),
-      failedSummaryOpen: true
+      triageOpen: true,
+      failedSummaryOpen: true,
+      errorsOpen: true,
+      insightsOpen: false,
+      failedShowLimit: FAILED_LIST_PAGE,
+      triageDefaultsApplied: false,
+      compareSelected: null,
+      compareFilter: "newly_failing",
+      compareSearch: "",
+      compareTagFilter: "",
+      compareDurationMinMs: 100,
+      compareCollapsedSuites: new Set(),
+      compareSuiteCollapseInitialized: false
     };
-    // Auto-expand suites with failures
+    function countFailedTestsQuick(rootSuite) {
+      if (!rootSuite) return 0;
+      if (reportData?.statistics?.failed != null) return reportData.statistics.failed;
+      if (rootSuite.statistics?.failed != null) return rootSuite.statistics.failed;
+      return getFailedTests(rootSuite).length;
+    }
+    function applyTriageDefaults(rootSuite) {
+      if (state.triageDefaultsApplied) return;
+      state.triageDefaultsApplied = true;
+      const failed = countFailedTestsQuick(rootSuite);
+      const errors = (reportData?.errors || []).length;
+      const hasInsights = !!(reportData?.durationInsights?.slowestTests?.length);
+      state.triageOpen = failed > 0 || errors > 0 || hasInsights;
+      // Keep tree dominant on large red builds: show triage chips, collapse bodies.
+      state.failedSummaryOpen = failed > 0 && failed <= TRIAGE_COLLAPSE_FAILED_AT;
+      state.errorsOpen = errors > 0 && errors <= TRIAGE_COLLAPSE_ERRORS_AT;
+      state.insightsOpen = false;
+      state.failedShowLimit = FAILED_LIST_PAGE;
+    }
+    // Auto-expand suites with failures (bounded for large runs)
     function expandFailedSuites(suite) {
-      if (suite.statistics.failed > 0) {
+      if ((suite.statistics?.failed || 0) > 0 || (suite.status || "").toUpperCase() === "FAIL") {
         state.expandedSuites.add(suite.id);
       }
       (suite.suites || []).forEach(expandFailedSuites);
     }
     function initializeExpandedSuites(rootSuite) {
       if (!rootSuite) return;
-      expandFailedSuites(rootSuite);
-      if (getFailedTests(rootSuite).length > 0) {
-        state.expandedSuites.add(rootSuite.id);
+      state.expandedSuites.add(rootSuite.id);
+      const failed = countFailedTestsQuick(rootSuite);
+      if (failed <= 0) return;
+      if (failed > LARGE_FAIL_THRESHOLD) {
+        // Expand only first-level failing children so the tree stays usable.
+        (rootSuite.suites || []).forEach(child => {
+          if ((child.statistics?.failed || 0) > 0 || (child.status || "").toUpperCase() === "FAIL") {
+            state.expandedSuites.add(child.id);
+          }
+        });
+        return;
       }
+      expandFailedSuites(rootSuite);
     }
     // ========== Utilities ==========
     function escapeHtml(s) {
@@ -1930,13 +2768,66 @@
       return getAllTests(suite).length;
     }
     function getFailedTests(suite) {
+      if (externalData && dataStore.testIndex.length > 0) {
+        const loadedById = new Map();
+        getAllTests(suite).forEach(t => loadedById.set(t.id, t));
+        return dataStore.testIndex
+          .filter(t => t.status === "FAIL")
+          .map(t => {
+            const loaded = loadedById.get(t.id);
+            return {
+              id: t.id,
+              name: t.name,
+              fullName: t.fullName || loaded?.fullName || t.name,
+              status: "FAIL",
+              message: loaded?.message || t.message || "",
+              duration: loaded?.duration ?? t.duration ?? 0,
+              tags: loaded?.tags || t.tags || []
+            };
+          });
+      }
       return getAllTests(suite).filter(t => t.status === "FAIL");
+    }
+    function getDedupedErrors(errors) {
+      const map = new Map();
+      (errors || []).forEach(e => {
+        const level = (e.level || "WARN").toUpperCase();
+        const text = e.text || "";
+        const key = level + "\0" + text;
+        if (!map.has(key)) {
+          map.set(key, { time: e.time || "", level, text, count: 0 });
+        }
+        map.get(key).count += 1;
+      });
+      return Array.from(map.values());
     }
     function filterTest(test) {
       if (state.statusFilter !== "ALL" && test.status !== state.statusFilter) return false;
       if (state.searchQuery && !test.name.toLowerCase().includes(state.searchQuery.toLowerCase())) return false;
       if (state.tagFilter && !(test.tags || []).includes(state.tagFilter)) return false;
       return true;
+    }
+    function indexEntryMatchesFilters(entry) {
+      if (!entry) return false;
+      return filterTest(entry);
+    }
+    function getVisibleTestsForSuite(suite) {
+      if (!suite) return [];
+      if (suite.testsLoaded || (suite.tests || []).length > 0) {
+        return (suite.tests || []).filter(filterTest);
+      }
+      if (externalData && dataStore.testsBySuite.has(suite.id)) {
+        return (dataStore.testsBySuite.get(suite.id) || []).filter(indexEntryMatchesFilters);
+      }
+      return [];
+    }
+    function suitePathFromFullName(fullName, testName) {
+      const full = String(fullName || "");
+      const name = String(testName || "");
+      if (full && name && full.endsWith("." + name)) return full.slice(0, -(name.length + 1));
+      if (full && name && full === name) return "";
+      const lastDot = full.lastIndexOf(".");
+      return lastDot > 0 ? full.slice(0, lastDot) : "";
     }
     /** Keyword (setup/teardown/body) matches current status filter. */
     function filterKeyword(kw) {
@@ -1956,7 +2847,12 @@
       if (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
         if (!suiteMatchesStatusFilter(suite)) return false;
         if (state.searchQuery || state.tagFilter) {
-          return (suite.tests || []).some(filterTest) || (suite.suites || []).some(suiteHasVisibleTests);
+          if (dataStore.testsBySuite.has(suite.id)) {
+            if ((dataStore.testsBySuite.get(suite.id) || []).some(indexEntryMatchesFilters)) return true;
+          } else if ((suite.tests || []).some(filterTest)) {
+            return true;
+          }
+          return (suite.suites || []).some(suiteHasVisibleTests);
         }
         return true;
       }
@@ -1974,7 +2870,9 @@
       if (!suite || !suiteHasVisibleTests(suite)) return ids;
       const setupMatches = !suite.setup || state.statusFilter === "ALL" || suite.setup.status === state.statusFilter;
       const teardownMatches = !suite.teardown || state.statusFilter === "ALL" || suite.teardown.status === state.statusFilter;
-      const hasChildren = (suite.tests || []).some(filterTest) || (suite.suites || []).some(suiteHasVisibleTests) || (suite.setup && setupMatches) || (suite.teardown && teardownMatches);
+      const hasDirectTests = getVisibleTestsForSuite(suite).length > 0
+        || (externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0 && !(state.searchQuery || state.tagFilter));
+      const hasChildren = hasDirectTests || (suite.suites || []).some(suiteHasVisibleTests) || (suite.setup && setupMatches) || (suite.teardown && teardownMatches);
       if (hasChildren) ids.push(suite.id);
       (suite.suites || []).forEach(s => ids.push(...getExpandableSuiteIds(s)));
       return ids;
@@ -2115,7 +3013,11 @@
     }
     function getAllTags(suite) {
       const tags = new Set();
-      getAllTests(suite).forEach(t => (t.tags || []).forEach(tag => tags.add(tag)));
+      if (externalData && dataStore.testIndex.length > 0) {
+        dataStore.testIndex.forEach(t => (t.tags || []).forEach(tag => tags.add(tag)));
+      } else {
+        getAllTests(suite).forEach(t => (t.tags || []).forEach(tag => tags.add(tag)));
+      }
       return Array.from(tags).sort();
     }
     /** Test keywords in execution order: setup, body keywords, teardown. */
@@ -2136,6 +3038,438 @@
       return [];
     }
     // ========== Render Functions ==========
+    function renderDurationInsights() {
+      const di = reportData?.durationInsights;
+      if (!di || !di.slowestTests || di.slowestTests.length === 0) return "";
+      const topTests = (di.slowestTests || []).slice(0, 8);
+      const hist = di.histogram || [];
+      return `
+        <div class="insights-panel">
+          <button class="insights-header" id="toggle-insights">
+            ${state.insightsOpen ? icons.chevronDown : icons.chevronRight}
+            <span>Duration Insights</span>
+          </button>
+          ${state.insightsOpen ? `
+            <div class="insights-body">
+              <div class="insights-section-title">Slowest tests</div>
+              ${topTests.map(t => {
+                const suitePath = suitePathFromFullName(t.fullName, t.name);
+                return `
+                <div class="insights-row" data-insight-test-id="${t.id}" title="${escapeHtml(t.fullName || t.name)}">
+                  <span class="name">
+                    <span class="name-main">${escapeHtml(t.name)}</span>
+                    ${suitePath ? `<span class="name-suite">${escapeHtml(suitePath)}</span>` : ""}
+                  </span>
+                  <span class="dur">${formatDuration(t.duration)}</span>
+                </div>
+              `;
+              }).join("")}
+              <div class="insights-section-title">Duration histogram</div>
+              <div class="histogram">
+                ${hist.map(b => `
+                  <div class="histogram-row">
+                    <span>${escapeHtml(b.label)}</span>
+                    <div class="histogram-bar-track"><div class="histogram-bar-fill" style="width:${Math.min(100, b.pct || 0)}%"></div></div>
+                    <span>${b.count}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+    function renderAttemptsBar(test) {
+      const attempts = test?.attempts;
+      if (!attempts || attempts.length < 2) return "";
+      return `
+        <div class="attempts-bar" title="Merged attempt history (last attempt is shown above)">
+          ${attempts.map(a => `
+            <span class="attempt-chip ${(a.status || "").toLowerCase()}">
+              #${a.index} ${a.status} · ${formatDuration(a.duration)}${a.source ? " · " + escapeHtml(a.source) : ""}
+            </span>
+          `).join("")}
+        </div>
+      `;
+    }
+    function compareEntryKey(entry) {
+      if (!entry) return "";
+      return entry.compareKey || entry.fullName || "";
+    }
+    function getCompareTags() {
+      const tags = new Set();
+      (reportData?.allComparisons || []).forEach(e => (e.tags || []).forEach(t => tags.add(t)));
+      return Array.from(tags).sort();
+    }
+    function compareEntrySuitePath(entry) {
+      if (!entry) return "(root)";
+      if (entry.suitePath) return entry.suitePath;
+      return suitePathFromFullName(entry.fullName, entry.name) || "(root)";
+    }
+    function groupCompareListBySuite(list) {
+      const groups = new Map();
+      (list || []).forEach(e => {
+        const path = compareEntrySuitePath(e);
+        if (!groups.has(path)) groups.set(path, []);
+        groups.get(path).push(e);
+      });
+      return Array.from(groups.entries());
+    }
+    function ensureCompareSuiteCollapse(list) {
+      const groups = groupCompareListBySuite(list);
+      const selectedPath = compareEntrySuitePath(state.compareSelected);
+      // Auto-collapse when the list is large and spans multiple suites.
+      if (!state.compareSuiteCollapseInitialized && list.length >= 40 && groups.length >= 2) {
+        state.compareSuiteCollapseInitialized = true;
+        state.compareCollapsedSuites = new Set(
+          groups.map(([path]) => path).filter(path => path !== selectedPath)
+        );
+      } else if (selectedPath && state.compareCollapsedSuites.has(selectedPath)) {
+        state.compareCollapsedSuites.delete(selectedPath);
+      }
+      return groups;
+    }
+    function renderCompareListHtml(list, selected) {
+      if (!list.length) return `<div class="compare-list-empty">Nothing in this category</div>`;
+      const groups = ensureCompareSuiteCollapse(list);
+      const avgPerSuite = list.length / Math.max(groups.length, 1);
+      const useGroups = groups.length >= 2 && (list.length >= 40 || avgPerSuite >= 2.5);
+      const renderItem = (e) => `
+        <button class="compare-item ${selected && compareEntryKey(selected) === compareEntryKey(e) ? "selected" : ""}" data-compare-key="${escapeHtml(compareEntryKey(e))}">
+          <div class="compare-item-name">${escapeHtml(e.name || e.fullName)}</div>
+          <div class="compare-item-meta">
+            <span class="st-a ${getStatusClass(e.statusA || "")}">${escapeHtml(e.statusA || "—")}</span>
+            <span>→</span>
+            <span class="st-b ${getStatusClass(e.statusB || "")}">${escapeHtml(e.statusB || "—")}</span>
+            ${e.durationDelta != null && e.durationDelta !== 0 ? `<span>· ${e.durationDelta > 0 ? "+" : ""}${formatDuration(e.durationDelta)}</span>` : ""}
+          </div>
+        </button>`;
+      if (!useGroups) return list.map(renderItem).join("");
+      const collapsedCount = groups.filter(([path]) => state.compareCollapsedSuites.has(path)).length;
+      const toolbar = `
+        <div class="compare-list-toolbar">
+          <span>${groups.length} suites · ${list.length} tests</span>
+          <span>
+            <button type="button" id="compare-expand-suites">${collapsedCount ? "Expand all" : "Collapse all"}</button>
+          </span>
+        </div>`;
+      const body = groups.map(([path, items]) => {
+        const collapsed = state.compareCollapsedSuites.has(path);
+        const short = path.length > 42 ? "…" + path.slice(-41) : path;
+        return `
+          <div class="compare-suite-group">
+            <button type="button" class="compare-suite-header" data-compare-suite="${escapeHtml(path)}" title="${escapeHtml(path)}">
+              <span class="compare-suite-chevron">${collapsed ? "▸" : "▾"}</span>
+              <span class="suite-name">${escapeHtml(short)}</span>
+              <span class="suite-count">${items.length}</span>
+            </button>
+            ${collapsed ? "" : items.map(renderItem).join("")}
+          </div>`;
+      }).join("");
+      return toolbar + body;
+    }
+    function formatCompareTimeDelta(delta) {
+      if (delta == null || delta === 0) return "—";
+      return `${delta > 0 ? "+" : ""}${formatDuration(delta)}`;
+    }
+    function entryMatchesSearchAndTag(entry) {
+      if (!entry) return false;
+      const q = (state.compareSearch || "").trim().toLowerCase();
+      if (q) {
+        const hay = `${entry.name || ""} ${entry.fullName || ""} ${entry.messageA || ""} ${entry.messageB || ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (state.compareTagFilter && !(entry.tags || []).includes(state.compareTagFilter)) return false;
+      return true;
+    }
+    function entryMatchesCompareFilters(entry) {
+      if (!entryMatchesSearchAndTag(entry)) return false;
+      if (state.compareFilter === "duration") {
+        const min = Number(state.compareDurationMinMs) || 0;
+        if (Math.abs(entry.durationDelta || 0) < min) return false;
+      }
+      return true;
+    }
+    function isMeaningfulCompareDiff(entry) {
+      if (!entry) return false;
+      if (entry.category && entry.category !== "unchanged") return true;
+      const noise = Number(state.compareDurationMinMs != null ? state.compareDurationMinMs : (reportData?.summary?.durationNoiseMs || 100));
+      if (Math.abs(entry.durationDelta || 0) >= noise) return true;
+      if (entry.messageChanged) return true;
+      if ((entry.tagsAdded || []).length || (entry.tagsRemoved || []).length) return true;
+      return false;
+    }
+    function getCompareList() {
+      if (!reportData || reportData.mode !== "compare") return [];
+      const map = {
+        newly_failing: reportData.newlyFailing || [],
+        newly_passing: reportData.newlyPassing || [],
+        still_failing: reportData.stillFailing || [],
+        duration: reportData.durationChanges || [],
+        only_in_a: reportData.onlyInA || [],
+        only_in_b: reportData.onlyInB || [],
+        all: (reportData.allComparisons || []).filter(isMeaningfulCompareDiff)
+      };
+      const base = map[state.compareFilter] || map.newly_failing;
+      return base.filter(entryMatchesCompareFilters);
+    }
+    function getCompareDurationCount(minMs) {
+      const min = Number(minMs) || 0;
+      return (reportData.durationChanges || []).filter(e =>
+        entryMatchesSearchAndTag(e) && Math.abs(e.durationDelta || 0) >= min
+      ).length;
+    }
+    function getCompareCategoryCount(key) {
+      if (!reportData || reportData.mode !== "compare") return 0;
+      if (key === "duration") return getCompareDurationCount(state.compareDurationMinMs);
+      const map = {
+        newly_failing: reportData.newlyFailing || [],
+        newly_passing: reportData.newlyPassing || [],
+        still_failing: reportData.stillFailing || [],
+        only_in_a: reportData.onlyInA || [],
+        only_in_b: reportData.onlyInB || [],
+        all: (reportData.allComparisons || []).filter(isMeaningfulCompareDiff)
+      };
+      return (map[key] || []).filter(entryMatchesSearchAndTag).length;
+    }
+    function pickDefaultCompareFilter() {
+      const s = reportData?.summary || {};
+      if ((s.newlyFailing || 0) > 0) return "newly_failing";
+      if ((s.stillFailing || 0) > 0) return "still_failing";
+      if ((s.newlyPassing || 0) > 0) return "newly_passing";
+      if (getCompareDurationCount(state.compareDurationMinMs) > 0) return "duration";
+      if ((s.onlyInA || 0) > 0) return "only_in_a";
+      if ((s.onlyInB || 0) > 0) return "only_in_b";
+      return "all";
+    }
+    function formatSigned(n, suffix = "") {
+      if (n == null || Number.isNaN(n)) return "—";
+      const sign = n > 0 ? "+" : "";
+      return `${sign}${n}${suffix}`;
+    }
+    function renderCompareMode() {
+      const s = reportData.summary || {};
+      if (!state._compareFilterInitialized) {
+        state.compareFilter = pickDefaultCompareFilter();
+        state.compareDurationMinMs = s.durationNoiseMs != null ? s.durationNoiseMs : 100;
+        state._compareFilterInitialized = true;
+      }
+      const list = getCompareList();
+      const selected = state.compareSelected && list.some(e => compareEntryKey(e) === compareEntryKey(state.compareSelected))
+        ? state.compareSelected
+        : (list[0] || null);
+      state.compareSelected = selected;
+      const labelA = reportData.runA?.label || "Run A";
+      const labelB = reportData.runB?.label || "Run B";
+      const durationCount = getCompareCategoryCount("duration");
+      const filters = [
+        ["newly_failing", "Newly failing", getCompareCategoryCount("newly_failing"), "fail"],
+        ["newly_passing", "Newly passing", getCompareCategoryCount("newly_passing"), "pass"],
+        ["still_failing", "Still failing", getCompareCategoryCount("still_failing"), "fail"],
+        ["duration", "Duration changed", durationCount, ""],
+        ["only_in_a", `Only in ${labelA}`, getCompareCategoryCount("only_in_a"), ""],
+        ["only_in_b", `Only in ${labelB}`, getCompareCategoryCount("only_in_b"), ""],
+        ["all", "All differences", getCompareCategoryCount("all"), ""]
+      ];
+      const statusPill = (status) => {
+        if (!status) return `<span class="compare-status-pill absent">Absent</span>`;
+        const cls = getStatusClass(status);
+        return `<span class="compare-status-pill ${cls}">${getStatusIcon(status)} ${escapeHtml(status)}</span>`;
+      };
+      const deltaHtml = (d) => {
+        if (d == null) return `<span class="compare-delta flat">—</span>`;
+        const cls = d > 0 ? "up" : d < 0 ? "down" : "flat";
+        const sign = d > 0 ? "+" : "";
+        const tip = d > 0 ? "slower" : d < 0 ? "faster" : "";
+        return `<span class="compare-delta ${cls}">${sign}${formatDuration(d)}${tip ? " " + tip : ""}</span>`;
+      };
+      const suitePath = selected ? suitePathFromFullName(selected.fullName, selected.name) : "";
+      const categoryLabel = (filters.find(f => f[0] === (selected?.category || state.compareFilter)) || [])[1] || selected?.category || "";
+      const verdict = s.verdict || "same";
+      const blockers = reportData.blockers || reportData.newlyFailing || [];
+      const tags = getCompareTags();
+      const investigate = [];
+      if (selected) {
+        const tipCategory = state.compareFilter === "duration" ? "duration" : selected.category;
+        if (tipCategory === "newly_failing") {
+          investigate.push("Treat as a merge blocker until root-caused.");
+          if (selected.messageB) investigate.push(`New failure message: ${selected.messageB}`);
+          if (selected.durationDelta > 0) investigate.push("Also slower than baseline — check waits/timeouts.");
+        } else if (tipCategory === "still_failing") {
+          investigate.push("Known failure still open — confirm if same root cause.");
+          if (selected.messageChanged) investigate.push("Failure message changed between runs.");
+        } else if (tipCategory === "newly_passing") {
+          investigate.push("Verify the fix is intentional and covered by assertions.");
+        } else if (tipCategory === "duration") {
+          investigate.push(selected.durationDelta > 0
+            ? "Investigate slowdown (env, data size, new waits)."
+            : "Speedup — confirm not from skipped work.");
+        } else if (tipCategory === "only_in_a") {
+          investigate.push("Missing in B — renamed, skipped, or removed from suite?");
+        } else if (tipCategory === "only_in_b") {
+          investigate.push("New in B — confirm intended coverage.");
+        }
+        if ((selected.tagsAdded || []).length) investigate.push(`Tags added: ${(selected.tagsAdded || []).join(", ")}`);
+        if ((selected.tagsRemoved || []).length) investigate.push(`Tags removed: ${(selected.tagsRemoved || []).join(", ")}`);
+        if (!(selected.tagsAdded || []).length && !(selected.tagsRemoved || []).length && (selected.tags || []).length) {
+          investigate.push(`Tags: ${(selected.tags || []).join(", ")}`);
+        }
+      }
+      return `
+        <div class="compare-layout">
+          <div class="compare-top">
+            <div class="compare-top-brand">
+              <img src="https://docs.robotframework.org/img/robot-framework-dark.svg" alt="">
+              <div class="compare-top-titles">
+                <h1>Compare runs</h1>
+                <p>ReportLens</p>
+              </div>
+            </div>
+            <div class="compare-runs">
+              <span class="compare-run-pill" title="${escapeHtml(labelA)}">${escapeHtml(labelA)}</span>
+              <span class="compare-run-arrow">→</span>
+              <span class="compare-run-pill" title="${escapeHtml(labelB)}">${escapeHtml(labelB)}</span>
+            </div>
+            <div class="compare-top-stats">
+              <span class="fail">${s.newlyFailing || 0} regressions</span>
+              <span class="pass">${s.newlyPassing || 0} fixed</span>
+              <span class="muted">${s.matched || 0} matched</span>
+            </div>
+            <button class="btn-icon" id="theme-toggle" title="Toggle theme">
+              ${state.isDark ? icons.sun : icons.moon}
+            </button>
+          </div>
+          <div class="compare-health">
+            <div class="compare-health-run">
+              <div class="label">${escapeHtml(labelA)}</div>
+              <div class="compare-health-metrics">
+                <span class="m"><strong>${s.totalA ?? "—"}</strong> tests</span>
+                <span class="m pass">${s.passA ?? 0} pass</span>
+                <span class="m fail">${s.failA ?? 0} fail</span>
+                <span class="m">${s.passRateA ?? 0}% pass rate</span>
+                <span class="m">${formatDuration(s.durationA || 0)}</span>
+              </div>
+            </div>
+            <div class="compare-health-verdict ${escapeHtml(verdict)}">
+              <div class="badge">${escapeHtml((verdict || "same").toUpperCase())}</div>
+              <div class="sub">${escapeHtml(s.verdictLabel || "")}</div>
+              <div class="sub">${s.newlyFailing || 0} regressions · ${s.newlyPassing || 0} fixed · rate ${formatSigned(s.passRateDelta, "%")} · time ${formatCompareTimeDelta(s.durationDelta)}</div>
+            </div>
+            <div class="compare-health-run" style="text-align:right">
+              <div class="label">${escapeHtml(labelB)}</div>
+              <div class="compare-health-metrics" style="justify-content:flex-end">
+                <span class="m"><strong>${s.totalB ?? "—"}</strong> tests</span>
+                <span class="m pass">${s.passB ?? 0} pass</span>
+                <span class="m fail">${s.failB ?? 0} fail</span>
+                <span class="m">${s.passRateB ?? 0}% pass rate</span>
+                <span class="m">${formatDuration(s.durationB || 0)}</span>
+              </div>
+            </div>
+          </div>
+          ${(() => {
+            const blockerTotal = s.blockerCount || blockers.length || 0;
+            if (!blockerTotal) return "";
+            const shown = blockers.slice(0, 5);
+            const more = Math.max(0, blockerTotal - shown.length);
+            return `
+            <div class="compare-blockers">
+              <div class="compare-blockers-body">
+                <div class="compare-blockers-title">${blockerTotal} merge blocker${blockerTotal > 1 ? "s" : ""} (newly failing)</div>
+                <div class="compare-blockers-list">
+                  ${shown.map(b => `
+                    <button class="compare-blocker-chip" data-compare-key="${escapeHtml(compareEntryKey(b))}" title="${escapeHtml(b.messageB || b.fullName || b.name)}">${escapeHtml(b.name || b.fullName)}</button>
+                  `).join("")}
+                  ${more ? `<span class="compare-tools-hint">+${more} more</span>` : ""}
+                </div>
+              </div>
+              <div class="compare-blockers-actions">
+                <button class="btn-view-blockers" id="view-blockers" type="button">View all</button>
+                <button class="btn-copy" id="copy-blockers" type="button">${icons.copy} Copy</button>
+              </div>
+            </div>
+          `;
+          })()}
+          <div class="compare-body">
+            <aside class="compare-sidebar">
+              <nav class="compare-nav">
+                ${filters.map(([v, label, count, tone]) => `
+                  <button class="compare-nav-btn ${state.compareFilter === v ? "active" : ""} ${count === 0 ? "is-empty" : ""} ${tone === "fail" && count ? "has-fail" : ""} ${tone === "pass" && count ? "has-pass" : ""}" data-compare-filter="${v}">
+                    <span>${escapeHtml(label)}</span>
+                    <span class="count">${count}</span>
+                  </button>
+                `).join("")}
+              </nav>
+              <div class="compare-tools">
+                <div class="search-input">
+                  ${icons.search}
+                  <input type="text" id="compare-search" placeholder="Filter tests..." value="${escapeHtml(state.compareSearch)}">
+                </div>
+                <div class="compare-tools-row">
+                  <select id="compare-tag-filter" title="Filter by tag">
+                    <option value="">All tags</option>
+                    ${tags.map(t => `<option value="${escapeHtml(t)}" ${state.compareTagFilter === t ? "selected" : ""}>${escapeHtml(t)}</option>`).join("")}
+                  </select>
+                  ${state.compareFilter === "duration" ? `
+                    <input type="number" id="compare-duration-min" min="0" step="50" value="${state.compareDurationMinMs}" title="Min duration delta (ms)">
+                  ` : ""}
+                </div>
+                ${state.compareFilter === "duration" ? `<div class="compare-tools-hint">Hide deltas under ${state.compareDurationMinMs}ms</div>` : ""}
+              </div>
+              <div class="compare-list">
+                ${renderCompareListHtml(list, selected)}
+              </div>
+            </aside>
+            <main class="compare-main">
+              ${selected ? `
+                <div class="compare-detail-head">
+                  <h2>${escapeHtml(selected.name || selected.fullName)}</h2>
+                  ${suitePath ? `<p class="compare-detail-path">${escapeHtml(suitePath)}</p>` : ""}
+                  ${(selected.tags || []).length ? `
+                    <div class="compare-detail-tags">
+                      ${(selected.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+                    </div>
+                  ` : ""}
+                </div>
+                <div class="compare-transition">
+                  ${statusPill(selected.statusA)}
+                  <span class="compare-transition-arrow">→</span>
+                  ${statusPill(selected.statusB)}
+                  <span class="compare-delta-badge">${deltaHtml(selected.durationDelta)}</span>
+                </div>
+                <div class="compare-split">
+                  <div class="compare-side">
+                    <div class="compare-side-label">${escapeHtml(labelA)}</div>
+                    <div class="compare-side-row"><span class="k">Status</span><span class="v ${getStatusClass(selected.statusA || "")}">${escapeHtml(selected.statusA || "Absent")}</span></div>
+                    <div class="compare-side-row"><span class="k">Duration</span><span class="v">${selected.durationA == null ? "—" : formatDuration(selected.durationA)}</span></div>
+                    ${selected.messageA ? `<div class="compare-side-msg">${escapeHtml(selected.messageA)}</div>` : `<div class="compare-tools-hint" style="margin-top:10px">No failure message</div>`}
+                  </div>
+                  <div class="compare-side">
+                    <div class="compare-side-label">${escapeHtml(labelB)}</div>
+                    <div class="compare-side-row"><span class="k">Status</span><span class="v ${getStatusClass(selected.statusB || "")}">${escapeHtml(selected.statusB || "Absent")}</span></div>
+                    <div class="compare-side-row"><span class="k">Duration</span><span class="v">${selected.durationB == null ? "—" : formatDuration(selected.durationB)}</span></div>
+                    ${selected.messageB ? `<div class="compare-side-msg">${escapeHtml(selected.messageB)}</div>` : `<div class="compare-tools-hint" style="margin-top:10px">No failure message</div>`}
+                    ${selected.messageChanged ? `<div class="compare-msg-changed">Failure message changed</div>` : ""}
+                  </div>
+                </div>
+                ${investigate.length ? `
+                  <div class="compare-investigate">
+                    <h3>What to check</h3>
+                    <ul>${investigate.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul>
+                  </div>
+                ` : ""}
+                ${categoryLabel ? `<div class="compare-category-tag">${escapeHtml(categoryLabel)}</div>` : ""}
+              ` : `
+                <div class="empty-state">
+                  ${icons.clipboard}
+                  <h3>No difference selected</h3>
+                  <p>Pick a category and a test from the left</p>
+                </div>
+              `}
+            </main>
+          </div>
+        </div>
+      `;
+    }
     function render() {
       // Save scroll positions before re-rendering
       const testTreeEl = document.querySelector(".test-tree");
@@ -2181,6 +3515,17 @@
             </main>
           </div>
         `;
+        return;
+      }
+
+      if (reportData.mode === "compare") {
+        document.body.className = state.isDark ? "" : "light";
+        if (!state.compareSelected) {
+          const list = getCompareList();
+          state.compareSelected = list[0] || null;
+        }
+        document.getElementById("app").innerHTML = renderCompareMode();
+        attachEventListeners();
         return;
       }
       
@@ -2263,6 +3608,12 @@
     function renderSidebar() {
       const allTags = getAllTags(reportData.rootSuite);
       const failedTests = getFailedTests(reportData.rootSuite);
+      const reportErrors = reportData.errors || [];
+      const dedupedErrors = getDedupedErrors(reportErrors);
+      const hasInsights = !!(reportData?.durationInsights?.slowestTests?.length);
+      const hasTriage = reportErrors.length > 0 || failedTests.length > 0 || hasInsights;
+      const visibleFailed = failedTests.slice(0, state.failedShowLimit);
+      const hiddenFailedCount = Math.max(0, failedTests.length - visibleFailed.length);
       const totalTests = reportData.rootSuite
         ? (externalData ? getSuiteTestCount(reportData.rootSuite) : getAllTests(reportData.rootSuite).filter(filterTest).length)
         : 0;
@@ -2286,21 +3637,70 @@
               </select>
             </div>
           </div>
-          ${failedTests.length > 0 ? `
-            <div class="failed-summary">
-              <button class="failed-summary-header" id="toggle-failed">
-                ${state.failedSummaryOpen ? icons.chevronDown : icons.chevronRight}
-                ${icons.x}
-                <span>${failedTests.length} Failed Test${failedTests.length > 1 ? "s" : ""}</span>
+          ${hasTriage ? `
+            <div class="triage-panel">
+              <button class="triage-header" id="toggle-triage">
+                ${state.triageOpen ? icons.chevronDown : icons.chevronRight}
+                <span class="triage-header-label">Triage</span>
+                <span class="triage-chips">
+                  ${reportErrors.length > 0 ? `<span class="triage-chip warn">${reportErrors.length} warn</span>` : ""}
+                  ${failedTests.length > 0 ? `<span class="triage-chip fail">${failedTests.length} fail</span>` : ""}
+                  ${hasInsights ? `<span class="triage-chip">insights</span>` : ""}
+                </span>
               </button>
-              ${state.failedSummaryOpen ? `
-                <div class="failed-summary-list">
-                  ${failedTests.map(t => `
-                    <button class="failed-item ${state.selectedTest?.id === t.id ? "selected" : ""}" data-test-id="${t.id}">
-                      <div class="failed-item-name">${t.name}</div>
-                      <div class="failed-item-error">${t.message || "No error message"}</div>
-                    </button>
-                  `).join("")}
+              ${state.triageOpen ? `
+                <div class="triage-body">
+                  ${reportErrors.length > 0 ? `
+                    <div class="errors-summary">
+                      <button class="errors-summary-header" id="toggle-errors">
+                        ${state.errorsOpen ? icons.chevronDown : icons.chevronRight}
+                        ${icons.alert}
+                        <span>${reportErrors.length} Warning${reportErrors.length > 1 ? "s" : ""} / Error${reportErrors.length > 1 ? "s" : ""}</span>
+                      </button>
+                      ${state.errorsOpen ? `
+                        <div class="errors-summary-list">
+                          ${dedupedErrors.map(e => `
+                            <div class="errors-summary-item level-${(e.level || "warn").toLowerCase()}" title="${escapeHtml(e.text)}">
+                              <span class="errors-summary-badge">${escapeHtml(e.level || "WARN")}</span>
+                              <span class="errors-summary-text">${escapeHtml(e.text)}</span>
+                              ${e.count > 1 ? `<span class="errors-summary-count">×${e.count}</span>` : ""}
+                            </div>
+                          `).join("")}
+                        </div>
+                      ` : ""}
+                    </div>
+                  ` : ""}
+                  ${failedTests.length > 0 ? `
+                    <div class="failed-summary">
+                      <button class="failed-summary-header" id="toggle-failed">
+                        ${state.failedSummaryOpen ? icons.chevronDown : icons.chevronRight}
+                        ${icons.x}
+                        <span>${failedTests.length} Failed Test${failedTests.length > 1 ? "s" : ""}</span>
+                      </button>
+                      ${state.failedSummaryOpen ? `
+                        <div class="failed-summary-list">
+                          ${visibleFailed.map(t => {
+                            const suitePath = suitePathFromFullName(t.fullName, t.name);
+                            return `
+                            <button class="failed-item ${state.selectedTest?.id === t.id ? "selected" : ""}" data-test-id="${t.id}" title="${escapeHtml(t.fullName || t.name)}">
+                              <div class="failed-item-name">${escapeHtml(t.name)}</div>
+                              ${suitePath ? `<div class="failed-item-suite">${escapeHtml(suitePath)}</div>` : ""}
+                              <div class="failed-item-error">${escapeHtml(t.message || "No error message")}</div>
+                            </button>
+                          `;
+                          }).join("")}
+                          ${hiddenFailedCount > 0 ? `
+                            <button class="failed-summary-more" id="failed-show-more">
+                              Show ${Math.min(FAILED_LIST_PAGE, hiddenFailedCount)} more (${hiddenFailedCount} remaining)
+                            </button>
+                          ` : (failedTests.length > FAILED_LIST_PAGE ? `
+                            <button class="failed-summary-more" id="failed-show-less">Show fewer</button>
+                          ` : "")}
+                        </div>
+                      ` : ""}
+                    </div>
+                  ` : ""}
+                  ${renderDurationInsights()}
                 </div>
               ` : ""}
             </div>
@@ -2325,19 +3725,23 @@
       if (!suiteHasVisibleTests(suite)) return "";
       
       const isExpanded = state.expandedSuites.has(suite.id);
-      const visibleTests = (suite.tests || []).filter(filterTest);
-  const isLoadingTests = suite.loadingTests === true;
-  const suiteError = dataStore.suiteErrors.get(suite.id);
+      const visibleTests = getVisibleTestsForSuite(suite);
+      const isLoadingTests = suite.loadingTests === true;
+      const suiteError = dataStore.suiteErrors.get(suite.id);
       const totalVisibleTests = visibleTests.length;
       const renderedTestCount = getSuiteRenderCount(suite.id, totalVisibleTests);
       const testsToRender = visibleTests.slice(0, renderedTestCount);
       const hasMoreTests = renderedTestCount < totalVisibleTests;
       const setupMatchesFilter = !suite.setup || state.statusFilter === "ALL" || suite.setup.status === state.statusFilter;
       const teardownMatchesFilter = !suite.teardown || state.statusFilter === "ALL" || suite.teardown.status === state.statusFilter;
-  const externalHasTests = externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0 && suiteMatchesStatusFilter(suite);
-  const hasChildren = visibleTests.length > 0 || externalHasTests || (suite.suites || []).some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
+      const externalHasTests = externalData && Array.isArray(suite.testIds) && suite.testIds.length > 0 && suiteMatchesStatusFilter(suite)
+        && (!(state.searchQuery || state.tagFilter) || visibleTests.length > 0);
+      const hasChildren = visibleTests.length > 0 || externalHasTests || (suite.suites || []).some(suiteHasVisibleTests) || (suite.setup && setupMatchesFilter) || (suite.teardown && teardownMatchesFilter);
       if (isExpanded && hasMoreTests) {
         scheduleSuiteBatchRender(suite.id, renderedTestCount, totalVisibleTests);
+      }
+      if (isExpanded && externalData && !suite.testsLoaded && !suite.loadingTests && Array.isArray(suite.testIds) && suite.testIds.length > 0) {
+        ensureSuiteLoaded(suite.id).catch(() => {});
       }
       
       const suiteTitle = (suite.fullName || suite.name || "").replace(/"/g, "&quot;");
@@ -2561,6 +3965,7 @@
                 ` : ""}
               </div>
             </div>
+            ${renderAttemptsBar(test)}
             ${testLoadError ? `
               <div class="failure-banner">
                 <div class="failure-content">
@@ -2771,6 +4176,7 @@
       document.getElementById("search-input")?.addEventListener("input", (e) => {
         state.searchQuery = e.target.value;
         resetSuiteRenderCounts();
+        expandSuitesForActiveFilters();
         render();
         if (externalData) {
           prefetchSuitesForFilters().catch(() => {});
@@ -2785,6 +4191,7 @@
       document.getElementById("status-filter")?.addEventListener("change", (e) => {
         state.statusFilter = e.target.value;
         resetSuiteRenderCounts();
+        expandSuitesForActiveFilters();
         render();
         if (externalData) {
           prefetchSuitesForFilters().catch(() => {});
@@ -2794,15 +4201,168 @@
       document.getElementById("tag-filter")?.addEventListener("change", (e) => {
         state.tagFilter = e.target.value;
         resetSuiteRenderCounts();
+        expandSuitesForActiveFilters();
         render();
         if (externalData) {
           prefetchSuitesForFilters().catch(() => {});
         }
       });
+      // Triage panel toggle
+      document.getElementById("toggle-triage")?.addEventListener("click", () => {
+        state.triageOpen = !state.triageOpen;
+        render();
+      });
       // Failed summary toggle
       document.getElementById("toggle-failed")?.addEventListener("click", () => {
         state.failedSummaryOpen = !state.failedSummaryOpen;
         render();
+      });
+      document.getElementById("failed-show-more")?.addEventListener("click", () => {
+        state.failedShowLimit = Math.min(
+          getFailedTests(reportData.rootSuite).length,
+          state.failedShowLimit + FAILED_LIST_PAGE
+        );
+        render();
+      });
+      document.getElementById("failed-show-less")?.addEventListener("click", () => {
+        state.failedShowLimit = FAILED_LIST_PAGE;
+        render();
+      });
+      // Warnings / errors summary toggle
+      document.getElementById("toggle-errors")?.addEventListener("click", () => {
+        state.errorsOpen = !state.errorsOpen;
+        render();
+      });
+      // Duration insights toggle
+      document.getElementById("toggle-insights")?.addEventListener("click", () => {
+        state.insightsOpen = !state.insightsOpen;
+        render();
+      });
+      document.querySelectorAll("[data-insight-test-id]").forEach(el => {
+        el.addEventListener("click", async () => {
+          const testId = el.getAttribute("data-insight-test-id");
+          if (!testId || !reportData?.rootSuite) return;
+          state.selectedSuiteKeyword = null;
+          state.selectedKeyword = null;
+          state.logsCleared = false;
+          if (externalData) {
+            const suiteId = dataStore.testToSuite.get(testId);
+            if (suiteId) {
+              const path = getSuitePathToId(reportData.rootSuite, suiteId);
+              if (path) path.forEach(id => state.expandedSuites.add(id));
+              await ensureSuiteLoaded(suiteId);
+            }
+            state.selectedTest = await ensureTestLoaded(testId);
+          } else {
+            state.selectedTest = getAllTests(reportData.rootSuite).find(t => t.id === testId) || null;
+            const path = getSuitePathToTest(reportData.rootSuite, testId);
+            if (path) path.forEach(id => state.expandedSuites.add(id));
+          }
+          if (state.selectedTest) location.hash = "test=" + state.selectedTest.id;
+          render();
+        });
+      });
+      // Compare mode
+      document.querySelectorAll("[data-compare-filter]").forEach(el => {
+        el.addEventListener("click", () => {
+          state.compareFilter = el.getAttribute("data-compare-filter") || "newly_failing";
+          state.compareSuiteCollapseInitialized = false;
+          state.compareCollapsedSuites = new Set();
+          const list = getCompareList();
+          state.compareSelected = list[0] || null;
+          render();
+        });
+      });
+      document.getElementById("view-blockers")?.addEventListener("click", () => {
+        state.compareFilter = "newly_failing";
+        state.compareSearch = "";
+        state.compareTagFilter = "";
+        state.compareSuiteCollapseInitialized = false;
+        state.compareCollapsedSuites = new Set();
+        const list = getCompareList();
+        state.compareSelected = list[0] || null;
+        render();
+      });
+      document.querySelectorAll("[data-compare-suite]").forEach(el => {
+        el.addEventListener("click", () => {
+          const path = el.getAttribute("data-compare-suite") || "";
+          if (!path) return;
+          if (state.compareCollapsedSuites.has(path)) state.compareCollapsedSuites.delete(path);
+          else state.compareCollapsedSuites.add(path);
+          render();
+        });
+      });
+      document.getElementById("compare-expand-suites")?.addEventListener("click", () => {
+        const list = getCompareList();
+        const groups = groupCompareListBySuite(list);
+        const allCollapsed = groups.every(([path]) => state.compareCollapsedSuites.has(path));
+        if (allCollapsed || state.compareCollapsedSuites.size) {
+          state.compareCollapsedSuites = new Set();
+        } else {
+          state.compareCollapsedSuites = new Set(groups.map(([path]) => path));
+        }
+        state.compareSuiteCollapseInitialized = true;
+        render();
+      });
+      document.getElementById("compare-search")?.addEventListener("input", (e) => {
+        state.compareSearch = e.target.value || "";
+        state.compareSuiteCollapseInitialized = false;
+        const list = getCompareList();
+        if (!list.some(x => compareEntryKey(x) === compareEntryKey(state.compareSelected))) {
+          state.compareSelected = list[0] || null;
+        }
+        render();
+        const input = document.getElementById("compare-search");
+        if (input) {
+          input.focus();
+          input.setSelectionRange(state.compareSearch.length, state.compareSearch.length);
+        }
+      });
+      document.getElementById("compare-tag-filter")?.addEventListener("change", (e) => {
+        state.compareTagFilter = e.target.value || "";
+        state.compareSuiteCollapseInitialized = false;
+        const list = getCompareList();
+        state.compareSelected = list.find(x => compareEntryKey(x) === compareEntryKey(state.compareSelected)) || list[0] || null;
+        render();
+      });
+      document.getElementById("compare-duration-min")?.addEventListener("change", (e) => {
+        const n = parseInt(e.target.value, 10);
+        state.compareDurationMinMs = Number.isFinite(n) && n >= 0 ? n : 100;
+        state.compareSuiteCollapseInitialized = false;
+        const list = getCompareList();
+        state.compareSelected = list.find(x => compareEntryKey(x) === compareEntryKey(state.compareSelected)) || list[0] || null;
+        render();
+      });
+      document.getElementById("copy-blockers")?.addEventListener("click", async () => {
+        const blockers = reportData.newlyFailing || reportData.blockers || [];
+        const text = blockers.map(b => {
+          const msg = (b.messageB || "").replace(/\s+/g, " ").trim();
+          return `- ${b.name || b.fullName}${msg ? `: ${msg}` : ""}`;
+        }).join("\n");
+        try {
+          await navigator.clipboard.writeText(text || "(no blockers)");
+          const btn = document.getElementById("copy-blockers");
+          if (btn) {
+            const prev = btn.innerHTML;
+            btn.textContent = "Copied";
+            setTimeout(() => { btn.innerHTML = prev; }, 1200);
+          }
+        } catch (_) {}
+      });
+      document.querySelectorAll(".compare-item, .compare-blocker-chip").forEach(el => {
+        el.addEventListener("click", () => {
+          const key = el.getAttribute("data-compare-key");
+          if (el.classList.contains("compare-blocker-chip")) {
+            state.compareFilter = "newly_failing";
+            state.compareSearch = "";
+            state.compareTagFilter = "";
+            state.compareSuiteCollapseInitialized = false;
+          }
+          const list = getCompareList();
+          const fromAll = (reportData.allComparisons || []).find(x => compareEntryKey(x) === key);
+          state.compareSelected = list.find(x => compareEntryKey(x) === key) || fromAll || null;
+          render();
+        });
       });
       // Failed item clicks
       document.querySelectorAll(".failed-item").forEach(el => {
@@ -3190,20 +4750,28 @@
         await loadExternalData();
       }
       if (reportData?.rootSuite) {
+        applyTriageDefaults(reportData.rootSuite);
         initializeExpandedSuites(reportData.rootSuite);
       }
       const appliedDeepLink = await applyDeepLink();
       if (!appliedDeepLink) {
         if (externalData && reportData?.rootSuite) {
           const failedSuiteIds = getFailedSuiteIds(reportData.rootSuite);
-          failedSuiteIds.forEach(id => {
-            const path = getSuitePathToId(reportData.rootSuite, id);
-            if (path) path.forEach(pathId => state.expandedSuites.add(pathId));
+          const leafFailedIds = failedSuiteIds.filter(id => {
+            const suite = dataStore.suiteMap.get(id);
+            return suite && Array.isArray(suite.testIds) && suite.testIds.length > 0;
           });
-          for (const suiteId of failedSuiteIds) {
+          const failedCount = countFailedTestsQuick(reportData.rootSuite);
+          const loadLimit = failedCount > LARGE_FAIL_THRESHOLD
+            ? BOOT_LOAD_FAILED_SUITES_LARGE
+            : BOOT_LOAD_FAILED_SUITES_MAX;
+          const suitesToLoad = leafFailedIds.slice(0, Math.max(1, loadLimit));
+          for (const suiteId of suitesToLoad) {
+            const path = getSuitePathToId(reportData.rootSuite, suiteId);
+            if (path) path.forEach(pathId => state.expandedSuites.add(pathId));
             await ensureSuiteLoaded(suiteId);
           }
-          const primaryFailedSuiteId = failedSuiteIds[0];
+          const primaryFailedSuiteId = suitesToLoad[0];
           if (primaryFailedSuiteId) {
             const suite = dataStore.suiteMap.get(primaryFailedSuiteId);
             const failedTest = suite?.tests?.find(t => (t.status || "").toUpperCase() === "FAIL");
@@ -3226,7 +4794,11 @@
           const firstFailed = failedTests[0];
           if (externalData) {
             const suiteId = dataStore.testToSuite.get(firstFailed.id);
-            if (suiteId) await ensureSuiteLoaded(suiteId);
+            if (suiteId) {
+              const path = getSuitePathToId(reportData.rootSuite, suiteId);
+              if (path) path.forEach(pathId => state.expandedSuites.add(pathId));
+              await ensureSuiteLoaded(suiteId);
+            }
             const loaded = await ensureTestLoaded(firstFailed.id);
             if (loaded) state.selectedTest = loaded;
           } else {

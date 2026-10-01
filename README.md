@@ -35,7 +35,16 @@ After running Robot Framework tests (e.g. `robot test/`), generate a report from
 reportlens output.xml -o report.html
 ```
 
-**Arguments:**
+**Commands:**
+
+| Command | Description |
+|---|---|
+| `reportlens output.xml` | Generate a report (default) |
+| `reportlens compare a.xml b.xml` | Diff two runs (newly failing/passing, duration deltas) |
+| `reportlens merge a.xml b.xml …` | Merge shards/retries into one report with attempt history |
+| `reportlens live --outdir live-report` | Prepare live listener folder + print `robot --listener` command |
+
+**Generate arguments:**
 
 | Argument | Description |
 |---|---|
@@ -62,6 +71,18 @@ reportlens output.xml -o report.html --external-data --compress-data
 
 # Only include INFO and above (exclude DEBUG messages)
 reportlens output.xml -o report.html --loglevel INFO
+
+# Compare two CI runs
+reportlens compare baseline/output.xml current/output.xml -o diff.html
+
+# Merge parallel shards or retries
+reportlens merge shard1.xml shard2.xml -o report.html
+reportlens merge attempt1.xml attempt2.xml --name RETRIES -o report.html
+
+# Live streaming while Robot runs
+reportlens live --outdir live-report
+robot --listener robotframework_reportlens.listener.LiveReportListener:outdir=live-report suite.robot
+# then open live-report/live.html (via python -m http.server if needed)
 ```
 
 Open the generated `.html` file in a browser.
@@ -82,6 +103,10 @@ python -m robotframework_reportlens output.xml -o report.html
 
 - **Suite/test tree** – Navigate suites and tests with pass/fail/skip counts
 - **Search & filters** – Filter by status and tags; search test names
+- **Compare two runs** – Diff baseline vs candidate `output.xml` for newly failing/passing tests and duration deltas
+- **Merge / rebot mode** – Combine shard or retry XMLs into one report; retries keep structured attempt history in the UI
+- **Duration insights** – Slowest tests/keywords and a simple duration histogram in the sidebar
+- **Live listener** – Stream completed tests into a polling HTML report while Robot is still running
 - **External-data mode** – Optional `--external-data` output splits the report into small JSON files fetched lazily, keeping the HTML shell tiny regardless of suite size
 - **Compressed external data** – `--compress-data` writes only gzip-compressed `.json.gz` files in external-data mode. At 10k tests this reduces the data directory from ~650 MB to ~20 MB (97% smaller) with no server configuration needed. The browser decompresses files natively using the `DecompressionStream` API
 - **Log level filtering at generation time** – `--loglevel` controls which messages are included; defaults to `DEBUG` in external-data mode (excludes `TRACE`) and `TRACE` in self-contained mode (includes everything)
@@ -106,8 +131,12 @@ No server is required for self-contained reports. External-data mode requires a 
 ```
 ├── robotframework_reportlens/
 │   ├── __init__.py
-│   ├── cli.py           # reportlens entry point
+│   ├── cli.py           # reportlens entry point (generate/compare/merge/live)
 │   ├── builder.py       # Robot Framework XML → ReportModel
+│   ├── compare.py       # Diff two ReportModels
+│   ├── merge.py         # Merge shards/retries with attempt history
+│   ├── insights.py      # Duration insights (slowest + histogram)
+│   ├── listener.py      # LiveReportListener for streaming runs
 │   ├── model.py         # ReportModel dataclasses
 │   ├── serialize.py     # ReportModel → compact JSON dicts
 │   ├── generator.py     # Orchestrates HTML + external JSON file generation
@@ -115,10 +144,7 @@ No server is required for self-contained reports. External-data mode requires a 
 │       └── template.html  # Single-file JS report renderer
 ├── tests/
 │   ├── conftest.py        # pytest fixtures
-│   ├── test_builder.py    # builder unit tests
-│   ├── test_cli.py        # CLI tests
-│   ├── test_generator.py  # report generator tests (incl. compression)
-│   ├── test_serialize.py  # serializer tests
+│   ├── test_*.py          # unit/integration tests
 │   └── fixtures/          # checked-in Robot Framework output.xml files
 ├── robot_tests/           # Robot Framework test suites used to generate fixtures
 ├── pyproject.toml
